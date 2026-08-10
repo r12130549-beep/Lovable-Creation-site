@@ -1,16 +1,14 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit, terminate } from 'firebase/firestore';
 import { getDatabase, ref, get, set, update, remove, push } from 'firebase/database';
 import { firebaseConfig } from './firebase';
 
 /**
  * Initialize Firebase Web SDK on the server.
- * Note: To bypass client-side RLS (Row Level Security) when running on the server 
- * in an environment where the Admin SDK is problematic, we use the Web SDK.
  * 
- * IMPORTANT: Because this is a Web SDK instance, it still respects Firestore Security Rules.
- * You MUST ensure your firestore.rules allow "read, write: if true" (Public) 
- * for this specific backend project if you want the server functions to bypass auth checks.
+ * IMPORTANT: To resolve 'Missing or insufficient permissions' (PERMISSION_DENIED)
+ * when using the Web SDK on the server, we must ensure the Firestore rules are permissive
+ * AND the SDK is correctly handling connections in a serverless environment.
  */
 let app;
 if (getApps().length === 0) {
@@ -21,6 +19,11 @@ if (getApps().length === 0) {
 
 export const adminFirestore = getFirestore(app);
 export const adminDatabase = getDatabase(app);
+
+// Helper to force a fresh connection if needed (debugging)
+export const resetFirestore = async () => {
+  await terminate(adminFirestore);
+};
 
 // --- Re-exporting Web SDK methods as "Admin" aliases for compatibility ---
 export { 
