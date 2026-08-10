@@ -176,15 +176,24 @@ function AdminPage() {
         <AnimatePresence mode="wait">
           {activeTab === 'orders' && (
             <motion.div key="orders" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              {realtimeOrders.filter(o => o.orderId?.includes(searchQuery)).map(order => (
-                <div key={order.id} className="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl flex justify-between items-center">
+              {realtimeOrders.filter(o => o.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) || o.customerName?.toLowerCase().includes(searchQuery.toLowerCase())).map(order => (
+                <div key={order.id} className="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl flex justify-between items-center group hover:border-red-500/30 transition-all cursor-pointer" onClick={() => setSelectedOrder(order)}>
                   <div>
-                    <h3 className="font-bold">{order.orderId} - {order.customerName}</h3>
-                    <p className="text-xs text-white/40">{order.productName} | ৳{order.price}</p>
+                    <h3 className="font-bold flex items-center gap-2">
+                      {order.orderId} - {order.customerName}
+                      <span className={`text-[8px] px-2 py-0.5 rounded-full uppercase tracking-widest ${
+                        order.orderStatus === 'Approved' ? 'bg-green-500/10 text-green-500' : 
+                        order.orderStatus === 'Rejected' ? 'bg-red-500/10 text-red-500' : 
+                        'bg-yellow-500/10 text-yellow-500'
+                      }`}>
+                        {order.orderStatus}
+                      </span>
+                    </h3>
+                    <p className="text-xs text-white/40">{order.productName} | ৳{order.price} | {order.email}</p>
                   </div>
                   <div className="flex gap-2">
-                     <button onClick={() => updateOrderMutation.mutate({ orderId: order.id, status: 'Approved' })} className="px-4 py-2 bg-green-600 text-xs font-bold rounded-xl">Approve</button>
-                     <button onClick={() => updateOrderMutation.mutate({ orderId: order.id, status: 'Rejected' })} className="px-4 py-2 bg-red-600 text-xs font-bold rounded-xl">Reject</button>
+                     <button onClick={(e) => { e.stopPropagation(); updateOrderMutation.mutate({ orderId: order.id, status: 'Approved' }); }} className="px-4 py-2 bg-green-600/10 text-green-500 hover:bg-green-600 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">Approve</button>
+                     <button onClick={(e) => { e.stopPropagation(); updateOrderMutation.mutate({ orderId: order.id, status: 'Rejected' }); }} className="px-4 py-2 bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">Reject</button>
                   </div>
                 </div>
               ))}
