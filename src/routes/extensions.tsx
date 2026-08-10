@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Star, Users, ArrowRight, Zap, Shield, LayoutDashboard, Sparkles, Filter, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { firestore } from '@/lib/firebase';
+import { collection, query, getDocs, orderBy, where } from 'firebase/firestore';
 
 export const Route = createFileRoute("/extensions")({
   head: () => ({
@@ -29,31 +30,35 @@ function ExtensionsPage() {
   const { data: extensions, isLoading } = useQuery({
     queryKey: ['extensions', activeCategory, sortBy],
     queryFn: async () => {
-      let query = supabase.from('extensions').select('*');
-      
+      const extensionsRef = collection(firestore, 'extensions');
+      let q;
+
       if (activeCategory !== 'All') {
-        query = query.eq('category', activeCategory);
+        q = query(extensionsRef, where('category', '==', activeCategory));
+      } else {
+        q = query(extensionsRef);
       }
+
+      const snapshot = await getDocs(q);
+      let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
 
       if (sortBy === 'price_low') {
-        query = query.order('price', { ascending: true });
+        data.sort((a: any, b: any) => (a.price || 0) - (b.price || 0));
       } else if (sortBy === 'price_high') {
-        query = query.order('price', { ascending: false });
+        data.sort((a: any, b: any) => (b.price || 0) - (a.price || 0));
       } else if (sortBy === 'rating') {
-        query = query.order('rating', { ascending: false });
+        data.sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0));
       } else {
-        query = query.order('user_count', { ascending: false });
+        data.sort((a: any, b: any) => (b.user_count || 0) - (a.user_count || 0));
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
       return data;
     }
   });
 
-  const filteredExtensions = extensions?.filter(ext => 
-    ext.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ext.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredExtensions = (extensions || []).filter((ext: any) => 
+    (ext.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (ext.description || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

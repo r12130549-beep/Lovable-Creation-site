@@ -1,0 +1,26 @@
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit } from 'firebase/firestore';
+import { getDatabase, ref, get, set, update, push, remove } from 'firebase/database';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBvh8MNr3kVKt4FJlXIRGG-pVBmyC_GFO8",
+  authDomain: "lovable-a893f.firebaseapp.com",
+  projectId: "lovable-a893f",
+  storageBucket: "lovable-a893f.firebasestorage.app",
+  databaseURL: "https://lovable-a893f-default-rtdb.firebaseio.com",
+};
+
+let app: FirebaseApp;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApp();
+}
+
+export const adminFirestore = getFirestore(app);
+export const adminDatabase = getDatabase(app);
+
+export { 
+  collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit,
+  ref, get, set, update, push, remove
+};

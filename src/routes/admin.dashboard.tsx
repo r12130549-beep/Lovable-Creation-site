@@ -15,11 +15,10 @@ import { getAdminUsers, toggleUserStatus, removeUser } from '@/lib/users.functio
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { FileUpload } from '@/components/admin/FileUpload';
 import { motion, AnimatePresence } from 'framer-motion';
 import { firestore } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, getDocs } from 'firebase/firestore';
 import { format } from 'date-fns';
 
 export const Route = createFileRoute('/admin/dashboard')({
@@ -89,9 +88,10 @@ function AdminPage() {
   const { data: extensions, isLoading: extensionsLoading } = useQuery({
     queryKey: ['admin-extensions'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('extensions').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
+      const extensionsRef = collection(firestore, 'extensions');
+      const q = query(extensionsRef, orderBy('created_at', 'desc'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     },
     enabled: activeTab === 'extensions',
   });
