@@ -120,8 +120,10 @@ function AdminPage() {
         return;
       }
       toast.success('অর্ডার সফলভাবে তৈরি হয়েছে');
-      const orderIdToCopy = result.order_id;
-      window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
+      const orderIdToCopy = result.order_id || result.orderId;
+      if (orderIdToCopy) {
+        window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
+      }
       queryClient.invalidateQueries({ queryKey: ['admin-earnings'] });
       // Refresh the orders list immediately
       getAdminOrdersFn().then(orders => setRealtimeOrders(orders || []));
