@@ -6,6 +6,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { getAppSettings } from "@/lib/settings.functions";
 import { useLanguage, translations } from "@/hooks/use-language";
+import { auth } from "@/lib/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,7 +26,20 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      setShowLoginModal(false);
+      toast.success("Login Successful");
+    } catch (error: any) {
+      console.error("Login Error:", error);
+      toast.error("Login Failed");
+    }
+  };
   const { language: lang, setLanguage: setLang } = useLanguage();
   const t = translations[lang];
 
@@ -102,7 +118,32 @@ function Index() {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Login option removed as requested */}
+              {user ? (
+                <div className="flex items-center gap-4">
+                  {isAdmin && (
+                    <Link 
+                      to="/admin/dashboard" 
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-red-600/20"
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
+                  <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl">
+                    <img src={user.photoURL || ''} alt="" className="w-6 h-6 rounded-full border border-white/10" />
+                    <span className="text-[10px] font-bold text-white/70 truncate max-w-[100px]">{user.displayName}</span>
+                    <button onClick={() => signOut()} className="text-white/40 hover:text-red-500 transition-colors">
+                      <LogOut className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setShowLoginModal(true)}
+                  className="bg-white/5 hover:bg-white/10 text-white/70 hover:text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all"
+                >
+                  Login
+                </button>
+              )}
             </div>
           </div>
 
@@ -128,7 +169,18 @@ function Index() {
                 <a href="#features" onClick={() => setIsMenuOpen(false)}>{t.features}</a>
                 <a href="#faq" onClick={() => setIsMenuOpen(false)}>{t.faq}</a>
                 <Link to="/track-order" className="text-red-500" onClick={() => setIsMenuOpen(false)}>{t.trackOrder}</Link>
-                {/* Login option removed as requested */}
+                {user ? (
+                  <div className="flex flex-col gap-4">
+                    {isAdmin && (
+                      <Link to="/admin/dashboard" className="text-red-500" onClick={() => setIsMenuOpen(false)}>Admin Panel</Link>
+                    )}
+                    <button onClick={() => signOut()} className="flex items-center gap-2 text-white/40">
+                      <LogOut className="w-5 h-5" /> Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => { setShowLoginModal(true); setIsMenuOpen(false); }} className="text-white/70">Login</button>
+                )}
               </div>
             </motion.div>
           )}
