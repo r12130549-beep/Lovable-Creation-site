@@ -187,12 +187,12 @@ function CheckoutPage() {
 
       // 3. Create order via server function
       const result = await createManualOrderFn({ data: orderPayload });
-      if (!result.success || !result.order_id) {
+      if (!result.success || (!result.order_id && !result.orderId)) {
         throw new Error(result.message || 'অর্ডারটি সেভ করা যায়নি');
       }
       
       // 4. Update local state with the actual order ID from server
-      const finalOrderId = result.order_id;
+      const finalOrderId = result.order_id || result.orderId;
       setOrderId(finalOrderId);
 
       setStep(5);
