@@ -35,7 +35,21 @@ export const getExtensions = createServerFn({ method: "GET" })
       const q = query(extensionsRef);
 
       const snapshot = await getDocs(q);
-      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as any[];
+      const results = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as any[];
+
+      // Manual filtering and sorting to bypass Firebase index requirements
+      let filtered = results;
+      if (data?.slug) {
+        filtered = results.filter(ext => ext.slug === data.slug).slice(0, 1);
+      } else if (data?.category && data.category !== "All") {
+        filtered = results.filter(ext => ext.category === data.category);
+      }
+
+      return filtered.sort((a, b) => {
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return dateB - dateA;
+      });
     } catch (error: any) {
       console.error("Error fetching extensions:", error);
       return [] as any[];
