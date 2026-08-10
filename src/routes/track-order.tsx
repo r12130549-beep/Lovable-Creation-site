@@ -246,7 +246,7 @@ function TrackOrderPage() {
                     </p>
                   )}
                 </div>
-              ) : order.isExpired ? (
+              ) : order?.isExpired ? (
                 <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 mb-12 text-center space-y-4">
                   <Shield className="w-12 h-12 text-red-500 mx-auto opacity-50" />
                   <div>
@@ -264,7 +264,7 @@ function TrackOrderPage() {
               ) : null}
 
               {/* Status Message */}
-              {(order.status === 'Rejected' || order.status === 'Failed') && !order.isExpired ? (
+              {(order?.status === 'Rejected' || order?.status === 'Failed') && !order?.isExpired ? (
                 <div className="bg-red-500/5 border border-red-500/10 rounded-2xl p-6 flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5 text-red-500" />
@@ -272,11 +272,11 @@ function TrackOrderPage() {
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-widest text-red-500 mb-1">পেমেন্ট সময় শেষ</h4>
                     <p className="text-[10px] font-medium text-white/60 leading-relaxed">
-                      {order.admin_note || "৩০ মিনিটের মধ্যে পেমেন্ট না হওয়ায় এই অর্ডারটি স্বয়ংক্রিয়ভাবে বাতিল হয়েছে। অনুগ্রহ করে নতুন অর্ডার দিন।"}
+                      {order?.admin_note || "৩০ মিনিটের মধ্যে পেমেন্ট না হওয়ায় এই অর্ডারটি স্বয়ংক্রিয়ভাবে বাতিল হয়েছে। অনুগ্রহ করে নতুন অর্ডার দিন।"}
                     </p>
                   </div>
                 </div>
-              ) : (order.status === 'Pending' || order.status === 'Payment Review') && !order.isExpired ? (
+              ) : (order?.status === 'Pending' || order?.status === 'Payment Review') && !order?.isExpired ? (
                 <div className="bg-yellow-500/5 border border-yellow-500/10 rounded-2xl p-6 flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5 text-yellow-500" />
