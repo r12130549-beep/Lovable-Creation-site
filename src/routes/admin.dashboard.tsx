@@ -41,7 +41,7 @@ export const getAdminOrdersFast = createServerFn({ method: "GET" })
       const q = serverQuery(ordersRef, serverOrderBy("created_at", "desc"), serverLimit(50));
       const querySnapshot = await serverGetDocs(q);
       
-      const orders = querySnapshot.docs.map(doc => ({
+      const orders = querySnapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()
       }));
@@ -83,7 +83,8 @@ export const getAdminExtensionsFast = createServerFn({ method: "GET" })
       const extensionsRef = serverCollection(serverFirestore, "extensions");
       const q = serverQuery(extensionsRef, serverOrderBy("created_at", "desc"));
       const snapshot = await serverGetDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+
     } catch (error: any) {
       console.error("Error fetching extensions fast:", error);
       return [];
@@ -161,7 +162,8 @@ export const getAdminUsersFast = createServerFn({ method: "GET" })
     try {
       const usersRef = serverCollection(serverFirestore, "users");
       const snapshot = await serverGetDocs(usersRef);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+
     } catch (error) {
       console.error("Error fetching users fast:", error);
       return [];
@@ -173,7 +175,7 @@ export const getAdminLicensesFast = createServerFn({ method: "GET" })
     try {
       const licensesRef = serverCollection(serverFirestore, "licenses");
       const snapshot = await serverGetDocs(licensesRef);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
       console.error("Error fetching admin licenses fast:", error);
       return [];

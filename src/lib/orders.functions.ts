@@ -21,7 +21,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
       const q = query(ordersRef, orderBy("created_at", "desc"), limit(50));
       const querySnapshot = await getDocs(q);
       
-      const orders = querySnapshot.docs.map(doc => ({
+      const orders = querySnapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()
       }));
@@ -176,7 +176,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
       const ordersRef = collection(adminFirestore, "orders");
       const q = query(ordersRef, orderBy("created_at", "desc"), limit(200));
       const querySnapshot = await getDocs(q);
-      const orders = querySnapshot.docs.map(doc => doc.data());
+      const orders = querySnapshot.docs.map((doc: any) => doc.data());
       
       const filteredOrders = orders.filter((o: any) => 
         ["Approved", "Completed"].includes(o.order_status || o.payment_status)
@@ -221,7 +221,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
       
       return {
         stats: { total, daily, weekly, monthly, yearly },
-        table: earningsTable.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        table: earningsTable.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
       };
     } catch (error: any) {
       console.error("Error calculating earnings from Firebase:", error);
