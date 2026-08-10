@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
 
 const projectId = "lovable-a893f";
 
@@ -12,11 +12,17 @@ export const adminFirestore = admin.firestore();
 export const adminDatabase = admin.database();
 
 export const collection = (db: any, path: string) => db.collection(path);
-export const doc = (db: any, path: string, ...segments: string[]) => {
-  if (typeof db.collection === 'function') {
-    return db.collection(path).doc(segments.join('/'));
+export const doc = (dbOrCol: any, path?: string, ...segments: string[]) => {
+  if (typeof dbOrCol.collection === 'function' && path) {
+    return dbOrCol.collection(path).doc(segments.join('/'));
   }
-  return db.doc(path + (segments.length ? '/' + segments.join('/') : ''));
+  if (typeof dbOrCol.doc === 'function' && !path) {
+    return dbOrCol.doc();
+  }
+  if (path) {
+    return dbOrCol.doc(path + (segments.length ? '/' + segments.join('/') : ''));
+  }
+  return dbOrCol.doc();
 };
 
 export const getDocs = async (query: any) => {
@@ -64,8 +70,8 @@ export const query = (colRef: any, ...constraints: any[]) => {
   return q;
 };
 
-export const where = (field: string, op: string, val: any) => ({ type: 'where', field, op, val });
-export const orderBy = (field: string, dir: string = 'asc') => ({ type: 'orderBy', field, dir });
+export const where = (field: string, op: any, val: any) => ({ type: 'where', field, op, val });
+export const orderBy = (field: string, dir: any = 'asc') => ({ type: 'orderBy', field, dir });
 export const limit = (val: number) => ({ type: 'limit', val });
 
 export const ref = (db: any, path: string) => db.ref(path);
