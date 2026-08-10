@@ -596,7 +596,7 @@ function CheckoutPage() {
                     <p className="font-black text-sm uppercase">VIBEX Premium Plan</p>
                     <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">One-time payment</p>
                   </div>
-                  <p className="font-black text-red-500">$29.99</p>
+                  <p className="font-black text-red-500">৳{bdtAmount}</p>
                 </div>
 
                 <div className="h-[1px] bg-white/5 w-full" />
@@ -604,18 +604,18 @@ function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
                     <span>Subtotal</span>
-                    <span>$29.99</span>
+                    <span>৳{bdtAmount}</span>
                   </div>
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
                     <span>Processing Fee</span>
-                    <span>$0.00</span>
+                    <span>৳0.00</span>
                   </div>
                 </div>
 
                 <div className="pt-6 border-t border-white/5">
                   <div className="flex justify-between items-end">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Total Amount</p>
-                    <p className="text-3xl font-black text-white">$29.99</p>
+                    <p className="text-3xl font-black text-white">৳{bdtAmount}</p>
                   </div>
                 </div>
               </div>
