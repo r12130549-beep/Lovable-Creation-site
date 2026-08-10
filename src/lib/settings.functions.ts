@@ -7,13 +7,12 @@ export const getAppSettings = createServerFn({ method: "GET" })
     try {
       const { supabaseAdmin } = await import("../integrations/supabase/client.server");
       
-      // Attempt to fetch settings, but don't crash if database is unavailable
       const { data, error } = await supabaseAdmin
         .from("app_settings")
         .select("*");
 
       if (error) {
-        console.warn("Supabase warning fetching settings (possibly table doesn't exist yet):", error.message);
+        console.warn("Supabase fetch error:", error.message);
         return {};
       }
       
@@ -24,7 +23,8 @@ export const getAppSettings = createServerFn({ method: "GET" })
       
       return settings;
     } catch (error: any) {
-      console.warn("Silent catch in getAppSettings:", error.message);
+      console.error("Error in getAppSettings:", error);
+      // Return a plain object to avoid the 'forgot to return a response' error
       return {};
     }
   });

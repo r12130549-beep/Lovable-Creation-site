@@ -6,9 +6,13 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
     const result = await next();
     
-    // Server functions might return data that is NOT a Response,
-    // but the final server handler MUST return a Response.
-    // However, errorMiddleware as requestMiddleware expects result to be a Response.
+    // In TanStack Start v1, requestMiddleware MUST return a Response.
+    // middleware.server next() for requestMiddleware returns a Response.
+    // If for some reason it's undefined, we return a fallback.
+    if (!result) {
+      return new Response("OK", { status: 200 });
+    }
+    
     return result;
   } catch (error: any) {
     if (error instanceof Response) {
