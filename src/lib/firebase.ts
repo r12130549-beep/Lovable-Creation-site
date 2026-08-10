@@ -3,7 +3,8 @@ import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 import { getFirestore } from "firebase/firestore";
 
-const firebaseConfig = {
+// The firebaseConfig is exported to be used by the server-side as well
+export const firebaseConfig = {
   apiKey: "AIzaSyBvh8MNr3kVKt4FJlXIRGG-pVBmyC_GFO8",
   authDomain: "lovable-a893f.firebaseapp.com",
   projectId: "lovable-a893f",
@@ -24,7 +25,4 @@ if (getApps().length === 0) {
 export const auth = getAuth(app);
 export const db = getDatabase(app);
 export const firestore = getFirestore(app);
-
-// Helper for simplified public reads if needed
-export { firebaseConfig };
 export default app;
