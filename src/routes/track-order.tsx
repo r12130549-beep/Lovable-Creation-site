@@ -196,7 +196,7 @@ function TrackOrderPage() {
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">মূল্য</p>
-                  <p className="text-xs font-bold text-white/80">৳{order.amount}</p>
+                  <p className="text-xs font-bold text-white/80">{order.amount || 0} {order.currency || '৳'}</p>
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">পেমেন্ট</p>

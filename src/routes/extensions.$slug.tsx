@@ -7,8 +7,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { firestore } from '@/lib/firebase';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { getExtensions } from '@/lib/extensions.functions';
 
 export const Route = createFileRoute("/extensions/$slug")({
   head: ({ loaderData }) => ({
@@ -22,13 +21,9 @@ export const Route = createFileRoute("/extensions/$slug")({
     ],
   }),
   loader: async ({ params }: { params: any }) => {
-    const extensionsRef = collection(firestore, "extensions");
-    const q = query(extensionsRef, where("slug", "==", params.slug), limit(1));
-    const snapshot = await getDocs(q);
-    
-    if (snapshot.empty || !snapshot.docs[0]) throw new Error("Extension not found");
-    const docSnap = snapshot.docs[0];
-    return { id: docSnap.id, ...docSnap.data() } as any;
+    const extensions = await getExtensions({ data: { slug: params.slug } });
+    if (!extensions || extensions.length === 0) throw new Error("Extension not found");
+    return extensions[0];
   },
   component: ExtensionDetailsPage,
 });

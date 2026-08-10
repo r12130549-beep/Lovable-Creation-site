@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAdminLicenses, updateLicenseAdmin, createLicenseAdmin } from '@/lib/licenses.functions';
-import { deleteExtension, updateExtension, createExtension } from '@/lib/extensions.functions';
+import { deleteExtension, updateExtension, createExtension, getExtensions } from '@/lib/extensions.functions';
 import { getAdminOrders, updateOrderStatus, createManualOrder, getEarningsStats } from '@/lib/orders.functions';
 import { getAdminUsers, toggleUserStatus, removeUser } from '@/lib/users.functions';
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
@@ -17,8 +17,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { FileUpload } from '@/components/admin/FileUpload';
 import { motion, AnimatePresence } from 'framer-motion';
-import { firestore } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot, getDocs } from 'firebase/firestore';
+
 import { format } from 'date-fns';
 
 export const Route = createFileRoute('/admin/dashboard')({
@@ -54,6 +53,7 @@ function AdminPage() {
   const updateOrderStatusFn = useServerFn(updateOrderStatus);
   const createExtensionFn = useServerFn(createExtension);
   const deleteExtensionFn = useServerFn(deleteExtension);
+  const getExtensionsFn = useServerFn(getExtensions);
 
   useEffect(() => {
     if (initialized && (!user || !isAdmin)) {
@@ -88,10 +88,8 @@ function AdminPage() {
   const { data: extensions, isLoading: extensionsLoading } = useQuery({
     queryKey: ['admin-extensions'],
     queryFn: async () => {
-      const extensionsRef = collection(firestore, 'extensions');
-      const q = query(extensionsRef, orderBy('created_at', 'desc'));
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = await getExtensionsFn();
+      return data;
     },
     enabled: activeTab === 'extensions',
   });
@@ -122,8 +120,10 @@ function AdminPage() {
         return;
       }
       toast.success('অর্ডার সফলভাবে তৈরি হয়েছে');
-      const orderIdToCopy = result.order_id;
-      window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
+      const orderIdToCopy = result.order_id || result.orderId;
+      if (orderIdToCopy) {
+        window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
+      }
       queryClient.invalidateQueries({ queryKey: ['admin-earnings'] });
       // Refresh the orders list immediately
       getAdminOrdersFn().then(orders => setRealtimeOrders(orders || []));
@@ -712,7 +712,7 @@ function AdminPage() {
               <div>
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-2 block">Payment Proof</label>
                 <img 
-                  src={(selectedOrder.screenshot_url || selectedOrder.screenshotUrl).startsWith('http') ? (selectedOrder.screenshot_url || selectedOrder.screenshotUrl) : `${import.meta.env['VITE_SUPABASE_URL']}/storage/v1/object/public/order-assets/${(selectedOrder.screenshot_url || selectedOrder.screenshotUrl)}`} 
+                  src={(selectedOrder.screenshot_url || selectedOrder.screenshotUrl)} 
                   className="w-full rounded-2xl border border-white/10" 
                   alt="Payment Screenshot" 
                 />

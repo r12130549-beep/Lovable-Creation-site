@@ -1,11 +1,29 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-
+import { 
+  adminFirestore, 
+  collection, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  orderBy,
+  where
+} from "./firebase-admin.server";
 
 export const getAdminUsers = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { getAllUsersAdmin } = await import("./users.server");
-    return getAllUsersAdmin();
+    try {
+      const usersRef = collection(adminFirestore, "users");
+      const snapshot = await getDocs(usersRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return [];
+    }
   });
 
 export const toggleUserStatus = createServerFn({ method: "POST" })
@@ -17,8 +35,14 @@ export const toggleUserStatus = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
-    const { updateUserStatus } = await import("./users.server");
-    return updateUserStatus(data.userId, data.isSuspended);
+    try {
+      const userRef = doc(adminFirestore, "users", data.userId);
+      await updateDoc(userRef, { is_suspended: data.isSuspended });
+      return { success: true };
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+      return { success: false };
+    }
   });
 
 export const removeUser = createServerFn({ method: "POST" })
@@ -29,8 +53,14 @@ export const removeUser = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
-    const { deleteUser } = await import("./users.server");
-    return deleteUser(data.userId);
+    try {
+      const userRef = doc(adminFirestore, "users", data.userId);
+      await deleteDoc(userRef);
+      return { success: true };
+    } catch (error) {
+      console.error("Error removing user:", error);
+      return { success: false };
+    }
   });
 
 export const updateUserRole = createServerFn({ method: "POST" })
@@ -42,6 +72,12 @@ export const updateUserRole = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
-    const { updateUserRole: updateUserRoleServer } = await import("./users.server");
-    return updateUserRoleServer(data.userId, data.role);
+    try {
+      const userRef = doc(adminFirestore, "users", data.userId);
+      await updateDoc(userRef, { role: data.role });
+      return { success: true };
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      return { success: false };
+    }
   });

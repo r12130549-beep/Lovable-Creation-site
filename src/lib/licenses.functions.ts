@@ -1,16 +1,24 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-
 import { 
-  generateLicenseKey, 
-} from "./licenses.server";
+  adminFirestore, 
+  collection, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  query, 
+  where,
+  orderBy,
+  limit
+} from "./firebase-admin.server";
 
 const licenseStatusSchema = z.enum(["Active", "Expired", "Suspended", "Revoked"]);
 
 export const getMyLicenses = createServerFn({ method: "GET" })
   .handler(async () => {
-    // With Firebase switch, we rely on email-based tracking or public order ID tracking
-    // For now, we return an empty list to prevent crashes on the dashboard
+    // Return empty for now as requested by previous logic context
     return [];
   });
 
@@ -22,26 +30,32 @@ export const createLicenseAdmin = createServerFn({ method: "POST" })
       deviceLimit: z.number().int().min(1).default(3)
     }).parse(data)
   )
-
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
-    const key = generateLicenseKey();
-    const expiry = new Date();
-    expiry.setFullYear(expiry.getFullYear() + 1); // 1 year default
+    try {
+      const key = `VIBEX-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      const expiry = new Date();
+      expiry.setFullYear(expiry.getFullYear() + 1);
 
-    const { data: license, error } = await supabaseAdmin.from('licenses').insert({
-      user_id: data.userId,
-      extension_id: data.extensionId,
-      key,
-      status: 'Active',
-      device_limit: data.deviceLimit,
-      expires_at: expiry.toISOString()
-    }).select().single();
+      const licensesRef = collection(adminFirestore, "licenses");
+      const licenseRef = doc(licensesRef);
+      const licenseData = {
+        id: licenseRef.id,
+        user_id: data.userId,
+        extension_id: data.extensionId,
+        key,
+        status: 'Active',
+        device_limit: data.deviceLimit,
+        expires_at: expiry.toISOString(),
+        created_at: new Date().toISOString()
+      };
 
-    if (error) throw error;
-    return license;
+      await setDoc(licenseRef, licenseData);
+      return licenseData;
+    } catch (error) {
+      console.error("Error creating license:", error);
+      throw error;
+    }
   });
-
 
 export const updateLicenseAdmin = createServerFn({ method: "POST" })
   .validator((data: { 
@@ -58,32 +72,35 @@ export const updateLicenseAdmin = createServerFn({ method: "POST" })
       deviceLimit: z.number().int().min(1).optional(),
       expiryDate: z.string().optional(),
       resetActivations: z.boolean().optional(),
-      downloadUrl: z.string().url().optional()
+      downloadUrl: z.string().optional()
     }).parse(data)
   )
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
-    if (data.resetActivations) {
-      const { resetLicenseActivations } = await import("./licenses.server");
-      await resetLicenseActivations(data.licenseId);
+    try {
+      const licenseRef = doc(adminFirestore, "licenses", data.licenseId);
+      const updates: any = {};
+      if (data.status) updates.status = data.status;
+      if (data.deviceLimit) updates.device_limit = data.deviceLimit;
+      if (data.expiryDate) updates.expires_at = data.expiryDate;
+      if (data.downloadUrl) updates.download_url = data.downloadUrl;
+      if (data.resetActivations) updates.activated_devices = 0;
+
+      await updateDoc(licenseRef, updates);
+      return { success: true };
+    } catch (error) {
+      console.error("Error updating license:", error);
+      return { success: false };
     }
-
-    const updates: any = {};
-    if (data.status) updates.status = data.status;
-    if (data.deviceLimit) updates.device_limit = data.deviceLimit;
-    if (data.expiryDate) updates.expires_at = data.expiryDate;
-    if (data.downloadUrl) updates.download_url = data.downloadUrl;
-
-    if (Object.keys(updates).length > 0) {
-      const { error } = await supabaseAdmin.from('licenses').update(updates).eq('id', data.licenseId);
-      if (error) throw error;
-    }
-
-    return { success: true };
   });
 
 export const getAdminLicenses = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { getAllLicensesAdmin } = await import("./licenses.server");
-    return getAllLicensesAdmin();
+    try {
+      const licensesRef = collection(adminFirestore, "licenses");
+      const snapshot = await getDocs(licensesRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error("Error fetching admin licenses:", error);
+      return [];
+    }
   });
