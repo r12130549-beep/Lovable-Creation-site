@@ -185,8 +185,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const q = query(ordersRef, orderBy("created_at", "desc"), limit(200));
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(ordersRef);
       const orders = querySnapshot.docs.map((doc: any) => doc.data());
       
       const filteredOrders = orders.filter((o: any) => 

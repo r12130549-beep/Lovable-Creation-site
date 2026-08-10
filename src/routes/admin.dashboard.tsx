@@ -94,8 +94,7 @@ export const getAdminExtensionsFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const extensionsRef = serverCollection(serverFirestore, "extensions");
-      const q = serverQuery(extensionsRef, serverOrderBy("created_at", "desc"));
-      const snapshot = await serverGetDocs(q);
+      const snapshot = await serverGetDocs(extensionsRef);
       return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
     } catch (error: any) {
