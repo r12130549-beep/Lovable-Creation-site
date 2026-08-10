@@ -15,9 +15,8 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     }
 
     const authHeader = request.headers.get('authorization');
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : undefined;
     
-    // Create a guest client if no token is present
     const supabase = createClient<Database>(
       SUPABASE_URL,
       SUPABASE_PUBLISHABLE_KEY,
@@ -33,16 +32,26 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       }
     );
 
-    const { data, error } = await supabase.auth.getClaims(token);
-    if (error || !data?.claims?.sub) {
-      throw new Error('Unauthorized');
+    let userId = 'guest';
+    let claims = null;
+
+    if (token && token.split('.').length === 3) {
+      try {
+        const { data, error } = await supabase.auth.getClaims(token);
+        if (!error && data?.claims?.sub) {
+          userId = data.claims.sub;
+          claims = data.claims;
+        }
+      } catch (e) {
+        // Silent guest fallback
+      }
     }
 
     return next({
       context: {
         supabase,
-        userId: data.claims.sub,
-        claims: data.claims,
+        userId,
+        claims,
       },
     });
   },
