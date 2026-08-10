@@ -13,7 +13,8 @@ const unwrap = (data: unknown) => {
 export const deleteExtension = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => z.object({ id: z.any().transform((v) => String(v)) }).parse(unwrap(data)))
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
+    const { createAdminClient } = await import("../integrations/supabase/client.server");
+    const supabaseAdmin = createAdminClient();
     const { error } = await supabaseAdmin.from("extensions").delete().eq("id", data.id);
     if (error) throw error;
     return { success: true };
@@ -29,7 +30,8 @@ export const updateExtension = createServerFn({ method: "POST" })
       .parse(unwrap(data)),
   )
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
+    const { createAdminClient } = await import("../integrations/supabase/client.server");
+    const supabaseAdmin = createAdminClient();
     const { error } = await supabaseAdmin
       .from("extensions")
       .update(data.updates as any)
@@ -61,7 +63,8 @@ export const createExtension = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const { supabaseAdmin } = await import("../integrations/supabase/client.server");
+      const { createAdminClient } = await import("../integrations/supabase/client.server");
+      const supabaseAdmin = createAdminClient();
 
       const name = data.name?.trim() || "Untitled Extension";
       const slug =

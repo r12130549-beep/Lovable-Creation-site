@@ -4,8 +4,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 
 // HARDCODED keys to prevent "Invalid API Key" errors during server-side execution
-const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
+const SUPABASE_URL = (typeof process !== 'undefined' && process.env['VITE_SUPABASE_URL']) || 'https://gxskutcwhatbkeaczyvd.supabase.co';
+const SUPABASE_ANON_KEY = (typeof process !== 'undefined' && process.env['VITE_SUPABASE_ANON_KEY']) || 'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
 
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {

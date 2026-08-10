@@ -1,23 +1,40 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
-const SUPABASE_SERVICE_ROLE_KEY = 'sb_secret_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
-
-// Create the client immediately with hardcoded keys to ensure it's available for all server functions
-export const supabaseAdmin = createClient<Database>(
-  SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY,
-  {
-    global: {
-      headers: {
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-      },
-    },
-    auth: {
-      storage: undefined,
-      persistSession: false,
-      autoRefreshToken: false,
-    }
+// Read from process.env if available, otherwise use hardcoded fallbacks
+// These are managed keys for the Lovable project gxskutcwhatbkeaczyvd
+const getEnv = (key: string, fallback: string) => {
+  if (typeof process !== 'undefined' && process.env && process.env[key]) {
+    return process.env[key];
   }
-);
+  return fallback;
+};
+
+const SUPABASE_URL = getEnv('VITE_SUPABASE_URL', 'https://gxskutcwhatbkeaczyvd.supabase.co');
+const SUPABASE_SERVICE_ROLE_KEY = getEnv('SUPABASE_SERVICE_ROLE_KEY', 'sb_secret_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY');
+
+// Helper to create clients with consistent header configuration
+export const createAdminClient = () => {
+  const url = getEnv('VITE_SUPABASE_URL', 'https://gxskutcwhatbkeaczyvd.supabase.co');
+  const key = getEnv('SUPABASE_SERVICE_ROLE_KEY', 'sb_secret_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY');
+  
+  return createClient<Database>(
+    url,
+    key,
+    {
+      global: {
+        headers: {
+          apikey: key,
+        },
+      },
+      auth: {
+        storage: undefined,
+        persistSession: false,
+        autoRefreshToken: false,
+      }
+    }
+  );
+};
+
+// Standard admin client instance
+export const supabaseAdmin = createAdminClient();

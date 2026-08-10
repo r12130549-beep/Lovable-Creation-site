@@ -5,7 +5,8 @@ export const getAppSettings = createServerFn({ method: "GET" })
   .handler(async () => {
     console.log("DEBUG: getAppSettings called");
     try {
-      const { supabaseAdmin } = await import("../integrations/supabase/client.server");
+      const { createAdminClient } = await import("../integrations/supabase/client.server");
+      const supabaseAdmin = createAdminClient();
       console.log("DEBUG: supabaseAdmin imported");
       
       const { data, error } = await supabaseAdmin
@@ -42,7 +43,8 @@ export const updateAppSetting = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     console.log("DEBUG: updateAppSetting called for key:", data.key);
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { createAdminClient } = await import("@/integrations/supabase/client.server");
+      const supabaseAdmin = createAdminClient();
       const { error } = await supabaseAdmin
         .from("app_settings")
         .upsert({ 
