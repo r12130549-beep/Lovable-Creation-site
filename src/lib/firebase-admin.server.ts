@@ -2,20 +2,24 @@ import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getDatabase } from 'firebase-admin/database';
 
-const projectId = "lovable-a893f";
-const databaseURL = "https://lovable-a893f-default-rtdb.firebaseio.com";
+const firebaseConfig = {
+  projectId: "lovable-a893f",
+  databaseURL: "https://lovable-a893f-default-rtdb.firebaseio.com"
+};
 
+/**
+ * Initialize Firebase Admin SDK.
+ * Using project ID allows the SDK to function without a service account JSON file,
+ * relying on environment credentials or public access for non-sensitive operations.
+ */
 if (getApps().length === 0) {
-  initializeApp({
-    projectId: projectId,
-    databaseURL: databaseURL
-  });
+  initializeApp(firebaseConfig);
 }
 
 export const adminFirestore = getFirestore();
 export const adminDatabase = getDatabase();
 
-
+// --- Compatibility Helpers for Firestore Admin SDK ---
 export const collection = (db: any, path: string) => db.collection(path);
 export const doc = (dbOrCol: any, path?: string, ...segments: string[]) => {
   if (typeof dbOrCol.collection === 'function' && path) {
@@ -31,29 +35,39 @@ export const doc = (dbOrCol: any, path?: string, ...segments: string[]) => {
 };
 
 export const getDocs = async (query: any) => {
-  const snapshot = await query.get();
-  return {
-    docs: snapshot.docs.map((d: any) => ({
-      id: d.id,
-      data: () => d.data(),
-    })),
-    empty: snapshot.empty,
-    forEach: (callback: (doc: any) => void) => {
-      snapshot.docs.forEach((d: any) => callback({
+  try {
+    const snapshot = await query.get();
+    return {
+      docs: snapshot.docs.map((d: any) => ({
         id: d.id,
         data: () => d.data(),
-      }));
-    }
-  };
+      })),
+      empty: snapshot.empty,
+      forEach: (callback: (doc: any) => void) => {
+        snapshot.docs.forEach((d: any) => callback({
+          id: d.id,
+          data: () => d.data(),
+        }));
+      }
+    };
+  } catch (error: any) {
+    console.error("Firestore Admin getDocs failed:", error.message);
+    return { docs: [], empty: true, forEach: () => {} };
+  }
 };
 
 export const getDoc = async (docRef: any) => {
-  const snapshot = await docRef.get();
-  return {
-    exists: () => snapshot.exists,
-    data: () => snapshot.data(),
-    id: snapshot.id
-  };
+  try {
+    const snapshot = await docRef.get();
+    return {
+      exists: () => snapshot.exists,
+      data: () => snapshot.data(),
+      id: snapshot.id
+    };
+  } catch (error: any) {
+    console.error("Firestore Admin getDoc failed:", error.message);
+    return { exists: () => false, data: () => undefined, id: docRef.id };
+  }
 };
 
 export const setDoc = async (docRef: any, data: any, options?: { merge?: boolean }) => {
@@ -62,6 +76,7 @@ export const setDoc = async (docRef: any, data: any, options?: { merge?: boolean
   }
   return await docRef.set(data);
 };
+
 export const updateDoc = async (docRef: any, data: any) => await docRef.update(data);
 export const deleteDoc = async (docRef: any) => await docRef.delete();
 
@@ -79,6 +94,7 @@ export const where = (field: string, op: any, val: any) => ({ type: 'where', fie
 export const orderBy = (field: string, dir: any = 'asc') => ({ type: 'orderBy', field, dir });
 export const limit = (val: number) => ({ type: 'limit', val });
 
+// --- Realtime Database Helpers ---
 export const ref = (db: any, path: string) => db.ref(path);
 export const get = async (nodeRef: any) => await nodeRef.once('value');
 export const set = async (nodeRef: any, val: any) => await nodeRef.set(val);

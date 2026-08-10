@@ -24,4 +24,7 @@ if (getApps().length === 0) {
 export const auth = getAuth(app);
 export const db = getDatabase(app);
 export const firestore = getFirestore(app);
+
+// Helper for simplified public reads if needed
+export { firebaseConfig };
 export default app;
