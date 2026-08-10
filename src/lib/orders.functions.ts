@@ -12,20 +12,20 @@ export const getAdminOrders = createServerFn({ method: "GET" })
       
       if (error) throw error;
       
-      return data.map(order => ({
+      return (data || []).map((order: any) => ({
         id: order.id,
-        orderId: order.order_id,
+        orderId: order.order_id || order.id,
         customerName: order.customer_name,
         email: order.customer_email,
         whatsapp: order.customer_phone,
-        productName: order.product_name,
+        productName: order.product_name || order.productName || "Unknown",
         category: order.category,
-        price: order.price,
-        currency: order.currency,
-        quantity: order.quantity,
+        price: order.price || order.amount || 0,
+        currency: order.currency || "৳",
+        quantity: order.quantity || 1,
         paymentMethod: order.payment_method,
-        paymentStatus: order.payment_status,
-        orderStatus: order.order_status,
+        paymentStatus: order.payment_status || order.status || "Pending",
+        orderStatus: order.order_status || order.status || "Pending",
         licenseKey: order.license_key,
         licenseName: order.license_name,
         downloadLink: order.download_link,
@@ -45,7 +45,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
 export const updateOrderStatus = createServerFn({ method: "POST" })
   .inputValidator((data) => 
     z.object({
-      orderId: z.string(), // This is the internal UUID or order_id
+      orderId: z.string(), 
       status: z.string(),
       productName: z.string().optional(),
       paymentStatus: z.string().optional(),
@@ -71,7 +71,6 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       if (data.downloadLink) updatePayload.download_link = data.downloadLink;
       if (data.expireDate) updatePayload.expire_date = data.expireDate;
 
-      // Try updating by ID first, then by order_id
       const { error: idError } = await supabaseAdmin
         .from("orders")
         .update(updatePayload)
@@ -146,7 +145,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
           notes: data.notes,
           transaction_id: data.transactionId,
           screenshot_url: data.screenshotUrl,
-        })
+        } as any)
         .select()
         .single();
 
@@ -171,8 +170,8 @@ async function generateUniqueOrderId(): Promise<string> {
     
     const { data } = await supabaseAdmin
       .from("orders")
-      .select("order_id")
-      .eq("order_id", orderId)
+      .select("id")
+      .eq("id", orderId)
       .maybeSingle();
       
     if (!data) return orderId;
@@ -186,10 +185,13 @@ export const getEarningsStats = createServerFn({ method: "GET" })
     try {
       const { data: orders, error } = await supabaseAdmin
         .from("orders")
-        .select("*")
-        .in("order_status", ["Approved", "Completed"]);
+        .select("*");
       
       if (error) throw error;
+      
+      const filteredOrders = (orders || []).filter((o: any) => 
+        ["Approved", "Completed"].includes(o.order_status) || ["Approved", "Completed"].includes(o.status)
+      );
       
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -204,8 +206,8 @@ export const getEarningsStats = createServerFn({ method: "GET" })
       let monthly = 0;
       let yearly = 0;
       
-      const earningsTable = orders.map(order => {
-        const price = Number(order.price) || 0;
+      const earningsTable = filteredOrders.map((order: any) => {
+        const price = Number(order.price || order.amount) || 0;
         const createdAt = new Date(order.created_at);
         
         total += price;
@@ -216,14 +218,14 @@ export const getEarningsStats = createServerFn({ method: "GET" })
         
         return {
           id: order.id,
-          orderId: order.order_id,
+          orderId: order.order_id || order.id,
           customer: order.customer_name,
           uid: order.user_id,
-          product: order.product_name,
+          product: order.product_name || order.productName || "Unknown",
           paymentMethod: order.payment_method,
           price: price,
           currency: order.currency || "৳",
-          status: order.order_status,
+          status: order.order_status || order.status || "Pending",
           date: order.created_at
         };
       });
