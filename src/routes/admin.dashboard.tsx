@@ -11,7 +11,8 @@ import {
   query as serverQuery, 
   orderBy as serverOrderBy, 
   where as serverWhere,
-  limit as serverLimit
+  limit as serverLimit,
+  setDoc as serverSetDoc
 } from "../lib/firebase-admin.server";
 import { useAuth } from '@/hooks/use-auth';
 import { 
@@ -21,10 +22,9 @@ import {
   Phone, Zap, Eye, Filter, Loader2, ExternalLink
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAdminLicenses, updateLicenseAdmin, createLicenseAdmin } from '@/lib/licenses.functions';
-import { deleteExtension, updateExtension, createExtension, getExtensions } from '@/lib/extensions.functions';
-import { getAdminOrders, updateOrderStatus, createManualOrder, getEarningsStats } from '@/lib/orders.functions';
-import { getAdminUsers, toggleUserStatus, removeUser } from '@/lib/users.functions';
+import { updateLicenseAdmin } from '@/lib/licenses.functions';
+import { createManualOrder, getEarningsStats } from '@/lib/orders.functions';
+import { toggleUserStatus, removeUser } from '@/lib/users.functions';
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
@@ -144,9 +144,9 @@ function AdminPage() {
   const queryClient = useQueryClient();
   const getAdminOrdersFn = useServerFn(getAdminOrdersFast);
   const createManualOrderFn = useServerFn(createManualOrder);
-  const updateOrderStatusFn = useServerFn(updateOrderStatus);
-  const createExtensionFn = useServerFn(createExtension);
-  const deleteExtensionFn = useServerFn(deleteExtension);
+  const updateOrderStatusFn = useServerFn(updateOrderStatusFast);
+  const createExtensionFn = useServerFn(createExtensionFast);
+  const deleteExtensionFn = useServerFn(deleteExtensionFast);
   const getExtensionsFn = useServerFn(getAdminExtensionsFast);
   const getAdminUsersFn = useServerFn(getAdminUsersFast);
   const getAdminLicensesFn = useServerFn(getAdminLicensesFast);
