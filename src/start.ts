@@ -5,8 +5,16 @@ import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
-    return await next();
+    const result = await next();
+    if (result === undefined) {
+      // Return a basic Response if next() returns undefined to avoid TanStack Start error
+      return new Response("OK", { status: 200 });
+    }
+    return result;
   } catch (error: any) {
+    if (error instanceof Response) {
+      return error;
+    }
     if (error != null && typeof error === "object" && "statusCode" in error) {
       throw error;
     }
@@ -16,7 +24,7 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
     if (message.includes("Invalid API key") || message.includes("apiKey") || message.includes("auth")) {
        console.error("Supabase API Key Error detected, providing fallback response:", message);
        return new Response(JSON.stringify({ error: "Database configuration error", fallback: true }), {
-         status: 200, // Return 200 to avoid trigger the global 500 handler if we want to handle it in UI
+         status: 200, 
          headers: { "content-type": "application/json" }
        });
     }

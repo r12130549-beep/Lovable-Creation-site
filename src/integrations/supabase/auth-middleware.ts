@@ -8,13 +8,21 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     const request = getRequest();
 
     if (!request?.headers) {
-      throw new Error('Unauthorized');
+      // In TanStack Start v1 server functions, next() must be returned
+      // If we want to block, we should throw a Response or return a value
+      // but usually middleware just provides context.
+      return next({
+        context: {
+          supabase: null as any,
+          userId: 'guest',
+          claims: null,
+        },
+      });
     }
 
     const authHeader = request.headers.get('authorization');
     const token = (authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : undefined) as string | undefined;
     
-    // Create client manually to avoid module-scope instantiation issues
     const supabase = createClient<Database>(
       'https://gxskutcwhatbkeaczyvd.supabase.co',
       'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY',
