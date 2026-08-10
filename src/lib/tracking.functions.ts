@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { firestore } from "./firebase";
-import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const trackOrder = createServerFn({ method: "POST" })
   .inputValidator((data) =>
@@ -12,41 +11,47 @@ export const trackOrder = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const ordersRef = collection(firestore, "orders");
-      const q = query(ordersRef, where("orderId", "==", data.orderId), limit(1));
-      const querySnapshot = await getDocs(q);
+      // Search in Supabase orders table
+      const { data: order, error } = await supabaseAdmin
+        .from("orders")
+        .select("*")
+        .eq("order_id", data.orderId)
+        .maybeSingle();
 
-      const doc = querySnapshot.docs[0];
-      if (!doc) {
+      if (error) throw error;
+      if (!order) {
         throw new Error("Order not found");
       }
 
-      const orderData = doc.data();
-
-      if (data.email && orderData['email']?.toLowerCase() !== data.email.toLowerCase()) {
+      if (data.email && order.customer_email?.toLowerCase() !== data.email.toLowerCase()) {
         throw new Error("Order not found or invalid credentials");
       }
 
-      // Convert timestamps to strings for client-side serialization
+      const now = new Date();
+      const expireDate = order.expire_date ? new Date(order.expire_date) : null;
+      const isExpired = expireDate && expireDate < now;
+
       return {
-        id: orderData['orderId'],
-        customer_name: orderData['customerName'],
-        customer_email: orderData['email'],
-        payment_method: orderData['paymentMethod'],
-        payment_status: orderData['paymentStatus'],
-        transaction_id: orderData['txid'],
-        status: orderData['orderStatus'],
-        amount: orderData['price'],
-        currency: orderData['currency'] || "৳",
-        admin_note: orderData['notes'],
-        created_at: orderData['createdAt']?.toDate?.()?.toISOString() || orderData['createdAt'],
-        updated_at: orderData['updatedAt']?.toDate?.()?.toISOString() || orderData['updatedAt'],
+        id: order.order_id,
+        customer_name: order.customer_name,
+        customer_email: order.customer_email,
+        payment_method: order.payment_method,
+        payment_status: order.payment_status || order.status,
+        transaction_id: order.transaction_id,
+        status: order.order_status || order.status,
+        amount: order.price || order.amount,
+        currency: order.currency || "৳",
+        admin_note: order.notes,
+        created_at: order.created_at,
+        updated_at: order.updated_at,
+        product_name: order.product_name,
+        isExpired,
         license: {
-          key: orderData['licenseKey'],
-          name: orderData['licenseName'],
-          status: orderData['licenseKey'] ? (orderData['expireDate']?.toDate() < new Date() ? 'Expired' : 'Active') : null,
-          expires_at: orderData['expireDate']?.toDate?.()?.toISOString() || orderData['expireDate'],
-          download_url: orderData['downloadLink']
+          key: isExpired ? null : order.license_key,
+          name: order.license_name,
+          status: order.license_key ? (isExpired ? 'Expired' : 'Active') : null,
+          expires_at: order.expire_date,
+          download_url: isExpired ? null : order.download_link
         }
       };
     } catch (error: any) {
