@@ -5,7 +5,9 @@ import { getDatabase } from 'firebase-admin/database';
 const projectId = "lovable-a893f";
 const databaseURL = "https://lovable-a893f-default-rtdb.firebaseio.com";
 
-// Using the provided configuration for the Admin SDK
+// Using a simplified initialization for environments without a service account JSON.
+// This allows the SDK to be initialized with just the project ID, and it will
+// use unauthenticated access for local/preview development if no ADC is found.
 if (getApps().length === 0) {
   initializeApp({
     projectId: projectId,
@@ -13,8 +15,12 @@ if (getApps().length === 0) {
   });
 }
 
-export const adminFirestore = getFirestore();
-export const adminDatabase = getDatabase();
+// Global variable to hold the admin instance
+const adminDb = getFirestore();
+const adminRtdb = getDatabase();
+
+export { adminDb as adminFirestore, adminRtdb as adminDatabase };
+
 
 
 
