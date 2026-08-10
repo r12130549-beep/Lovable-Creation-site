@@ -43,15 +43,15 @@ export const getExtensions = createServerFn({ method: "GET" })
       }
 
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
     } catch (error: any) {
       console.error("Error fetching extensions:", error);
-      return [];
+      return [] as any[];
     }
   });
 
 export const deleteExtension = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => z.object({ id: z.any().transform((v) => String(v)) }).parse(unwrap(data)))
+  .validator((data: unknown) => z.object({ id: z.any().transform((v) => String(v)) }).parse(unwrap(data)))
   .handler(async ({ data }) => {
     try {
       const extensionRef = doc(adminFirestore, "extensions", data.id);
@@ -64,7 +64,7 @@ export const deleteExtension = createServerFn({ method: "POST" })
   });
 
 export const updateExtension = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) =>
+  .validator((data: unknown) =>
     z
       .object({
         id: z.any().transform((v) => String(v)),
@@ -87,7 +87,7 @@ export const updateExtension = createServerFn({ method: "POST" })
   });
 
 export const createExtension = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) =>
+  .validator((data: unknown) =>
     z
       .object({
         name: str,

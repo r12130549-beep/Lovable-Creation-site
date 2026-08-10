@@ -11,7 +11,7 @@ export const getCoupons = createServerFn({ method: "GET" })
   });
 
 export const validateCoupon = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ code: z.string(), extensionId: z.string().optional() }))
+  .validator((data: any) => z.object({ code: z.string(), extensionId: z.string().optional() }).parse(data))
   .handler(async ({ data }) => {
     const { data: coupon, error } = await supabase
       .from('coupons' as any)
@@ -30,7 +30,7 @@ export const validateCoupon = createServerFn({ method: "POST" })
 
 // --- Reviews ---
 export const getExtensionReviews = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ extensionId: z.string() }))
+  .validator((data: any) => z.object({ extensionId: z.string() }).parse(data))
   .handler(async ({ data }) => {
     const { data: reviews, error } = await supabase
       .from('reviews' as any)
@@ -42,11 +42,11 @@ export const getExtensionReviews = createServerFn({ method: "GET" })
   });
 
 export const submitReview = createServerFn({ method: "POST" })
-  .inputValidator(z.object({
+  .validator((data: any) => z.object({
     extensionId: z.string(),
     rating: z.number().min(1).max(5),
     comment: z.string().optional()
-  }))
+  }).parse(data))
   .handler(async ({ data }) => {
     const { data: review, error } = await supabase
       .from('reviews' as any)
@@ -62,11 +62,11 @@ export const submitReview = createServerFn({ method: "POST" })
 
 // --- Support ---
 export const createTicket = createServerFn({ method: "POST" })
-  .inputValidator(z.object({
+  .validator((data: any) => z.object({
     subject: z.string(),
     message: z.string(),
     attachmentUrl: z.string().optional()
-  }))
+  }).parse(data))
   .handler(async ({ data }) => {
     const { data: ticket, error } = await supabase
       .from('support_tickets' as any)
