@@ -100,12 +100,7 @@ function Index() {
             </div>
 
             <div className="flex items-center gap-4">
-              <Link 
-                to="/auth" 
-                className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center hover:bg-white/10 transition-all active:scale-95"
-              >
-                <User className="w-5 h-5 text-white/40" />
-              </Link>
+              {/* Login option removed as requested */}
             </div>
           </div>
 
@@ -131,7 +126,7 @@ function Index() {
                 <a href="#features" onClick={() => setIsMenuOpen(false)}>Features</a>
                 <a href="#faq" onClick={() => setIsMenuOpen(false)}>FAQ</a>
                 <Link to="/track-order" className="text-red-500" onClick={() => setIsMenuOpen(false)}>Track Order</Link>
-                <Link to="/auth" className="bg-gradient-to-r from-red-600 to-purple-600 py-4 rounded-2xl text-center" onClick={() => setIsMenuOpen(false)}>Admin Panel</Link>
+                {/* Login option removed as requested */}
               </div>
             </motion.div>
           )}
