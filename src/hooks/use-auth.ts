@@ -1,9 +1,7 @@
 import { create } from 'zustand';
-import { auth, firestore, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut, User } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, get, set } from 'firebase/database';
-import { supabase } from '@/integrations/supabase/client';
+import { checkAdminStatus } from '@/lib/users.functions';
 
 interface AuthState {
   user: User | null;
@@ -42,69 +40,22 @@ if (typeof window !== 'undefined') {
     
     try {
       console.log('[useAuth] User detected:', user.email, user.uid);
-      let isAdmin = false;
-
-      // 1. Hardcoded check for primary admin email - ONLY ALLOW THESE EMAILS
-      const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
       
-      if (user.email && allowedEmails.includes(user.email)) {
-        isAdmin = true;
-        console.log('[useAuth] Admin detected by hardcoded email:', user.email);
-      } else {
-        // 2. Check Firestore for role - but we still verify against the whitelist for security
-        try {
-          const userDoc = await getDoc(doc(firestore, 'users', user.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            // Only allow if whitelisted AND has the role
-            if ((userData['role'] === 'admin' || userData['isAdmin'] === true) && user.email && allowedEmails.includes(user.email)) {
-              isAdmin = true;
-            }
-          }
-        } catch (fsErr) {
-          console.warn('[useAuth] Firestore check failed');
-        }
-
-        // 3. Check RTDB - same whitelist check
-        if (!isAdmin) {
-          try {
-            const snapshot = await get(ref(db, `admins/${user.uid}`));
-            if (snapshot.exists()) {
-              const adminData = snapshot.val();
-              const hasRole = adminData === true || adminData?.role === 'admin';
-              if (hasRole && user.email && allowedEmails.includes(user.email)) {
-                isAdmin = true;
-              }
-            }
-          } catch (dbErr) {
-            console.warn('[useAuth] RTDB check failed');
-          }
-        }
-      }
-
-      // If they are not in the whitelist, they are NOT admin, period.
-      if (user.email && !allowedEmails.includes(user.email)) {
-        isAdmin = false;
-      }
-
-      // Sync to Supabase for redundancy if they are confirmed admin
-      if (isAdmin) {
-        try {
-          await supabase.from('profiles').upsert({
-            id: user.uid,
-            full_name: user.displayName,
-            avatar_url: user.photoURL,
-            role: 'admin',
-            updated_at: new Date().toISOString()
-          });
-        } catch (sbErr) {}
-      }
+      // Use the server function to check admin status securely
+      // This bypasses client-side "Missing or insufficient permissions" errors
+      const result = await checkAdminStatus({ data: { email: user.email || '', uid: user.uid } } as any);
+      const isAdmin = result?.isAdmin || false;
       
-      console.log('[useAuth] Final Admin status:', isAdmin);
+      console.log('[useAuth] Final Admin status from server:', isAdmin);
       state.setUser(user, isAdmin);
     } catch (error: any) {
       console.error('[useAuth] General error in admin status check:', error);
-      state.setUser(user, false);
+      
+      // Fallback to basic email check if server function fails
+      const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
+      const isAdminFallback = user.email ? allowedEmails.includes(user.email) : false;
+      
+      state.setUser(user, isAdminFallback);
     }
   });
 }
