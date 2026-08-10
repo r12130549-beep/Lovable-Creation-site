@@ -19,7 +19,8 @@ export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const querySnapshot = await getDocs(query(ordersRef));
+      // Use getDocs directly on collection to bypass query/index issues if any
+      const querySnapshot = await getDocs(ordersRef);
       
       const orders = querySnapshot.docs.map((doc: any) => {
         const data = doc.data();
