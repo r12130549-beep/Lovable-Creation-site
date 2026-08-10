@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAdminLicenses, updateLicenseAdmin, createLicenseAdmin } from '@/lib/licenses.functions';
-import { deleteExtension, updateExtension, createExtension } from '@/lib/extensions.functions';
+import { deleteExtension, updateExtension, createExtension, getExtensions } from '@/lib/extensions.functions';
 import { getAdminOrders, updateOrderStatus, createManualOrder, getEarningsStats } from '@/lib/orders.functions';
 import { getAdminUsers, toggleUserStatus, removeUser } from '@/lib/users.functions';
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
@@ -17,7 +17,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { FileUpload } from '@/components/admin/FileUpload';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getExtensions } from '@/lib/extensions.functions';
+
 import { format } from 'date-fns';
 
 export const Route = createFileRoute('/admin/dashboard')({
