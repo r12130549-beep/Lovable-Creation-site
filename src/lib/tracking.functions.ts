@@ -31,11 +31,11 @@ export const trackOrder = createServerFn({ method: "POST" })
       );
       
       if (!order) {
-        throw new Error("অর্ডারটি পাওয়া যায়নি। অনুগ্রহ করে সঠিক আইডি ব্যবহার করুন।");
+        throw new Error("আপনার দেয়া অর্ডার আইডিটি আমাদের সিস্টেমে খুঁজে পাওয়া যায়নি। আইডিটি পুনরায় চেক করে দেখুন।");
       }
 
       if (data.email && order.customer_email?.toLowerCase() !== data.email.toLowerCase()) {
-        throw new Error("অর্ডার আইডি এবং ইমেইল ম্যাচ করেনি।");
+        throw new Error("দুঃখিত, এই অর্ডার আইডির সাথে ইমেইলটি মিলছে না। অনুগ্রহ করে সঠিক ইমেইল দিন।");
       }
 
       const now = new Date();
