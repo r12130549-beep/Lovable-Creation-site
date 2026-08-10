@@ -3,6 +3,10 @@ import { getRequest } from '@tanstack/react-start/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 
+// HARDCODED keys to prevent "Invalid API Key" errors during server-side execution
+const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
+
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     const request = getRequest();
@@ -11,8 +15,8 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     const token = (authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : undefined) as string | undefined;
     
     const supabase: SupabaseClient<Database> = createClient<Database>(
-      'https://gxskutcwhatbkeaczyvd.supabase.co',
-      'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY',
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY,
       {
         global: {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
