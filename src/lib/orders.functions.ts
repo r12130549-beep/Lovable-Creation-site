@@ -43,6 +43,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     z.object({
       orderId: z.string(),
       status: z.string(),
+      productName: z.string().optional(),
       paymentStatus: z.string().optional(),
       adminNote: z.string().optional(),
       licenseName: z.string().optional(),
@@ -59,6 +60,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
         updatedAt: serverTimestamp(),
       };
       
+      if (data.productName) updatePayload.productName = data.productName;
       if (data.paymentStatus) updatePayload.paymentStatus = data.paymentStatus;
       if (data.adminNote !== undefined) updatePayload.notes = data.adminNote;
       if (data.licenseName) updatePayload.licenseName = data.licenseName;
@@ -124,23 +126,29 @@ export const createManualOrder = createServerFn({ method: "POST" })
 
 async function generateUniqueOrderId(): Promise<string> {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let isUnique = false;
   let orderId = '';
   
-  while (!isUnique) {
+  // Try generating up to 5 times if collisions occur
+  for (let attempt = 0; attempt < 5; attempt++) {
     let randomPart = '';
     for (let i = 0; i < 7; i++) {
       randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     orderId = `ORDER-${randomPart}`;
     
-    // Check uniqueness in Firestore
-    const ordersRef = collection(firestore, "orders");
-    const q = query(ordersRef, where("orderId", "==", orderId));
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.empty) {
-      isUnique = true;
+    try {
+      const ordersRef = collection(firestore, "orders");
+      const q = query(ordersRef, where("orderId", "==", orderId));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        return orderId;
+      }
+    } catch (err) {
+      console.warn("Retrying order ID generation due to error:", err);
+      // Fallback: if Firebase query fails, just use the generated ID 
+      // The addDoc will still work, and collisions are statistically very rare (36^7)
+      if (attempt === 4) return orderId;
     }
   }
   

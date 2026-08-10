@@ -41,13 +41,6 @@ export const Route = createFileRoute('/checkout')({
 
 const PAYMENT_METHODS = [
   { 
-    id: 'stripe', 
-    name: 'Stripe', 
-    type: 'automatic',
-    icon: <Globe className="w-6 h-6" />,
-    color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
-  },
-  { 
     id: 'binance', 
     name: 'Binance Pay', 
     type: 'manual',

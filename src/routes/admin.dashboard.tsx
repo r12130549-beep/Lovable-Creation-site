@@ -188,18 +188,38 @@ function AdminPage() {
             <motion.div key="orders" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
               {realtimeOrders.filter(o => o.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) || o.customerName?.toLowerCase().includes(searchQuery.toLowerCase())).map(order => (
                 <div key={order.id} className="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl flex justify-between items-center group hover:border-red-500/30 transition-all cursor-pointer" onClick={() => setSelectedOrder(order)}>
-                  <div>
-                    <h3 className="font-bold flex items-center gap-2">
-                      {order.orderId} - {order.customerName}
-                      <span className={`text-[8px] px-2 py-0.5 rounded-full uppercase tracking-widest ${
-                        order.orderStatus === 'Approved' ? 'bg-green-500/10 text-green-500' : 
-                        order.orderStatus === 'Rejected' ? 'bg-red-500/10 text-red-500' : 
-                        'bg-yellow-500/10 text-yellow-500'
-                      }`}>
-                        {order.orderStatus}
-                      </span>
-                    </h3>
-                    <p className="text-xs text-white/40">{order.productName} | ৳{order.price} | {order.email}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="font-bold flex items-center gap-2">
+                        {order.orderId}
+                        <span className={`text-[8px] px-2 py-0.5 rounded-full uppercase tracking-widest ${
+                          order.orderStatus === 'Approved' ? 'bg-green-500/10 text-green-500' : 
+                          order.orderStatus === 'Rejected' ? 'bg-red-500/10 text-red-500' : 
+                          'bg-yellow-500/10 text-yellow-500'
+                        }`}>
+                          {order.orderStatus}
+                        </span>
+                      </h3>
+                      <div className="flex items-center gap-2 bg-white/5 rounded-lg px-2 py-1 group/edit">
+                        <Edit className="w-3 h-3 text-white/20 group-hover/edit:text-red-500" />
+                        <input 
+                          defaultValue={order.productName}
+                          onBlur={async (e) => {
+                            if (e.target.value !== order.productName) {
+                              try {
+                                await updateOrderMutation.mutateAsync({ orderId: order.id, productName: e.target.value, status: order.orderStatus });
+                                toast.success('Product name updated');
+                              } catch (err) {
+                                e.target.value = order.productName;
+                              }
+                            }
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-transparent border-none outline-none text-xs font-bold text-white w-40 focus:ring-0"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-white/40">{order.customerName} | ৳{order.price} | {order.email}</p>
                   </div>
                   <div className="flex gap-2">
                      <button onClick={(e) => { e.stopPropagation(); updateOrderMutation.mutate({ orderId: order.id, status: 'Approved' }); }} className="px-4 py-2 bg-green-600/10 text-green-500 hover:bg-green-600 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">Approve</button>
