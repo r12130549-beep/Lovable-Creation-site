@@ -212,7 +212,7 @@ function AdminPage() {
                           onBlur={async (e) => {
                             if (e.target.value !== order.productName) {
                               try {
-                                await updateOrderMutation.mutateAsync({ orderId: order.id, productName: e.target.value, status: order.orderStatus });
+                                await updateOrderMutation.mutateAsync({ orderId: order.id, productName: e.target.value, status: order.orderStatus || order.status });
                                 toast.success('Product name updated');
                               } catch (err) {
                                 e.target.value = order.productName;
