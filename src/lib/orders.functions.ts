@@ -97,7 +97,9 @@ export const createManualOrder = createServerFn({ method: "POST" })
       expireDate: z.string().optional(),
       notes: z.string().optional(),
     });
-    return schema.parse(data);
+    // Support both { data: { ... } } and direct { ... } wrapping
+    const input = (data as any)?.data || data;
+    return schema.parse(input);
   })
   .handler(async ({ data }) => {
     try {
