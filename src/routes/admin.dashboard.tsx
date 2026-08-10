@@ -298,7 +298,7 @@ function AdminPage() {
   });
 
   const updateOrderMutation = useMutation({
-    mutationFn: (data: any) => updateOrderStatusFn(data),
+    mutationFn: (data: any) => updateOrderStatusFn({ data } as any),
     onSuccess: () => {
       toast.success('অর্ডার আপডেট করা হয়েছে');
       setSelectedOrder(null);
@@ -309,7 +309,7 @@ function AdminPage() {
   });
 
   const deleteExtensionMutation = useMutation({
-    mutationFn: (id: string) => deleteExtensionFn({ id }),
+    mutationFn: (id: string) => deleteExtensionFn({ data: { id } } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
       toast.success('Extension deleted');
@@ -317,7 +317,7 @@ function AdminPage() {
   });
 
   const createExtensionMutation = useMutation({
-    mutationFn: (data: any) => createExtensionFn(data),
+    mutationFn: (data: any) => createExtensionFn({ data } as any),
     onSuccess: (res: any) => {
       if (res && res.success === false) {
         toast.error(res.message || 'Failed to create extension');
