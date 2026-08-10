@@ -97,7 +97,7 @@ export const getAdminLicenses = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const licensesRef = collection(adminFirestore, "licenses");
-      const snapshot = await getDocs(licensesRef);
+      const snapshot = await getDocs(query(licensesRef));
       return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
       console.error("Error fetching admin licenses:", error);
