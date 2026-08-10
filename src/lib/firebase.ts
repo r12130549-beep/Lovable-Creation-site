@@ -4,13 +4,14 @@ import { getDatabase } from "firebase/database";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBvh8MNr3kVKt4FJlXIRGG-pVBmyC_GFO8",
-  authDomain: "shark-extension.firebaseapp.com",
-  projectId: "shark-extension",
-  storageBucket: "shark-extension.firebasestorage.app",
-  messagingSenderId: "968318734474",
-  appId: "1:968318734474:web:fb11f1bcf0d2dec3b6dd73",
-  measurementId: "G-GCKEGMX7WF"
+  apiKey: "AIzaSyBvh8MNr3kVKt4FJlXIRGG-pVBmyC_GFO8", // Hardcoded per user request, normally use VITE_GOOGLE_API_KEY
+  authDomain: "do-you-know-fe718.firebaseapp.com",
+  databaseURL: "https://do-you-know-fe718-default-rtdb.firebaseio.com",
+  projectId: "do-you-know-fe718",
+  storageBucket: "do-you-know-fe718.firebasestorage.app",
+  messagingSenderId: "386831264788",
+  appId: "1:386831264788:web:1d4089af3eafaa18f68b01",
+  measurementId: "G-E7VW0KV2T3"
 };
 
 const app = initializeApp(firebaseConfig);
