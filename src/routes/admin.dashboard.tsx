@@ -836,9 +836,18 @@ function AdminPage() {
                       placeholder={`Enter ${field.label}`}
                       defaultValue={(queryClient.getQueryData(['app-settings']) as any)?.[field.key]}
                       onBlur={async (e) => {
-                        await updateAppSetting({ data: { key: field.key, value: e.target.value } });
-                        queryClient.invalidateQueries({ queryKey: ['app-settings'] });
-                        toast.success(`${field.label} updated`);
+                        const val = e.target.value;
+                        const currentVal = (queryClient.getQueryData(['app-settings']) as any)?.[field.key];
+                        if (val === currentVal) return;
+                        
+                        try {
+                          await updateAppSetting({ data: { key: field.key, value: val } } as any);
+                          queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+                          toast.success(`${field.label} updated`);
+                        } catch (err: any) {
+                          console.error(`Error updating ${field.key}:`, err);
+                          toast.error(`Failed to update ${field.label}`);
+                        }
                       }}
                       className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm font-bold focus:border-red-500/50 outline-none"
                     />
