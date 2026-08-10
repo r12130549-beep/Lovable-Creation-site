@@ -368,7 +368,7 @@ function AdminPage() {
                     <select 
                       value={(queryClient.getQueryData(['app-settings']) as any)?.['server_status'] || 'Online'}
                       onChange={async (e) => {
-                        await updateAppSetting({ key: 'server_status', value: e.target.value });
+                        await updateAppSetting({ data: { key: 'server_status', value: e.target.value } });
                         queryClient.invalidateQueries({ queryKey: ['app-settings'] });
                         toast.success('Server status updated');
                       }}
@@ -386,7 +386,7 @@ function AdminPage() {
                       placeholder="Show this message when offline..."
                       defaultValue={(queryClient.getQueryData(['app-settings']) as any)?.['offline_message']}
                       onBlur={async (e) => {
-                        await updateAppSetting({ key: 'offline_message', value: e.target.value });
+                        await updateAppSetting({ data: { key: 'offline_message', value: e.target.value } });
                         queryClient.invalidateQueries({ queryKey: ['app-settings'] });
                         toast.success('Offline message saved');
                       }}
@@ -412,7 +412,7 @@ function AdminPage() {
                       placeholder={`Enter ${field.label}`}
                       defaultValue={(queryClient.getQueryData(['app-settings']) as any)?.[field.key]}
                       onBlur={async (e) => {
-                        await updateAppSetting({ key: field.key, value: e.target.value });
+                        await updateAppSetting({ data: { key: field.key, value: e.target.value } });
                         queryClient.invalidateQueries({ queryKey: ['app-settings'] });
                         toast.success(`${field.label} updated`);
                       }}
