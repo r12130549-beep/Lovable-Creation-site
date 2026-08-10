@@ -193,6 +193,7 @@ function CheckoutPage() {
           email: formData.email,
           whatsapp: formData.phone,
           productName: (search as any)['productId'] || 'Premium Extension',
+          category: 'Extension',
           price: amount,
           currency: "৳",
           paymentMethod: selectedMethod.id,

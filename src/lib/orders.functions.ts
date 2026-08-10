@@ -83,7 +83,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
     email: z.any(),
     whatsapp: z.any(),
     productName: z.any(),
-    category: z.string().optional().default("General"),
+    category: z.any().optional().default("General"),
     price: z.any().transform(v => Number(v) || 0),
     currency: z.string().optional().default("৳"),
     quantity: z.number().optional().default(1),
