@@ -19,7 +19,7 @@ export const getAdminUsers = createServerFn({ method: "GET" })
     try {
       const usersRef = collection(adminFirestore, "users");
       const snapshot = await getDocs(usersRef);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
       console.error("Error fetching users:", error);
       return [];

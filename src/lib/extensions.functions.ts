@@ -43,7 +43,7 @@ export const getExtensions = createServerFn({ method: "GET" })
       }
 
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as any[];
     } catch (error: any) {
       console.error("Error fetching extensions:", error);
       return [] as any[];

@@ -1,29 +1,84 @@
-import { getApps, getApp, FirebaseApp, initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit } from 'firebase/firestore';
-import { getDatabase, ref, get, set, update, push, remove } from 'firebase/database';
+import { initializeApp, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getDatabase } from 'firebase-admin/database';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBvh8MNr3kVKt4FJlXIRGG-pVBmyC_GFO8",
-  authDomain: "lovable-a893f.firebaseapp.com",
-  projectId: "lovable-a893f",
-  storageBucket: "lovable-a893f.firebasestorage.app",
-  databaseURL: "https://lovable-a893f-default-rtdb.firebaseio.com",
-  messagingSenderId: "755506465353",
-  appId: "1:755506465353:web:68e9ce259f56a913154d98",
-  measurementId: "G-D9RZXBYKX3"
-};
+const projectId = "lovable-a893f";
 
-let app: FirebaseApp;
 if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApp();
+  initializeApp({
+    projectId: projectId,
+  });
 }
 
-export const adminFirestore = getFirestore(app);
-export const adminDatabase = getDatabase(app);
+export const adminFirestore = getFirestore();
+export const adminDatabase = getDatabase();
 
-export { 
-  collection, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit, doc,
-  ref, get, set, update, push, remove
+export const collection = (db: any, path: string) => db.collection(path);
+export const doc = (dbOrCol: any, path?: string, ...segments: string[]) => {
+  if (typeof dbOrCol.collection === 'function' && path) {
+    return dbOrCol.collection(path).doc(segments.join('/'));
+  }
+  if (typeof dbOrCol.doc === 'function' && !path) {
+    return dbOrCol.doc();
+  }
+  if (path) {
+    return dbOrCol.doc(path + (segments.length ? '/' + segments.join('/') : ''));
+  }
+  return dbOrCol.doc();
 };
+
+export const getDocs = async (query: any) => {
+  const snapshot = await query.get();
+  return {
+    docs: snapshot.docs.map((d: any) => ({
+      id: d.id,
+      data: () => d.data(),
+    })),
+    empty: snapshot.empty,
+    forEach: (callback: (doc: any) => void) => {
+      snapshot.docs.forEach((d: any) => callback({
+        id: d.id,
+        data: () => d.data(),
+      }));
+    }
+  };
+};
+
+export const getDoc = async (docRef: any) => {
+  const snapshot = await docRef.get();
+  return {
+    exists: () => snapshot.exists,
+    data: () => snapshot.data(),
+    id: snapshot.id
+  };
+};
+
+export const setDoc = async (docRef: any, data: any, options?: { merge?: boolean }) => {
+  if (options?.merge) {
+    return await docRef.set(data, { merge: true });
+  }
+  return await docRef.set(data);
+};
+export const updateDoc = async (docRef: any, data: any) => await docRef.update(data);
+export const deleteDoc = async (docRef: any) => await docRef.delete();
+
+export const query = (colRef: any, ...constraints: any[]) => {
+  let q = colRef;
+  for (const constraint of constraints) {
+    if (constraint.type === 'where') q = q.where(constraint.field, constraint.op, constraint.val);
+    if (constraint.type === 'orderBy') q = q.orderBy(constraint.field, constraint.dir);
+    if (constraint.type === 'limit') q = q.limit(constraint.val);
+  }
+  return q;
+};
+
+export const where = (field: string, op: any, val: any) => ({ type: 'where', field, op, val });
+export const orderBy = (field: string, dir: any = 'asc') => ({ type: 'orderBy', field, dir });
+export const limit = (val: number) => ({ type: 'limit', val });
+
+export const ref = (db: any, path: string) => db.ref(path);
+export const get = async (nodeRef: any) => await nodeRef.once('value');
+export const set = async (nodeRef: any, val: any) => await nodeRef.set(val);
+export const update = async (nodeRef: any, val: any) => await nodeRef.update(val);
+export const remove = async (nodeRef: any) => await nodeRef.remove();
+export const push = (nodeRef: any) => nodeRef.push();
