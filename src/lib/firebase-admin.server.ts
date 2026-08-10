@@ -55,4 +55,13 @@ export const limit = (n: number) => ({ type: 'limit', n });
 
 export const resetFirestore = async () => {
   // terminate() is not available on adminFirestore
+  return Promise.resolve();
 };
+
+export const ref = (db: any, path: string) => db.ref(path);
+export const get = (ref: any) => ref.get();
+export const set = (ref: any, value: any) => ref.set(value);
+export const update = (ref: any, value: any) => ref.update(value);
+export const remove = (ref: any) => ref.remove();
+export const push = (ref: any) => ref.push();
+export const writeBatch = (db: any) => db.batch();
