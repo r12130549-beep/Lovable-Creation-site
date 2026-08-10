@@ -188,7 +188,7 @@ function TrackOrderPage() {
               <div className="grid grid-cols-2 md:grid-cols-2 gap-y-10 gap-x-12 mb-12">
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">ইমেইল</p>
-                  <p className="text-xs font-bold text-white/80">{order.customer_email}</p>
+                  <p className="text-xs font-bold text-white/80">{order?.customer_email || 'N/A'}</p>
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">প্ল্যান</p>
@@ -196,19 +196,19 @@ function TrackOrderPage() {
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">মূল্য</p>
-                  <p className="text-xs font-bold text-white/80">{order.amount || 0} {order.currency || '৳'}</p>
+                  <p className="text-xs font-bold text-white/80">{order?.amount || 0} {order?.currency || '৳'}</p>
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">পেমেন্ট</p>
-                  <p className="text-xs font-bold text-white/80 uppercase">{order.payment_method}</p>
+                  <p className="text-xs font-bold text-white/80 uppercase">{order?.payment_method || 'N/A'}</p>
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">ট্রানজেকশন আইডি</p>
-                  <p className="text-xs font-mono font-bold text-white/80">{order.transaction_id || 'N/A'}</p>
+                  <p className="text-xs font-mono font-bold text-white/80">{order?.transaction_id || 'N/A'}</p>
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">তারিখ</p>
-                  <p className="text-xs font-bold text-white/80">{format(new Date(order.created_at), 'd/M/yyyy')}</p>
+                  <p className="text-xs font-bold text-white/80">{order?.created_at ? format(new Date(order.created_at), 'd/M/yyyy') : 'N/A'}</p>
                 </div>
               </div>
 
