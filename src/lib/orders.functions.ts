@@ -19,9 +19,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      // Use a smaller batch size or just get all and sort in memory if the list is small
-      // Admin SDK get() returns a QuerySnapshot
-      const querySnapshot = await ordersRef.get();
+      const querySnapshot = await getDocs(ordersRef);
       
       const orders = querySnapshot.docs.map((doc: any) => {
         const data = doc.data();
