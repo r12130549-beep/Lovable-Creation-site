@@ -9,5 +9,8 @@ export const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVI
     storage: undefined,
     persistSession: false,
     autoRefreshToken: false,
+  },
+  global: {
+    headers: { 'x-application-name': 'lovable-creation-admin' }
   }
 });

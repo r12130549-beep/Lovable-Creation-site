@@ -1,6 +1,6 @@
 // Helper to get admin client inside functions to avoid module-scope instantiation
 async function getAdmin() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { supabaseAdmin } = await import("../integrations/supabase/client.server");
   return supabaseAdmin;
 }
 
@@ -9,12 +9,7 @@ export async function getAllUsersAdmin() {
   const supabase = await getAdmin();
   const { data, error } = await supabase
     .from('profiles')
-    .select(`
-      *,
-      orders:orders(count),
-      licenses:licenses(count)
-    `)
-    .order('created_at', { ascending: false });
+    .select(`*`);
 
   if (error) throw error;
   return data;

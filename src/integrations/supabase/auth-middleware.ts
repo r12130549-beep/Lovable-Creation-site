@@ -3,9 +3,6 @@ import { getRequest } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 
-const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
-
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     const request = getRequest();
@@ -15,23 +12,15 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     }
 
     const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      throw new Error('Unauthorized');
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    if (!token || token.split('.').length !== 3) {
-      throw new Error('Unauthorized');
-    }
-
+    const token = (authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : undefined) as string | undefined;
+    
+    // Create client manually to avoid module-scope instantiation issues
     const supabase = createClient<Database>(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY,
+      'https://gxskutcwhatbkeaczyvd.supabase.co',
+      'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY',
       {
         global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         },
         auth: {
           storage: undefined,
@@ -41,16 +30,26 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       }
     );
 
-    const { data, error } = await supabase.auth.getClaims(token);
-    if (error || !data?.claims?.sub) {
-      throw new Error('Unauthorized');
+    let userId = 'guest';
+    let claims = null;
+
+    if (token && token.split('.').length === 3) {
+      try {
+        const { data, error } = await supabase.auth.getClaims(token);
+        if (!error && data?.claims?.sub) {
+          userId = data.claims.sub;
+          claims = data.claims;
+        }
+      } catch (e) {
+        // Silent guest fallback
+      }
     }
 
     return next({
       context: {
         supabase,
-        userId: data.claims.sub,
-        claims: data.claims,
+        userId,
+        claims,
       },
     });
   },

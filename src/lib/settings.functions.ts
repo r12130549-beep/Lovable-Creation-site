@@ -5,12 +5,12 @@ import { z } from "zod";
 export const getAppSettings = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { supabaseAdmin } = await import("../integrations/supabase/client.server");
       
       // Attempt to fetch settings, but don't crash if database is unavailable
       const { data, error } = await supabaseAdmin
         .from("app_settings")
-        .select("key, value");
+        .select("*");
 
       if (error) {
         console.warn("Supabase warning fetching settings (possibly table doesn't exist yet):", error.message);
