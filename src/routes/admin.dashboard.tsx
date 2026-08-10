@@ -57,9 +57,11 @@ function AdminPage() {
 
   useEffect(() => {
     if (!isAdmin) return;
+    let unsubscribe: (() => void) | undefined;
+    
     try {
       const q = query(collection(firestore, 'orders'), orderBy('createdAt', 'desc'));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
+      unsubscribe = onSnapshot(q, (snapshot) => {
         setRealtimeOrders(snapshot.docs.map(doc => ({ 
           id: doc.id, 
           ...doc.data(),
@@ -71,10 +73,15 @@ function AdminPage() {
         // Fallback to server function if realtime fails
         getAdminOrders().then(setRealtimeOrders).catch(console.error);
       });
-      return () => unsubscribe();
     } catch (err) {
       console.error("Firestore setup error:", err);
+      // Fallback
+      getAdminOrders().then(setRealtimeOrders).catch(console.error);
     }
+    
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [isAdmin]);
 
   const { data: earningsData } = useQuery({
