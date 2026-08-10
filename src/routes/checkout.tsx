@@ -413,10 +413,10 @@ function CheckoutPage() {
                           <div className="space-y-2">
                             <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 ml-1">Binance Pay ID</label>
                             <div className="flex items-center gap-2 bg-black/40 p-4 rounded-2xl border border-white/5 group">
-                              <code className="flex-1 text-sm font-black tracking-wider text-yellow-400">{appSettings?.['binance_id']}</code>
+                              <code className="flex-1 text-sm font-black tracking-wider text-yellow-400">{(appSettings as Record<string, any>)?.['binance_id']}</code>
                               <button 
                                 onClick={() => {
-                                  navigator.clipboard.writeText(appSettings?.['binance_id'] as string || '');
+                                  navigator.clipboard.writeText((appSettings as Record<string, any>)?.['binance_id'] as string || '');
                                   toast.success('Pay ID copied!');
                                 }}
                                 className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
@@ -507,7 +507,7 @@ function CheckoutPage() {
                             </div>
                             <div>
                               <p className="text-[10px] font-black uppercase tracking-widest text-yellow-500">Sending to Pay ID</p>
-                              <p className="text-xs font-black tracking-widest">{appSettings?.['binance_id']}</p>
+                              <p className="text-xs font-black tracking-widest">{(appSettings as Record<string, any>)?.['binance_id']}</p>
                             </div>
                           </div>
                           <p className="text-xs font-black text-yellow-500">{usdtAmount} USDT</p>
