@@ -51,18 +51,13 @@ if (typeof window !== 'undefined') {
         isAdmin = true;
         console.log('[useAuth] Admin detected by hardcoded email:', user.email);
       } else {
-        // 2. Check Firestore for role (but must be whitelisted for now)
+        // 2. Check Firestore for role - but we still verify against the whitelist for security
         try {
           const userDoc = await getDoc(doc(firestore, 'users', user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            // Only allow if explicitly marked as admin
-            const hasAdminRole = (userData['role'] === 'admin' || userData['isAdmin'] === true);
-            
-            // If they have the role but aren't in the whitelist, we still block them for extra safety
-            // Unless the user explicitly wants to allow manually added Firestore admins.
-            // For now, let's keep the whitelist as the final gate.
-            if (hasAdminRole && user.email && allowedEmails.includes(user.email)) {
+            // Only allow if whitelisted AND has the role
+            if ((userData['role'] === 'admin' || userData['isAdmin'] === true) && user.email && allowedEmails.includes(user.email)) {
               isAdmin = true;
             }
           }
@@ -70,15 +65,14 @@ if (typeof window !== 'undefined') {
           console.warn('[useAuth] Firestore check failed');
         }
 
-        // 3. Check RTDB
+        // 3. Check RTDB - same whitelist check
         if (!isAdmin) {
           try {
             const snapshot = await get(ref(db, `admins/${user.uid}`));
             if (snapshot.exists()) {
               const adminData = snapshot.val();
-              const hasAdminRole = adminData === true || adminData?.role === 'admin';
-              
-              if (hasAdminRole && user.email && allowedEmails.includes(user.email)) {
+              const hasRole = adminData === true || adminData?.role === 'admin';
+              if (hasRole && user.email && allowedEmails.includes(user.email)) {
                 isAdmin = true;
               }
             }
@@ -88,7 +82,12 @@ if (typeof window !== 'undefined') {
         }
       }
 
-      // If we found they are admin, sync to Supabase (keeping it for legacy/redundancy if needed)
+      // If they are not in the whitelist, they are NOT admin, period.
+      if (user.email && !allowedEmails.includes(user.email)) {
+        isAdmin = false;
+      }
+
+      // Sync to Supabase for redundancy if they are confirmed admin
       if (isAdmin) {
         try {
           await supabase.from('profiles').upsert({
@@ -98,9 +97,7 @@ if (typeof window !== 'undefined') {
             role: 'admin',
             updated_at: new Date().toISOString()
           });
-        } catch (sbErr) {
-           // Ignore Supabase sync errors
-        }
+        } catch (sbErr) {}
       }
       
       console.log('[useAuth] Final Admin status:', isAdmin);
