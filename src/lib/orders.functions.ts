@@ -138,7 +138,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
         notes: String(data.notes || ''),
         license_key: data.licenseKey || '',
         license_name: data.licenseName || '',
-        download_link: data.download_link || '',
+        download_link: data.downloadLink || '',
         expire_date: data.expireDate || null
       };
 
