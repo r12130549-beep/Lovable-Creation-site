@@ -165,14 +165,17 @@ function AdminLoginPage() {
         }
       }
       
-      if (isAdmin) {
+      // Final validation: Only allow if whitelisted OR if they were manually added (but for now, we stick to whitelist for safety)
+      const isWhitelisted = user.email && allowedEmails.includes(user.email);
+      
+      if (isAdmin && isWhitelisted) {
         toast.success('অ্যাডমিন অ্যাক্সেস মঞ্জুর করা হয়েছে');
         console.log('[AdminLogin] Redirecting to dashboard...');
         navigate({ to: '/admin/dashboard' });
       } else {
-        console.log('[AdminLogin] Not an admin, signing out');
+        console.log('[AdminLogin] Access denied. Admin:', isAdmin, 'Whitelisted:', isWhitelisted);
         await auth.signOut();
-        toast.error('অ্যাক্সেস প্রত্যাখ্যান করা হয়েছে: আপনি অ্যাডমিন নন');
+        toast.error('অ্যাক্সেস প্রত্যাখ্যান করা হয়েছে: আপনি অনুমোদিত অ্যাডমিন নন');
       }
     } catch (err: any) {
       console.error('[AdminLogin] Error:', err);
