@@ -55,7 +55,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       licenseName: z.string().optional(),
       licenseKey: z.string().optional(),
       downloadLink: z.string().optional(),
-      expireDate: z.string().optional(),
+      expireDate: z.string().optional().nullable(),
     }).parse(data)
   )
   .handler(async ({ data }) => {
@@ -112,15 +112,15 @@ export const createManualOrder = createServerFn({ method: "POST" })
       licenseKey: z.any().optional().default(""),
       licenseName: z.any().optional().default(""),
       downloadLink: z.any().optional().default(""),
-      expireDate: z.any().optional(),
+      expireDate: z.any().optional().nullable(),
       notes: z.any().optional().default(""),
       transactionId: z.any().optional(),
       screenshotUrl: z.any().optional(),
     }).parse(raw);
   })
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const orderId = `ORDER-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       
       const orderData: any = {
