@@ -13,6 +13,7 @@ export function generateLicenseKey() {
 export async function getLicensesForUser(userId: string) {
   const supabase = await getAdmin();
   const { data, error } = await supabase
+    .from('licenses')
     .select(`
       *,
       extension:extension_id(name, icon_url)
@@ -27,6 +28,7 @@ export async function getLicensesForUser(userId: string) {
 export async function getAllLicensesAdmin() {
   const supabase = await getAdmin();
   const { data, error } = await supabase
+    .from('licenses')
     .select(`
       *,
       user:profiles(full_name),
@@ -41,6 +43,7 @@ export async function getAllLicensesAdmin() {
 export async function updateLicenseStatus(licenseId: string, status: string) {
   const supabase = await getAdmin();
   const { error } = await supabase
+    .from('licenses')
     .update({ status })
     .eq('id', licenseId);
   
@@ -51,6 +54,7 @@ export async function resetLicenseActivations(licenseId: string) {
   // Using any to bypass local type mismatch if types.ts hasn't updated yet
   const supabase = await getAdmin();
   const { error } = await supabase
+    .from('licenses')
     .update({ activated_devices: 0 } as any)
     .eq('id', licenseId);
   
@@ -60,6 +64,7 @@ export async function resetLicenseActivations(licenseId: string) {
 export async function extendLicenseExpiry(licenseId: string, days: number) {
   const supabase = await getAdmin();
   const { data: license } = await supabase
+    .from('licenses')
     .select('expires_at')
     .eq('id', licenseId)
     .single();
