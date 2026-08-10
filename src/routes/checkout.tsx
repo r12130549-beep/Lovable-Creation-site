@@ -105,16 +105,17 @@ function CheckoutPage() {
   });
 
   const getMethodDetails = (methodId: string) => {
-    if (!appSettings) return null;
+    if (!appSettings || Object.keys(appSettings).length === 0) return null;
+    const settings = appSettings as Record<string, any>;
     switch(methodId) {
-      case 'binance': return { number: appSettings['binance_id'] };
-      case 'bkash': return { number: appSettings['bkash_number'] };
-      case 'nagad': return { number: appSettings['nagad_number'] };
+      case 'binance': return { number: settings['binance_id'] };
+      case 'bkash': return { number: settings['bkash_number'] };
+      case 'nagad': return { number: settings['nagad_number'] };
       default: return null;
     }
   };
 
-  const usdtRate = useMemo(() => Number(appSettings?.['usdt_rate']) || 130, [appSettings]);
+  const usdtRate = useMemo(() => Number((appSettings as Record<string, any>)?.['usdt_rate']) || 130, [appSettings]);
   const bdtAmount = useMemo(() => (search as any)['plan'] === 'premium' ? 1500 : 0, [search]);
   const usdtAmount = useMemo(() => (bdtAmount / usdtRate).toFixed(2), [bdtAmount, usdtRate]);
 
