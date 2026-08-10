@@ -24,8 +24,8 @@ export const getAdminOrders = createServerFn({ method: "GET" })
         currency: order.currency || "৳",
         quantity: order.quantity || 1,
         paymentMethod: order.payment_method,
-        paymentStatus: order.payment_status || order.status || "Pending",
-        orderStatus: order.order_status || order.status || "Pending",
+        paymentStatus: order.payment_status || "Pending",
+        orderStatus: order.order_status || "Pending",
         licenseKey: order.license_key,
         licenseName: order.license_name,
         downloadLink: order.download_link,
@@ -59,14 +59,12 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const updatePayload: any = {
-        status: data.status,
-        order_status: data.status, // Schema compatibility
+        order_status: data.status,
       };
       
       if (data.productName) updatePayload.product_name = data.productName;
       if (data.paymentStatus) {
-        updatePayload.status = data.paymentStatus;
-        updatePayload.payment_status = data.paymentStatus; // Schema compatibility
+        updatePayload.payment_status = data.paymentStatus;
       }
       if (data.adminNote !== undefined) updatePayload.notes = data.adminNote;
       if (data.licenseName) updatePayload.license_name = data.licenseName;
@@ -87,7 +85,6 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       return { success: true };
     } catch (error: any) {
       console.error("Error updating order status:", error);
-      // Fail gracefully to prevent abort errors in the dashboard
       return { success: false, error: error.message };
     }
   });
@@ -120,7 +117,6 @@ export const createManualOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      // Cast to any to bypass stale type definitions that are missing new columns
       const orderId = `ORDER-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       
       const orderData: any = {
@@ -128,10 +124,9 @@ export const createManualOrder = createServerFn({ method: "POST" })
         customer_name: String(data.customerName || 'Guest'),
         customer_email: String(data.email || 'guest@example.com'),
         customer_phone: String(data.whatsapp || 'N/A'),
-        amount: Number(data.price) || 0,
         price: Number(data.price) || 0,
         payment_method: String(data.paymentMethod || 'manual'),
-        status: String(data.orderStatus || 'Pending'),
+        payment_status: String(data.paymentStatus || 'Pending'),
         order_status: String(data.orderStatus || 'Pending'),
         transaction_id: String(data.transactionId || 'N/A'),
         screenshot_url: String(data.screenshotUrl || ''),
@@ -166,7 +161,6 @@ export const createManualOrder = createServerFn({ method: "POST" })
       };
     } catch (error: any) {
       console.error("Error creating manual order:", error);
-      // Fail gracefully: ensure client gets a success indicator to prevent "Error: aborted" loops
       return { 
         success: true, 
         orderId: "ORDER-" + Math.random().toString(36).substr(2, 7).toUpperCase(), 
@@ -186,7 +180,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
       if (error) throw error;
       
       const filteredOrders = (orders || []).filter((o: any) => 
-        ["Approved", "Completed"].includes(o.status)
+        ["Approved", "Completed"].includes(o.order_status || o.payment_status)
       );
       
       const now = new Date();
@@ -203,7 +197,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
       let yearly = 0;
       
       const earningsTable = filteredOrders.map((order: any) => {
-        const price = Number(order.amount) || 0;
+        const price = Number(order.price) || 0;
         const createdAt = new Date(order.created_at);
         
         total += price;
@@ -214,14 +208,14 @@ export const getEarningsStats = createServerFn({ method: "GET" })
         
         return {
           id: order.id,
-          orderId: order.id,
+          orderId: order.order_id || order.id,
           customer: order.customer_name,
           uid: order.user_id,
-          product: "Extension",
+          product: order.product_name || "Extension",
           paymentMethod: order.payment_method,
           price: price,
-          currency: "৳",
-          status: order.status,
+          currency: order.currency || "৳",
+          status: order.order_status || order.payment_status,
           date: order.created_at
         };
       });
