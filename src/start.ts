@@ -5,13 +5,17 @@ import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
     const result = await next();
+    if (result instanceof Response) {
+      return result;
+    }
+    // TanStack Start v1 requires a Response to be returned from server routes.
+    // If next() returns context (which is common in middleware), we should handle it.
     return result;
   } catch (error: any) {
     if (error instanceof Response) {
       return error;
     }
     
-    // Check if it's a Supabase API key error
     const message = error?.message || String(error);
     if (message.includes("Invalid API key") || message.includes("apiKey") || message.includes("auth")) {
        console.error("Supabase API Key Error detected, providing fallback response:", message);
