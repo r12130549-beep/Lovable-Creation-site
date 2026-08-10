@@ -79,29 +79,29 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   });
 
 export const createManualOrder = createServerFn({ method: "POST" })
-  .inputValidator((data) => {
-    const schema = z.object({
-      uid: z.string().optional().default("guest"),
-      customerName: z.any(),
-      email: z.any(),
-      whatsapp: z.any(),
-      productName: z.any(),
-      category: z.any().optional().default("General"),
-      price: z.any().transform(v => Number(v) || 0),
-      currency: z.string().optional().default("৳"),
-      quantity: z.number().optional().default(1),
-      paymentMethod: z.any(),
-      paymentStatus: z.string().optional().default("Pending"),
-      orderStatus: z.string().optional().default("Pending"),
-      licenseKey: z.string().optional(),
-      licenseName: z.string().optional(),
-      downloadLink: z.string().optional(),
-      expireDate: z.string().optional(),
-      notes: z.string().optional(),
-    });
-    // Support both { data: { ... } } and direct { ... } wrapping
-    const input = (data as any)?.data || data;
-    return schema.parse(input);
+  .validator((data: unknown) => {
+    // Robust parsing that accepts both nested and flat structures
+    const raw = (data as any)?.data || data;
+    
+    return z.object({
+      uid: z.any().optional().default("guest"),
+      customerName: z.any().optional().default("Guest"),
+      email: z.any().optional().default("guest@example.com"),
+      whatsapp: z.any().optional().default("N/A"),
+      productName: z.any().optional().default("Premium Extension"),
+      category: z.any().optional().default("Extension"),
+      price: z.any().transform(v => Number(v) || 0).optional().default(0),
+      currency: z.any().optional().default("৳"),
+      quantity: z.any().transform(v => Number(v) || 1).optional().default(1),
+      paymentMethod: z.any().optional().default("manual"),
+      paymentStatus: z.any().optional().default("Pending"),
+      orderStatus: z.any().optional().default("Pending"),
+      licenseKey: z.any().optional().default(""),
+      licenseName: z.any().optional().default(""),
+      downloadLink: z.any().optional().default(""),
+      expireDate: z.any().optional(),
+      notes: z.any().optional().default(""),
+    }).parse(raw);
   })
   .handler(async ({ data }) => {
     try {
