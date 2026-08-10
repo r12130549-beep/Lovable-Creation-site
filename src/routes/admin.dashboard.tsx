@@ -239,7 +239,7 @@ function AdminPage() {
       try {
         if (!silent) setIsRefreshing(true);
         const orders = await getAdminOrdersFn();
-        setRealtimeOrders(orders || []);
+        if (orders) setRealtimeOrders(orders);
       } catch (err) {
         console.error("Error fetching admin orders:", err);
       } finally {
