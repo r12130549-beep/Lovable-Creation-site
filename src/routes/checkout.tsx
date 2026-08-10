@@ -287,8 +287,7 @@ function CheckoutPage() {
                             placeholder="John Doe" 
                             value={formData.name}
                             onChange={e => setFormData({...formData, name: e.target.value})}
-                            disabled={false}
-                            className={`w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 outline-none transition-all placeholder:text-white/10 ${!!firebaseUser ? 'opacity-50 cursor-not-allowed' : 'focus:border-red-500/50'}`}
+                            className="w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 focus:border-red-500/50 outline-none transition-all placeholder:text-white/10"
                           />
                         </div>
                       </div>
@@ -302,8 +301,7 @@ function CheckoutPage() {
                             placeholder="john@example.com" 
                             value={formData.email}
                             onChange={e => setFormData({...formData, email: e.target.value})}
-                            disabled={!!firebaseUser}
-                            className={`w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 outline-none transition-all placeholder:text-white/10 ${!!firebaseUser ? 'opacity-50 cursor-not-allowed' : 'focus:border-red-500/50'}`}
+                            className="w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 focus:border-red-500/50 outline-none transition-all placeholder:text-white/10"
                           />
                         </div>
                       </div>
