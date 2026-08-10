@@ -32,8 +32,11 @@ export const updateExtension = createServerFn({ method: "POST" })
   });
 
 export const createExtension = createServerFn({ method: "POST" })
-  .inputValidator((data) => 
-    z.object({ 
+  .validator((data: unknown) => {
+    // Handle both direct data and wrapped { data: ... }
+    const raw = (data as any)?.data || data;
+    
+    return z.object({ 
       name: z.string(),
       slug: z.string(),
       description: z.string().nullable().optional(),
@@ -48,8 +51,8 @@ export const createExtension = createServerFn({ method: "POST" })
       changelog: z.array(z.object({ version: z.string(), date: z.string(), changes: z.array(z.string()) })).nullable().optional(),
       compatibility: z.array(z.string()).nullable().optional(),
       screenshots: z.array(z.string()).nullable().optional(),
-    }).parse(data)
-  )
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     const { data: extension, error } = await supabaseAdmin
       .from("extensions")
