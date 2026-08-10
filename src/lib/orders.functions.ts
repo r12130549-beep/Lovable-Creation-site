@@ -17,41 +17,49 @@ import {
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
-    // Increase timeout or ensure connection is stable
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const q = query(ordersRef, orderBy("created_at", "desc"));
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(ordersRef);
       
-      const orders = querySnapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const orders = querySnapshot.docs.map((doc: any) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          created_at: data.created_at || new Date(0).toISOString(),
+        };
+      });
+
+      orders.sort((a: any, b: any) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return dateB - dateA;
+      });
       
       return orders.map((order: any) => ({
         id: order.id,
         orderId: order.order_id || order.id,
-        customerName: order.customer_name,
-        email: order.customer_email,
-        whatsapp: order.customer_phone,
+        customerName: order.customer_name || 'Guest',
+        email: order.customer_email || 'guest@example.com',
+        whatsapp: order.customer_phone || 'N/A',
         productName: order.product_name || order.productName || "Extension",
         category: order.category || "Extension",
-        price: order.price || order.amount || 0,
+        price: Number(order.price || order.amount || 0),
         currency: order.currency || "৳",
-        quantity: order.quantity || 1,
-        paymentMethod: order.payment_method,
+        quantity: Number(order.quantity || 1),
+        paymentMethod: order.payment_method || "Manual",
         paymentStatus: order.payment_status || "Pending",
         orderStatus: order.order_status || "Pending",
-        licenseKey: order.license_key,
-        licenseName: order.license_name,
-        downloadLink: order.download_link,
-        expireDate: order.expire_date,
-        notes: order.notes,
-        transactionId: order.transaction_id,
-        screenshotUrl: order.screenshot_url,
+        licenseKey: order.license_key || "",
+        licenseName: order.license_name || "",
+        downloadLink: order.download_link || "",
+        expireDate: order.expire_date || null,
+        notes: order.notes || "",
+        transactionId: order.transaction_id || "N/A",
+        screenshotUrl: order.screenshot_url || "",
         isManual: order.payment_method === "Manual",
         createdAt: order.created_at,
-        updatedAt: order.updated_at
+        updatedAt: order.updated_at || order.created_at
       }));
     } catch (error: any) {
       console.error("Error fetching admin orders from Firebase:", error);
@@ -177,8 +185,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const q = query(ordersRef, orderBy("created_at", "desc"), limit(200));
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(ordersRef);
       const orders = querySnapshot.docs.map((doc: any) => doc.data());
       
       const filteredOrders = orders.filter((o: any) => 
