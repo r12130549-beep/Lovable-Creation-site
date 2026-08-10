@@ -60,23 +60,35 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     try {
       const updatePayload: any = {
         status: data.status,
+        order_status: data.status, // Schema compatibility
       };
       
       if (data.productName) updatePayload.product_name = data.productName;
-      if (data.paymentStatus) updatePayload.status = data.paymentStatus;
+      if (data.paymentStatus) {
+        updatePayload.status = data.paymentStatus;
+        updatePayload.payment_status = data.paymentStatus; // Schema compatibility
+      }
       if (data.adminNote !== undefined) updatePayload.notes = data.adminNote;
+      if (data.licenseName) updatePayload.license_name = data.licenseName;
+      if (data.licenseKey) updatePayload.license_key = data.licenseKey;
+      if (data.downloadLink) updatePayload.download_link = data.downloadLink;
+      if (data.expireDate) updatePayload.expire_date = data.expireDate;
 
       const { error } = await supabaseAdmin
         .from("orders")
-        .update(updatePayload as any)
+        .update(updatePayload)
         .eq("id", data.orderId);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase update error details:", error);
+        throw error;
+      }
 
       return { success: true };
     } catch (error: any) {
       console.error("Error updating order status:", error);
-      throw error;
+      // Fail gracefully to prevent abort errors in the dashboard
+      return { success: false, error: error.message };
     }
   });
 
