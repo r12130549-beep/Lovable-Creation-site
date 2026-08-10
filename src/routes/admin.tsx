@@ -134,7 +134,8 @@ function AdminLoginPage() {
       let isAdmin = false;
 
       // Primary hardcoded check for admin email
-      if (user.email === 'admin@gmail.com' || user.email === 'gmail@gmail.com' || user.email === 'r12130549@gmail.com') {
+      const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
+      if (user.email && allowedEmails.includes(user.email)) {
         isAdmin = true;
       } else {
         // 1. Try Firestore
