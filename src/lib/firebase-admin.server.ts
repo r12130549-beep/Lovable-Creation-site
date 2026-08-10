@@ -34,6 +34,20 @@ try {
 export const adminFirestore = db;
 export const adminDatabase = getDatabase(app);
 
+// Global error handler for Firestore operations to provide better feedback
+export const wrapFirestoreCall = async (fn: any, name: string) => {
+  try {
+    return await fn();
+  } catch (error: any) {
+    console.error(`CRITICAL FIRESTORE ERROR [${name}]:`, error);
+    if (error.code === 'permission-denied') {
+      console.error("HINT: Ensure the Firebase service account/SDK is correctly configured and rules allow the operation.");
+    }
+    throw error;
+  }
+};
+
+
 // Helper to force a fresh connection if needed
 export const resetFirestore = async () => {
   try {
