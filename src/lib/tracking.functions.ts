@@ -20,16 +20,20 @@ export const trackOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const q = query(
-        ordersRef, 
-        where("order_id", "==", data.orderId.trim().toUpperCase()), 
-        limit(1)
+      const querySnapshot = await getDocs(query(ordersRef));
+      
+      const orders = querySnapshot.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      const searchId = data.orderId.trim().toUpperCase();
+      const orderData = orders.find((o: any) => 
+        (o.order_id?.toUpperCase() === searchId || o.id === data.orderId)
       );
       
-      const querySnapshot = await getDocs(q);
-      
-      if (querySnapshot.empty || !querySnapshot.docs[0]) {
-        throw new Error("Order not found");
+      if (!orderData) {
+        throw new Error("অর্ডারটি পাওয়া যায়নি। অনুগ্রহ করে সঠিক আইডি ব্যবহার করুন।");
       }
 
       const orderData = querySnapshot.docs[0].data();
