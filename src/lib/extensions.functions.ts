@@ -1,5 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { 
+  adminFirestore, 
+  collection, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  orderBy 
+} from "./firebase-admin.server";
 
 const str = z.any().transform((v) => (v === null || v === undefined ? undefined : String(v))).optional();
 const num = z.any().transform((v) => (v === null || v === undefined || v === "" ? undefined : Number(v) || 0)).optional();
@@ -13,11 +25,14 @@ const unwrap = (data: unknown) => {
 export const deleteExtension = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => z.object({ id: z.any().transform((v) => String(v)) }).parse(unwrap(data)))
   .handler(async ({ data }) => {
-    const { createAdminClient } = await import("../integrations/supabase/client.server");
-    const supabaseAdmin = createAdminClient();
-    const { error } = await supabaseAdmin.from("extensions").delete().eq("id", data.id);
-    if (error) throw error;
-    return { success: true };
+    try {
+      const extensionRef = doc(adminFirestore, "extensions", data.id);
+      await deleteDoc(extensionRef);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error deleting extension from Firebase:", error);
+      throw error;
+    }
   });
 
 export const updateExtension = createServerFn({ method: "POST" })
@@ -30,14 +45,17 @@ export const updateExtension = createServerFn({ method: "POST" })
       .parse(unwrap(data)),
   )
   .handler(async ({ data }) => {
-    const { createAdminClient } = await import("../integrations/supabase/client.server");
-    const supabaseAdmin = createAdminClient();
-    const { error } = await supabaseAdmin
-      .from("extensions")
-      .update(data.updates as any)
-      .eq("id", data.id);
-    if (error) throw error;
-    return { success: true };
+    try {
+      const extensionRef = doc(adminFirestore, "extensions", data.id);
+      await updateDoc(extensionRef, {
+        ...(data.updates as any),
+        updated_at: new Date().toISOString()
+      });
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error updating extension in Firebase:", error);
+      throw error;
+    }
   });
 
 export const createExtension = createServerFn({ method: "POST" })
@@ -63,9 +81,8 @@ export const createExtension = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const { createAdminClient } = await import("../integrations/supabase/client.server");
-      const supabaseAdmin = createAdminClient();
-
+      const extensionsRef = collection(adminFirestore, "extensions");
+      
       const name = data.name?.trim() || "Untitled Extension";
       const slug =
         data.slug?.trim() ||
@@ -73,7 +90,9 @@ export const createExtension = createServerFn({ method: "POST" })
           .toString(36)
           .slice(2, 6)}`;
 
+      const extensionRef = doc(extensionsRef);
       const payload: any = {
+        id: extensionRef.id,
         name,
         slug,
         description: data.description ?? null,
@@ -87,28 +106,16 @@ export const createExtension = createServerFn({ method: "POST" })
         changelog: data.changelog ?? [],
         compatibility: data.compatibility ?? [],
         screenshots: data.screenshots ?? [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       if (data.discount_price !== undefined) payload.discount_price = data.discount_price;
 
-      // Ensure table exists and query is safe
-      if (!supabaseAdmin || !supabaseAdmin.from) {
-        throw new Error("Database client not initialized");
-      }
-
-      const { data: extension, error } = await supabaseAdmin
-        .from("extensions")
-        .insert(payload)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Database error details:", error);
-        return { success: false, message: `Database error: ${error.message}` };
-      }
+      await setDoc(extensionRef, payload);
       
-      return { success: true, extension };
+      return { success: true, extension: payload };
     } catch (error: any) {
-      console.error("Caught error in createExtension:", error);
+      console.error("Caught error in createExtension (Firebase):", error);
       return { success: false, message: error?.message || "Failed to create extension" };
     }
   });
