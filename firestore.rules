@@ -1,25 +1,42 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow users to read their own profile
-    match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null && request.auth.uid == userId;
+    // Helper to check if user is a whitelisted admin
+    function isAdmin() {
+      return request.auth != null && 
+        (request.auth.token.email == 'admin@gmail.com' || 
+         request.auth.token.email == 'gmail@gmail.com' || 
+         request.auth.token.email == 'r12130549@gmail.com');
     }
-    
-    // Extensions/Products: Anyone can read, only admin can write
-    match /extensions/{extensionId} {
-      allow read: if true;
-      allow write: if request.auth != null && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    // Orders: Anyone can create (guest checkout), only admin can read all
+
+    // Orders: Anyone can create (for guest checkout), Admins can manage, 
+    // Public can read single orders for tracking (limited by query)
     match /orders/{orderId} {
       allow create: if true;
-      allow read: if request.auth != null && 
-        (request.auth.uid == resource.data.userId || 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow read: if isAdmin() || (request.query.limit <= 1);
+      allow update, delete: if isAdmin();
+    }
+
+    // Extensions/Products: Public read, Admin write
+    match /extensions/{extensionId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Settings: Public read, Admin write
+    match /app_settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Users: Admin can manage, users can manage their own profile
+    match /users/{userId} {
+      allow read, write: if isAdmin() || (request.auth != null && request.auth.uid == userId);
+    }
+    
+    // Default deny for everything else
+    match /{document=**} {
+      allow read, write: if isAdmin();
     }
   }
 }
