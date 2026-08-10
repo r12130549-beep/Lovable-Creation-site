@@ -96,9 +96,12 @@ function CheckoutPage() {
   const search = useSearch({ from: '/checkout' }) as { productId?: string; plan?: string };
   const navigate = useNavigate();
 
-  const { data: appSettings } = useQuery({
+  const { data: appSettings, isLoading: settingsLoading } = useQuery({
     queryKey: ['app-settings'],
-    queryFn: () => getAppSettings(),
+    queryFn: () => getAppSettings().catch(err => {
+      console.error("Settings fetch error:", err);
+      return {};
+    }),
   });
 
   const getMethodDetails = (methodId: string) => {
