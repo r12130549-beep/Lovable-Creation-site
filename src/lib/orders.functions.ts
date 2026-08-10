@@ -17,6 +17,7 @@ import {
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
+    // Increase timeout or ensure connection is stable
     try {
       const ordersRef = collection(adminFirestore, "orders");
       const q = query(ordersRef, orderBy("created_at", "desc"));
