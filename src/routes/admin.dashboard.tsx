@@ -38,13 +38,19 @@ export const getAdminOrdersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = serverCollection(serverFirestore, "orders");
-      const q = serverQuery(ordersRef, serverOrderBy("created_at", "desc"));
-      const querySnapshot = await serverGetDocs(q);
+      const querySnapshot = await serverGetDocs(ordersRef);
       
       const orders = querySnapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data()
       }));
+      
+      // Sort in memory to avoid index requirements while debugging
+      orders.sort((a: any, b: any) => {
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return dateB - dateA;
+      });
       
       return orders.map((order: any) => ({
         id: order.id,

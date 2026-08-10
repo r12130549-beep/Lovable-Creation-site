@@ -28,34 +28,27 @@ export const useAuth = create<AuthState>((set) => ({
 
 if (typeof window !== 'undefined') {
   onAuthStateChanged(auth, async (user) => {
-    console.log('[useAuth] onAuthStateChanged fired:', user?.email);
     const state = useAuth.getState();
     state.setLoading(true);
     
     if (!user) {
-      console.log('[useAuth] No user found, clearing state');
       state.setUser(null, false);
       return;
     }
     
     try {
-      console.log('[useAuth] User detected:', user.email, user.uid);
-      
-      // Use the server function to check admin status securely
-      // This bypasses client-side "Missing or insufficient permissions" errors
-      const result = await checkAdminStatus({ data: { email: user.email || '', uid: user.uid } } as any);
-      const isAdmin = result?.isAdmin || false;
-      
-      console.log('[useAuth] Final Admin status from server:', isAdmin);
-      state.setUser(user, isAdmin);
-    } catch (error: any) {
-      console.error('[useAuth] General error in admin status check:', error);
-      
-      // Fallback to basic email check if server function fails
+      // Whitelist check first
       const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com', 'kivabe@gmail.com', 'popykhanum2255@gmail.com'];
-      const isAdminFallback = user.email ? allowedEmails.includes(user.email) : false;
-      
-      state.setUser(user, isAdminFallback);
+      if (allowedEmails.includes(user.email || '')) {
+        state.setUser(user, true);
+        return;
+      }
+
+      const result = await checkAdminStatus({ data: { email: user.email || '', uid: user.uid } } as any);
+      state.setUser(user, result?.isAdmin || false);
+    } catch (error: any) {
+      console.error('[useAuth] Error:', error);
+      state.setUser(user, false);
     }
   });
 }
