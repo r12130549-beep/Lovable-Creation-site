@@ -89,6 +89,72 @@ export const getAdminExtensionsFast = createServerFn({ method: "GET" })
     }
   });
 
+export const createExtensionFast = createServerFn({ method: "POST" })
+  .validator((data: any) => z.object({
+    name: z.string(),
+    slug: z.string().optional(),
+    description: z.string().optional(),
+    price: z.number().optional(),
+    category: z.string().optional(),
+    icon_url: z.string().optional(),
+    zip_url: z.string().optional(),
+    version: z.string().optional(),
+    status: z.string().optional()
+  }).parse(data))
+  .handler(async ({ data }) => {
+    const extensionsRef = serverCollection(serverFirestore, "extensions");
+    const docRef = serverDoc(extensionsRef);
+    const payload = {
+      ...data,
+      id: docRef.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    await serverSetDoc(docRef, payload);
+    return { success: true, extension: payload };
+  });
+
+export const updateExtensionFast = createServerFn({ method: "POST" })
+  .validator((data: any) => z.object({ id: z.string(), updates: z.any() }).parse(data))
+  .handler(async ({ data }) => {
+    const docRef = serverDoc(serverFirestore, "extensions", data.id);
+    await serverUpdateDoc(docRef, { ...data.updates, updated_at: new Date().toISOString() });
+    return { success: true };
+  });
+
+export const deleteExtensionFast = createServerFn({ method: "POST" })
+  .validator((data: any) => z.object({ id: z.string() }).parse(data))
+  .handler(async ({ data }) => {
+    const docRef = serverDoc(serverFirestore, "extensions", data.id);
+    await serverDeleteDoc(docRef);
+    return { success: true };
+  });
+
+export const updateOrderStatusFast = createServerFn({ method: "POST" })
+  .validator((data: any) => z.object({ 
+    orderId: z.string(), 
+    status: z.string(),
+    productName: z.string().optional(),
+    licenseName: z.string().optional(),
+    licenseKey: z.string().optional(),
+    downloadLink: z.string().optional(),
+    expireDate: z.string().optional().nullable()
+  }).parse(data))
+  .handler(async ({ data }) => {
+    const orderRef = serverDoc(serverFirestore, "orders", data.orderId);
+    const updatePayload: any = { 
+      order_status: data.status,
+      updated_at: new Date().toISOString()
+    };
+    if (data.productName) updatePayload.product_name = data.productName;
+    if (data.licenseName) updatePayload.license_name = data.licenseName;
+    if (data.licenseKey) updatePayload.license_key = data.licenseKey;
+    if (data.downloadLink) updatePayload.download_link = data.downloadLink;
+    if (data.expireDate) updatePayload.expire_date = data.expireDate;
+    await serverUpdateDoc(orderRef, updatePayload);
+    return { success: true };
+  });
+
 export const getAdminUsersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
