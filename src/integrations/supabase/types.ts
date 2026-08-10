@@ -191,42 +191,78 @@ export type Database = {
       }
       orders: {
         Row: {
-          amount: number | null
-          created_at: string
+          category: string | null
+          created_at: string | null
+          currency: string | null
           customer_email: string
           customer_name: string
           customer_phone: string | null
+          download_link: string | null
+          expire_date: string | null
           id: string
-          payment_method: string
+          license_key: string | null
+          license_name: string | null
+          notes: string | null
+          order_id: string
+          order_status: string | null
+          payment_method: string | null
+          payment_status: string | null
+          price: number
+          product_name: string
+          quantity: number | null
           screenshot_url: string | null
-          status: string
           transaction_id: string | null
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
-          amount?: number | null
-          created_at?: string
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
           customer_email: string
           customer_name: string
           customer_phone?: string | null
+          download_link?: string | null
+          expire_date?: string | null
           id?: string
-          payment_method: string
+          license_key?: string | null
+          license_name?: string | null
+          notes?: string | null
+          order_id: string
+          order_status?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          price?: number
+          product_name: string
+          quantity?: number | null
           screenshot_url?: string | null
-          status?: string
           transaction_id?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
-          amount?: number | null
-          created_at?: string
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
+          download_link?: string | null
+          expire_date?: string | null
           id?: string
-          payment_method?: string
+          license_key?: string | null
+          license_name?: string | null
+          notes?: string | null
+          order_id?: string
+          order_status?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          price?: number
+          product_name?: string
+          quantity?: number | null
           screenshot_url?: string | null
-          status?: string
           transaction_id?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: []

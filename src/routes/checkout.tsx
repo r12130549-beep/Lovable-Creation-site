@@ -179,14 +179,12 @@ function CheckoutPage() {
         notes: `TRX: ${formData.trxId || 'N/A'}`,
       };
 
-      // 3. Create order via server function (handles Firebase)
+      // 3. Create order via server function
       const result = await createManualOrder({ data: orderPayload });
       
       // 4. Update local state with the actual order ID from server
-      setOrderId(result.order_id || result.orderId || generatedOrderId);
-      
-      // 4. Update local state with the actual order ID from server
-      setOrderId(result.orderId || generatedOrderId);
+      const finalOrderId = result.order_id || result.orderId || generatedOrderId;
+      setOrderId(finalOrderId);
 
       setStep(5);
       toast.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');

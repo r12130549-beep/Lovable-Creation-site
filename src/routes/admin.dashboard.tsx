@@ -111,7 +111,8 @@ function AdminPage() {
     mutationFn: (data: any) => createManualOrder({ data }),
     onSuccess: (result) => {
       toast.success('অর্ডার সফলভাবে তৈরি হয়েছে');
-      window.prompt('অর্ডার আইডি (কপি করুন):', result.orderId);
+      const orderIdToCopy = result.order_id || result.orderId;
+      window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
       setActiveTab('orders');
     },
     onError: (err: any) => toast.error(err.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে')
@@ -198,8 +199,8 @@ function AdminPage() {
                       <h3 className="font-bold flex items-center gap-2">
                         {order.orderId || order.id}
                         <span className={`text-[8px] px-2 py-0.5 rounded-full uppercase tracking-widest ${
-                          order.orderStatus === 'Approved' || order.status === 'Approved' ? 'bg-green-500/10 text-green-500' : 
-                          order.orderStatus === 'Rejected' || order.status === 'Rejected' ? 'bg-red-500/10 text-red-500' : 
+                          ['Approved', 'Completed'].includes(order.orderStatus || order.status) ? 'bg-green-500/10 text-green-500' : 
+                          ['Rejected', 'Failed', 'Cancelled'].includes(order.orderStatus || order.status) ? 'bg-red-500/10 text-red-500' : 
                           'bg-yellow-500/10 text-yellow-500'
                         }`}>
                           {order.orderStatus || order.status}
@@ -247,31 +248,60 @@ function AdminPage() {
                 productName: formData.get('product')?.toString() || '',
                 category: "General",
                 price: Number(formData.get('price')),
-                paymentMethod: "Manual"
+                paymentMethod: "Manual",
+                licenseKey: formData.get('licenseKey')?.toString() || '',
+                licenseName: formData.get('licenseName')?.toString() || '',
+                downloadLink: formData.get('downloadLink')?.toString() || '',
+                expireDate: formData.get('expireDate')?.toString() || null,
               });
             }} className="p-8 bg-[#0A0A0A] border border-white/5 rounded-2xl space-y-4 max-w-lg">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Customer Name</label>
-                <input name="customerName" placeholder="Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Customer Name</label>
+                  <input name="customerName" placeholder="Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Email</label>
+                  <input name="email" placeholder="Email" type="email" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none text-sm" />
+                </div>
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Email</label>
-                <input name="email" placeholder="Email" type="email" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">WhatsApp</label>
-                <input name="whatsapp" placeholder="WhatsApp" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">WhatsApp</label>
+                  <input name="whatsapp" placeholder="WhatsApp" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Price (৳)</label>
+                  <input name="price" placeholder="Price" required type="number" className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none text-sm" />
+                </div>
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Product Name</label>
-                <input name="product" placeholder="Product" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                <input name="product" placeholder="Product" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none text-sm" />
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Price (৳)</label>
-                <input name="price" placeholder="Price" required type="number" className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+              
+              <div className="pt-4 border-t border-white/5 space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-red-500">License & Delivery Details</p>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">License Name</label>
+                  <input name="licenseName" placeholder="License Name (e.g. Lifetime)" className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">License Key</label>
+                  <input name="licenseKey" placeholder="License Key" className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Download Link</label>
+                  <input name="downloadLink" placeholder="Download URL" className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Expire Date</label>
+                  <input name="expireDate" type="datetime-local" className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none text-sm" />
+                </div>
               </div>
-              <button type="submit" disabled={createOrderMutation.isPending} className="w-full py-4 bg-red-600 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all flex items-center justify-center gap-2">
-                {createOrderMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Order"}
+
+              <button type="submit" disabled={createOrderMutation.isPending} className="w-full py-4 bg-red-600 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all flex items-center justify-center gap-2 mt-4">
+                {createOrderMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Order & Save ID"}
               </button>
             </motion.form>
           )}
@@ -650,23 +680,49 @@ function AdminPage() {
               </div>
             )}
 
-            <div className="flex gap-4 pt-4">
-              <button 
-                onClick={() => {
-                  updateOrderMutation.mutate({ orderId: selectedOrder.id, status: 'Approved' });
-                }} 
-                className="flex-1 py-4 bg-green-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-green-700 transition-all shadow-xl shadow-green-600/20"
-              >
-                Approve Order
-              </button>
-              <button 
-                onClick={() => {
-                  updateOrderMutation.mutate({ orderId: selectedOrder.id, status: 'Rejected' });
-                }} 
-                className="flex-1 py-4 bg-red-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-xl shadow-red-600/20"
-              >
-                Reject Order
-              </button>
+            <div className="space-y-4 pt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20">License Key</label>
+                  <input 
+                    defaultValue={selectedOrder.licenseKey} 
+                    onBlur={(e) => updateOrderMutation.mutate({ orderId: selectedOrder.id, licenseKey: e.target.value, status: selectedOrder.orderStatus || selectedOrder.status })}
+                    className="w-full bg-white/5 border border-white/5 p-3 rounded-xl outline-none text-xs" 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20">Download Link</label>
+                  <input 
+                    defaultValue={selectedOrder.downloadLink} 
+                    onBlur={(e) => updateOrderMutation.mutate({ orderId: selectedOrder.id, downloadLink: e.target.value, status: selectedOrder.orderStatus || selectedOrder.status })}
+                    className="w-full bg-white/5 border border-white/5 p-3 rounded-xl outline-none text-xs" 
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/20">Expire Date</label>
+                <input 
+                  type="datetime-local"
+                  defaultValue={selectedOrder.expireDate ? new Date(selectedOrder.expireDate).toISOString().slice(0, 16) : ''}
+                  onBlur={(e) => updateOrderMutation.mutate({ orderId: selectedOrder.id, expireDate: e.target.value, status: selectedOrder.orderStatus || selectedOrder.status })}
+                  className="w-full bg-white/5 border border-white/5 p-3 rounded-xl outline-none text-xs" 
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => updateOrderMutation.mutate({ orderId: selectedOrder.id, status: 'Approved' })} 
+                  className="flex-1 py-4 bg-green-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-green-700 transition-all shadow-xl shadow-green-600/20"
+                >
+                  Approve Order
+                </button>
+                <button 
+                  onClick={() => updateOrderMutation.mutate({ orderId: selectedOrder.id, status: 'Rejected' })} 
+                  className="flex-1 py-4 bg-red-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-xl shadow-red-600/20"
+                >
+                  Reject Order
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
