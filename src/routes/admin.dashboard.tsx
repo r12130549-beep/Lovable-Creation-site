@@ -722,28 +722,53 @@ function AdminPage() {
             <div className="space-y-4 pt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20">License Key</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20">License Name</label>
                   <input 
-                    defaultValue={selectedOrder.licenseKey} 
-                    onBlur={(e) => updateOrderMutation.mutate({ orderId: selectedOrder.id, licenseKey: e.target.value, status: selectedOrder.orderStatus || selectedOrder.status })}
+                    defaultValue={selectedOrder.licenseName} 
+                    onBlur={(e) => {
+                      if (e.target.value !== selectedOrder.licenseName) {
+                        updateOrderMutation.mutate({ orderId: selectedOrder.id, licenseName: e.target.value, status: selectedOrder.orderStatus || selectedOrder.status });
+                      }
+                    }}
+                    placeholder="e.g. Lifetime"
                     className="w-full bg-white/5 border border-white/5 p-3 rounded-xl outline-none text-xs" 
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20">Download Link</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/20">License Key</label>
                   <input 
-                    defaultValue={selectedOrder.downloadLink} 
-                    onBlur={(e) => updateOrderMutation.mutate({ orderId: selectedOrder.id, downloadLink: e.target.value, status: selectedOrder.orderStatus || selectedOrder.status })}
+                    defaultValue={selectedOrder.licenseKey} 
+                    onBlur={(e) => {
+                      if (e.target.value !== selectedOrder.licenseKey) {
+                        updateOrderMutation.mutate({ orderId: selectedOrder.id, licenseKey: e.target.value, status: selectedOrder.orderStatus || selectedOrder.status });
+                      }
+                    }}
                     className="w-full bg-white/5 border border-white/5 p-3 rounded-xl outline-none text-xs" 
                   />
                 </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/20">Download Link</label>
+                <input 
+                  defaultValue={selectedOrder.downloadLink} 
+                  onBlur={(e) => {
+                    if (e.target.value !== selectedOrder.downloadLink) {
+                      updateOrderMutation.mutate({ orderId: selectedOrder.id, downloadLink: e.target.value, status: selectedOrder.orderStatus || selectedOrder.status });
+                    }
+                  }}
+                  className="w-full bg-white/5 border border-white/5 p-3 rounded-xl outline-none text-xs" 
+                />
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-white/20">Expire Date</label>
                 <input 
                   type="datetime-local"
                   defaultValue={selectedOrder.expireDate ? new Date(selectedOrder.expireDate).toISOString().slice(0, 16) : ''}
-                  onBlur={(e) => updateOrderMutation.mutate({ orderId: selectedOrder.id, expireDate: e.target.value, status: selectedOrder.orderStatus || selectedOrder.status })}
+                  onBlur={(e) => {
+                    if (e.target.value !== (selectedOrder.expireDate ? new Date(selectedOrder.expireDate).toISOString().slice(0, 16) : '')) {
+                      updateOrderMutation.mutate({ orderId: selectedOrder.id, expireDate: e.target.value, status: selectedOrder.orderStatus || selectedOrder.status });
+                    }
+                  }}
                   className="w-full bg-white/5 border border-white/5 p-3 rounded-xl outline-none text-xs" 
                 />
               </div>

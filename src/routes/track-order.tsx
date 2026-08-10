@@ -175,9 +175,11 @@ function TrackOrderPage() {
                   <Download className="w-5 h-5 text-green-500" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-green-500 mb-1">ডেলিভারি সোর্স: VIBEX Secure</h4>
+                  <h4 className="text-xs font-black uppercase tracking-widest text-green-500 mb-1">
+                    {order.product_name || "VIBEX Secure Product"}
+                  </h4>
                   <p className="text-[10px] font-medium text-white/60 leading-relaxed">
-                    পেমেন্ট কনফার্ম হওয়ার সাথে সাথে গেটওয়ে স্বয়ংক্রিয়ভাবে লাইসেন্স কী পাঠিয়ে দেবে।
+                    পেমেন্ট কনফার্ম হওয়ার সাথে সাথে গেটওয়ে স্বয়ংক্রিয়ভাবে লাইসেন্স কী এবং ডাউনলোড লিংক পাঠিয়ে দেবে।
                   </p>
                 </div>
               </div>
