@@ -108,7 +108,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 
 export const createManualOrder = createServerFn({ method: "POST" })
   .validator((data: unknown) => {
-    const raw = (data as any)?.data || data;
+    const raw = (data as any)?.data || (typeof data === 'string' ? JSON.parse(data) : data);
     
     return z.object({
       uid: z.any().optional().default("guest"),

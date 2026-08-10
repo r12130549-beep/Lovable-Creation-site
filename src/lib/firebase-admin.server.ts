@@ -57,7 +57,9 @@ export const wrapFirestoreCall = async (fn: any, name: string) => {
 // Helper to force a fresh connection if needed
 export const resetFirestore = async () => {
   try {
-    await terminate(adminFirestore);
+    // We terminate the current instance to free up resources
+    await terminate(db);
+    // Note: Re-initialization will happen on the next call as needed
   } catch (e) {
     console.error("Error terminating firestore:", e);
   }
