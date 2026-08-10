@@ -40,18 +40,12 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       }
     }
 
-    const result = await next({
+    return next({
       context: {
         supabase,
         userId,
         claims,
       },
     });
-
-    if (result === undefined) {
-      return new Response("OK", { status: 200 });
-    }
-
-    return result;
   },
 );
