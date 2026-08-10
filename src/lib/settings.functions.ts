@@ -1,18 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-
 export const getAppSettings = createServerFn({ method: "GET" })
   .handler(async () => {
+    console.log("DEBUG: getAppSettings called");
     try {
       const { supabaseAdmin } = await import("../integrations/supabase/client.server");
+      console.log("DEBUG: supabaseAdmin imported");
       
       const { data, error } = await supabaseAdmin
         .from("app_settings")
         .select("*");
 
       if (error) {
-        console.warn("Supabase fetch error:", error.message);
+        console.warn("DEBUG: Supabase fetch error:", error.message);
         return {};
       }
       
@@ -21,9 +22,10 @@ export const getAppSettings = createServerFn({ method: "GET" })
         settings[item.key] = item.value;
       });
       
+      console.log("DEBUG: getAppSettings success, keys:", Object.keys(settings));
       return settings;
     } catch (error: any) {
-      console.error("Error in getAppSettings:", error);
+      console.error("DEBUG: Error in getAppSettings:", error);
       // Return a plain object to avoid the 'forgot to return a response' error
       return {};
     }
@@ -38,15 +40,24 @@ export const updateAppSetting = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("app_settings")
-      .upsert({ 
-        key: data.key, 
-        value: data.value,
-        updated_at: new Date().toISOString()
-      });
+    console.log("DEBUG: updateAppSetting called for key:", data.key);
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { error } = await supabaseAdmin
+        .from("app_settings")
+        .upsert({ 
+          key: data.key, 
+          value: data.value,
+          updated_at: new Date().toISOString()
+        });
 
-    if (error) throw error;
-    return { success: true };
+      if (error) {
+        console.error("DEBUG: updateAppSetting error:", error);
+        throw error;
+      }
+      return { success: true };
+    } catch (e: any) {
+      console.error("DEBUG: updateAppSetting catch:", e);
+      return { success: false, error: e.message };
+    }
   });
