@@ -91,7 +91,7 @@ export const checkAdminStatus = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
-    const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
+    const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com', 'kivabe@gmail.com'];
     if (allowedEmails.includes(data.email)) {
       return { isAdmin: true };
     }

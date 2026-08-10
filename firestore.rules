@@ -1,10 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 🛡️ EMERGENCY PERMANENT FIX: Complete permissive access.
-    // This removes ALL client-side permission checks.
-    // Recommended by Lovable Agent to resolve persistent UI errors.
-    
     match /{document=**} {
       allow read, write: if true;
     }
