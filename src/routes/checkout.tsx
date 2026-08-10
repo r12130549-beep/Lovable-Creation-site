@@ -187,20 +187,18 @@ function CheckoutPage() {
 
       // 3. Insert into Firebase Firestore (using server function to avoid permission errors)
       const result = await createManualOrder({
-        data: {
-          uid: firebaseUser?.uid || 'guest',
-          customerName: formData.name,
-          email: formData.email,
-          whatsapp: formData.phone,
-          productName: (search as any)['productId'] || 'Premium Extension',
-          category: 'Extension',
-          price: amount,
-          currency: "৳",
-          paymentMethod: selectedMethod.id,
-          paymentStatus: "Pending",
-          orderStatus: "Pending",
-          notes: `TRX: ${formData.trxId}`,
-        }
+        uid: firebaseUser?.uid || 'guest',
+        customerName: formData.name,
+        email: formData.email,
+        whatsapp: formData.phone,
+        productName: (search as any)['productId'] || 'Premium Extension',
+        category: 'Extension',
+        price: amount,
+        currency: "৳",
+        paymentMethod: selectedMethod.id,
+        paymentStatus: "Pending",
+        orderStatus: "Pending",
+        notes: `TRX: ${formData.trxId}`,
       });
       
       setOrderId(result.orderId);
