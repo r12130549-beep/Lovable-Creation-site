@@ -19,7 +19,9 @@ export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const querySnapshot = await getDocs(ordersRef);
+      // Use a smaller batch size or just get all and sort in memory if the list is small
+      // Admin SDK get() returns a QuerySnapshot
+      const querySnapshot = await ordersRef.get();
       
       const orders = querySnapshot.docs.map((doc: any) => {
         const data = doc.data();
@@ -36,7 +38,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
         return dateB - dateA;
       });
       
-      return orders.map((order: any) => ({
+      return orders.slice(0, 50).map((order: any) => ({
         id: order.id,
         orderId: order.order_id || order.id,
         customerName: order.customer_name || 'Guest',

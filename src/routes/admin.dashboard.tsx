@@ -37,25 +37,18 @@ import { format } from 'date-fns';
 export const getAdminOrdersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const ordersRef = serverCollection(serverFirestore, "orders");
-      const querySnapshot = await serverGetDocs(ordersRef);
+      const ordersRef = serverFirestore.collection("orders");
+      const querySnapshot = await ordersRef.orderBy('created_at', 'desc').limit(50).get();
       
       const orders = querySnapshot.docs.map((doc: any) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
-          // Ensure critical fields are strings to avoid serialization issues
           created_at: data.created_at || new Date(0).toISOString(),
           customer_name: data.customer_name || 'Guest',
           customer_email: data.customer_email || 'guest@example.com'
         };
-      });
-      
-      orders.sort((a: any, b: any) => {
-        const dateA = new Date(a.created_at).getTime();
-        const dateB = new Date(b.created_at).getTime();
-        return dateB - dateA;
       });
       
       return orders.map((order: any) => ({
@@ -85,7 +78,6 @@ export const getAdminOrdersFast = createServerFn({ method: "GET" })
       }));
     } catch (error: any) {
       console.error("CRITICAL: Error fetching admin orders fast:", error);
-      // Fallback to empty array instead of throwing to prevent UI crash
       return [];
     }
   });
@@ -93,8 +85,8 @@ export const getAdminOrdersFast = createServerFn({ method: "GET" })
 export const getAdminExtensionsFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const extensionsRef = serverCollection(serverFirestore, "extensions");
-      const snapshot = await serverGetDocs(extensionsRef);
+      const extensionsRef = serverFirestore.collection("extensions");
+      const snapshot = await extensionsRef.get();
       return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
     } catch (error: any) {
@@ -172,8 +164,8 @@ export const updateOrderStatusFast = createServerFn({ method: "POST" })
 export const getAdminUsersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const usersRef = serverCollection(serverFirestore, "users");
-      const snapshot = await serverGetDocs(usersRef);
+      const usersRef = serverFirestore.collection("users");
+      const snapshot = await usersRef.get();
       return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
     } catch (error) {
@@ -185,8 +177,8 @@ export const getAdminUsersFast = createServerFn({ method: "GET" })
 export const getAdminLicensesFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const licensesRef = serverCollection(serverFirestore, "licenses");
-      const snapshot = await serverGetDocs(licensesRef);
+      const licensesRef = serverFirestore.collection("licenses");
+      const snapshot = await licensesRef.get();
       return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
       console.error("Error fetching admin licenses fast:", error);
