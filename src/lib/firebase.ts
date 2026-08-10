@@ -24,5 +24,9 @@ if (getApps().length === 0) {
 
 export const auth = getAuth(app);
 export const db = getDatabase(app);
-export const firestore = getFirestore(app);
+// For serverless environments (like Cloudflare Workers), we need to use long polling
+export const firestore = (typeof window === 'undefined') 
+  ? initializeFirestore(app, { experimentalForceLongPolling: true })
+  : getFirestore(app);
+
 export default app;
