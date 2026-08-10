@@ -1,7 +1,13 @@
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+// Helper to get admin client inside functions to avoid module-scope instantiation
+async function getAdmin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
+
 
 export async function getAllUsersAdmin() {
-  const { data, error } = await supabaseAdmin
+  const supabase = await getAdmin();
+  const { data, error } = await supabase
     .from('profiles')
     .select(`
       *,
@@ -16,7 +22,8 @@ export async function getAllUsersAdmin() {
 
 export async function updateUserStatus(userId: string, isSuspended: boolean) {
   // Using metadata to store suspension status since profile schema is locked
-  const { error } = await supabaseAdmin.auth.admin.updateUserById(
+  const supabase = await getAdmin();
+  const { error } = await supabase.auth.admin.updateUserById(
     userId,
     { user_metadata: { is_suspended: isSuspended } }
   );
@@ -26,21 +33,23 @@ export async function updateUserStatus(userId: string, isSuspended: boolean) {
 }
 
 export async function deleteUser(userId: string) {
-  const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+  const supabase = await getAdmin();
+  const { error } = await supabase.auth.admin.deleteUser(userId);
   if (error) throw error;
   return { success: true };
 }
 
 export async function updateUserRole(userId: string, role: string) {
+  const supabase = await getAdmin();
   // Update in auth metadata
-  const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+  const { error: authError } = await supabase.auth.admin.updateUserById(
     userId,
     { user_metadata: { role: role } }
   );
   if (authError) throw authError;
 
   // Also update in profiles table if role column exists (handling optionally)
-  const { error: profileError } = await supabaseAdmin
+  const { error: profileError } = await supabase
     .from('profiles')
     .update({ role: role } as any)
     .eq('id', userId);
