@@ -113,7 +113,8 @@ function AdminLoginPage() {
       const user = userCredential.user;
       console.log('[AdminLogin] Firebase sign in successful:', user.email);
       
-      // Auto-sync admin status to Firestore so the user can see the pattern
+      // Removed auto-sync to Firestore to prevent unauthorized admin creation
+      /*
       try {
         const { setDoc, doc, serverTimestamp } = await import('firebase/firestore');
         const { firestore } = await import('@/lib/firebase');
@@ -127,12 +128,14 @@ function AdminLoginPage() {
       } catch (fsErr) {
         console.warn('[AdminLogin] Firestore sync failed, but login succeeded:', fsErr);
       }
+      */
 
       
       let isAdmin = false;
 
       // Primary hardcoded check for admin email
-      if (user.email === 'admin@gmail.com' || user.email === 'gmail@gmail.com' || user.email === 'r12130549@gmail.com') {
+      const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
+      if (user.email && allowedEmails.includes(user.email)) {
         isAdmin = true;
       } else {
         // 1. Try Firestore
@@ -162,14 +165,17 @@ function AdminLoginPage() {
         }
       }
       
-      if (isAdmin) {
+      // Final validation: Only allow if whitelisted OR if they were manually added (but for now, we stick to whitelist for safety)
+      const isWhitelisted = user.email && allowedEmails.includes(user.email);
+      
+      if (isAdmin && isWhitelisted) {
         toast.success('অ্যাডমিন অ্যাক্সেস মঞ্জুর করা হয়েছে');
         console.log('[AdminLogin] Redirecting to dashboard...');
         navigate({ to: '/admin/dashboard' });
       } else {
-        console.log('[AdminLogin] Not an admin, signing out');
+        console.log('[AdminLogin] Access denied. Admin:', isAdmin, 'Whitelisted:', isWhitelisted);
         await auth.signOut();
-        toast.error('অ্যাক্সেস প্রত্যাখ্যান করা হয়েছে: আপনি অ্যাডমিন নন');
+        toast.error('অ্যাক্সেস প্রত্যাখ্যান করা হয়েছে: আপনি অনুমোদিত অ্যাডমিন নন');
       }
     } catch (err: any) {
       console.error('[AdminLogin] Error:', err);
