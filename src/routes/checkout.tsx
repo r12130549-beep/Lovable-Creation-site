@@ -25,6 +25,8 @@ import { FileUpload } from '@/components/admin/FileUpload';
 import { useQuery } from '@tanstack/react-query';
 import { getAppSettings } from '@/lib/settings.functions';
 import { useAuth } from '@/hooks/use-auth';
+import { firestore } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 
 
 export const Route = createFileRoute('/checkout')({
@@ -159,7 +161,17 @@ function CheckoutPage() {
     try {
       const amount = (search as any)['plan'] === 'premium' ? 1500 : 0;
       
-      const { data: orderData, error } = await supabase.from('orders').insert({
+      // 1. Generate Order ID
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let randomPart = '';
+      for (let i = 0; i < 7; i++) {
+        randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const generatedOrderId = `ORDER-${randomPart}`;
+
+      // 2. Insert into Supabase (Legacy/Backup)
+      const { data: orderData, error: sbError } = await supabase.from('orders').insert({
+        id: generatedOrderId, // Try to use the same ID if possible, or let Supabase generate UUID
         customer_name: formData.name,
         customer_email: formData.email,
         customer_phone: formData.phone,
@@ -172,12 +184,33 @@ function CheckoutPage() {
         amount: amount,
       } as any).select().single();
 
-      if (error) throw error;
+      if (sbError) console.error('Supabase insert error:', sbError);
+
+      // 3. Insert into Firebase Firestore (Source of truth for Admin Dashboard)
+      const ordersRef = collection(firestore, "orders");
+      await addDoc(ordersRef, {
+        orderId: generatedOrderId,
+        customerName: formData.name,
+        email: formData.email,
+        whatsapp: formData.phone,
+        uid: firebaseUser?.uid || 'guest',
+        productName: (search as any)['productId'] || 'Premium Extension',
+        price: amount,
+        currency: "৳",
+        paymentMethod: selectedMethod.id,
+        paymentStatus: "Pending",
+        orderStatus: "Pending",
+        txid: formData.trxId || null,
+        screenshotUrl: screenshotUrl || null,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
       
-      setOrderId((orderData as any).id);
+      setOrderId(generatedOrderId);
       setStep(5);
       toast.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');
     } catch (err: any) {
+      console.error('Order submission error:', err);
       toast.error(err.message || 'Order submission failed');
     } finally {
       setLoading(false);
@@ -254,8 +287,7 @@ function CheckoutPage() {
                             placeholder="John Doe" 
                             value={formData.name}
                             onChange={e => setFormData({...formData, name: e.target.value})}
-                            disabled={!!firebaseUser}
-                            className={`w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 outline-none transition-all placeholder:text-white/10 ${!!firebaseUser ? 'opacity-50 cursor-not-allowed' : 'focus:border-red-500/50'}`}
+                            className="w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 focus:border-red-500/50 outline-none transition-all placeholder:text-white/10"
                           />
                         </div>
                       </div>
@@ -269,8 +301,7 @@ function CheckoutPage() {
                             placeholder="john@example.com" 
                             value={formData.email}
                             onChange={e => setFormData({...formData, email: e.target.value})}
-                            disabled={!!firebaseUser}
-                            className={`w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 outline-none transition-all placeholder:text-white/10 ${!!firebaseUser ? 'opacity-50 cursor-not-allowed' : 'focus:border-red-500/50'}`}
+                            className="w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 focus:border-red-500/50 outline-none transition-all placeholder:text-white/10"
                           />
                         </div>
                       </div>
