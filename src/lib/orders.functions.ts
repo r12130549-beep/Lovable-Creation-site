@@ -1,9 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     try {
       const { data, error } = await supabaseAdmin
         .from("orders")
@@ -116,6 +117,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     try {
       const orderId = `ORDER-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       
@@ -173,6 +175,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
 
 export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     try {
       const { data: orders, error } = await supabaseAdmin
         .from("orders")

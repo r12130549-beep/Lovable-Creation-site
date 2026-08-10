@@ -1,9 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
 
 export const getAppSettings = createServerFn({ method: "GET" })
   .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("app_settings")
       .select("*");
@@ -28,6 +29,7 @@ export const updateAppSetting = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("app_settings")
       .upsert({ 
