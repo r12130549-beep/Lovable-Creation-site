@@ -111,7 +111,8 @@ function AdminPage() {
     mutationFn: (data: any) => createManualOrder({ data }),
     onSuccess: (result) => {
       toast.success('অর্ডার সফলভাবে তৈরি হয়েছে');
-      window.prompt('অর্ডার আইডি (কপি করুন):', result.orderId);
+      const orderIdToCopy = result.order_id || result.orderId;
+      window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
       setActiveTab('orders');
     },
     onError: (err: any) => toast.error(err.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে')
@@ -198,8 +199,8 @@ function AdminPage() {
                       <h3 className="font-bold flex items-center gap-2">
                         {order.orderId || order.id}
                         <span className={`text-[8px] px-2 py-0.5 rounded-full uppercase tracking-widest ${
-                          order.orderStatus === 'Approved' || order.status === 'Approved' ? 'bg-green-500/10 text-green-500' : 
-                          order.orderStatus === 'Rejected' || order.status === 'Rejected' ? 'bg-red-500/10 text-red-500' : 
+                          ['Approved', 'Completed'].includes(order.orderStatus || order.status) ? 'bg-green-500/10 text-green-500' : 
+                          ['Rejected', 'Failed', 'Cancelled'].includes(order.orderStatus || order.status) ? 'bg-red-500/10 text-red-500' : 
                           'bg-yellow-500/10 text-yellow-500'
                         }`}>
                           {order.orderStatus || order.status}
