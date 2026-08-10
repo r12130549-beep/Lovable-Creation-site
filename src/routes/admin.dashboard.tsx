@@ -38,7 +38,7 @@ export const getAdminOrdersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = serverCollection(serverFirestore, "orders");
-      const q = serverQuery(ordersRef, serverOrderBy("created_at", "desc"), serverLimit(50));
+      const q = serverQuery(ordersRef, serverOrderBy("created_at", "desc"));
       const querySnapshot = await serverGetDocs(q);
       
       const orders = querySnapshot.docs.map((doc: any) => ({
