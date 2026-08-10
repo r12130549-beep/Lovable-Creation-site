@@ -1,6 +1,6 @@
 // Helper to get admin client inside functions to avoid module-scope instantiation
 async function getAdmin() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { supabaseAdmin } = await import("../integrations/supabase/client.server");
   return supabaseAdmin;
 }
 

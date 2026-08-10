@@ -24,7 +24,7 @@ export const createLicenseAdmin = createServerFn({ method: "POST" })
   )
 
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
     const key = generateLicenseKey();
     const expiry = new Date();
     expiry.setFullYear(expiry.getFullYear() + 1); // 1 year default
@@ -62,7 +62,7 @@ export const updateLicenseAdmin = createServerFn({ method: "POST" })
     }).parse(data)
   )
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
     if (data.resetActivations) {
       const { resetLicenseActivations } = await import("./licenses.server");
       await resetLicenseActivations(data.licenseId);

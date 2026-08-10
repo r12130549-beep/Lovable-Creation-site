@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
     try {
       const { data, error } = await supabaseAdmin
         .from("orders")
@@ -59,7 +59,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     }).parse(data)
   )
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
     try {
       const updatePayload: any = {
         order_status: data.status,
@@ -120,7 +120,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { supabaseAdmin } = await import("../integrations/supabase/client.server");
       const orderId = `ORDER-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       
       const orderData: any = {
@@ -176,7 +176,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
 
 export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../integrations/supabase/client.server");
     try {
       const { data: orders, error } = await supabaseAdmin
         .from("orders")
