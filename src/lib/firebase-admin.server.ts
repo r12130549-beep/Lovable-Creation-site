@@ -1,15 +1,17 @@
-import * as admin from 'firebase-admin';
+import { initializeApp, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getDatabase } from 'firebase-admin/database';
 
 const projectId = "lovable-a893f";
 
-if (admin.apps.length === 0) {
-  admin.initializeApp({
+if (getApps().length === 0) {
+  initializeApp({
     projectId: projectId,
   });
 }
 
-export const adminFirestore = admin.firestore();
-export const adminDatabase = admin.database();
+export const adminFirestore = getFirestore();
+export const adminDatabase = getDatabase();
 
 export const collection = (db: any, path: string) => db.collection(path);
 export const doc = (dbOrCol: any, path?: string, ...segments: string[]) => {
