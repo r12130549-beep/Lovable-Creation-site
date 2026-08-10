@@ -191,7 +191,7 @@ function AdminPage() {
         <AnimatePresence mode="wait">
           {activeTab === 'orders' && (
             <motion.div key="orders" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              {realtimeOrders.filter(o => o.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) || o.customerName?.toLowerCase().includes(searchQuery.toLowerCase())).map(order => (
+              {realtimeOrders.filter(o => (o.orderId || o.id)?.toLowerCase().includes(searchQuery.toLowerCase()) || o.customerName?.toLowerCase().includes(searchQuery.toLowerCase())).map(order => (
                 <div key={order.id} className="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl flex justify-between items-center group hover:border-red-500/30 transition-all cursor-pointer" onClick={() => setSelectedOrder(order)}>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
