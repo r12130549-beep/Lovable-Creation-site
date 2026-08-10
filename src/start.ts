@@ -6,10 +6,8 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
     const result = await next();
     
-    // In TanStack Start v1, requestMiddleware MUST return a Response.
-    // middleware.server next() for requestMiddleware returns a Response.
-    // If for some reason it's undefined, we return a fallback.
-    if (!result) {
+    // Safety check for request middleware return value
+    if (result === undefined) {
       return new Response("OK", { status: 200 });
     }
     
