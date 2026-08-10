@@ -102,17 +102,20 @@ export const getAdminExtensionsFast = createServerFn({ method: "GET" })
   });
 
 export const createExtensionFast = createServerFn({ method: "POST" })
-  .validator((data: any) => z.object({
-    name: z.string(),
-    slug: z.string().optional(),
-    description: z.string().optional(),
-    price: z.number().optional(),
-    category: z.string().optional(),
-    icon_url: z.string().optional(),
-    zip_url: z.string().optional(),
-    version: z.string().optional(),
-    status: z.string().optional()
-  }).parse(data))
+  .validator((data: any) => {
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+    return z.object({
+      name: z.string(),
+      slug: z.string().optional(),
+      description: z.string().optional(),
+      price: z.number().optional(),
+      category: z.string().optional(),
+      icon_url: z.string().optional(),
+      zip_url: z.string().optional(),
+      version: z.string().optional(),
+      status: z.string().optional()
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     try {
       const extensionsRef = serverCollection(serverFirestore, "extensions");
@@ -132,7 +135,10 @@ export const createExtensionFast = createServerFn({ method: "POST" })
   });
 
 export const updateExtensionFast = createServerFn({ method: "POST" })
-  .validator((data: any) => z.object({ id: z.string(), updates: z.any() }).parse(data))
+  .validator((data: any) => {
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+    return z.object({ id: z.string(), updates: z.any() }).parse(raw);
+  })
   .handler(async ({ data }) => {
     try {
       const docRef = serverDoc(serverFirestore, "extensions", data.id);
@@ -145,7 +151,10 @@ export const updateExtensionFast = createServerFn({ method: "POST" })
   });
 
 export const deleteExtensionFast = createServerFn({ method: "POST" })
-  .validator((data: any) => z.object({ id: z.string() }).parse(data))
+  .validator((data: any) => {
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+    return z.object({ id: z.string() }).parse(raw);
+  })
   .handler(async ({ data }) => {
     try {
       const docRef = serverDoc(serverFirestore, "extensions", data.id);
@@ -158,15 +167,18 @@ export const deleteExtensionFast = createServerFn({ method: "POST" })
   });
 
 export const updateOrderStatusFast = createServerFn({ method: "POST" })
-  .validator((data: any) => z.object({ 
-    orderId: z.string(), 
-    status: z.string(),
-    productName: z.string().optional(),
-    licenseName: z.string().optional(),
-    licenseKey: z.string().optional(),
-    downloadLink: z.string().optional(),
-    expireDate: z.string().optional().nullable()
-  }).parse(data))
+  .validator((data: any) => {
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+    return z.object({ 
+      orderId: z.string(), 
+      status: z.string(),
+      productName: z.string().optional(),
+      licenseName: z.string().optional(),
+      licenseKey: z.string().optional(),
+      downloadLink: z.string().optional(),
+      expireDate: z.string().optional().nullable()
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     try {
       const orderRef = serverDoc(serverFirestore, "orders", data.orderId);
