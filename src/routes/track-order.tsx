@@ -209,7 +209,7 @@ function TrackOrderPage() {
               </div>
 
               {/* License/Download Section - The core request */}
-              {order.license?.status === 'Active' && (
+              {order.license?.status === 'Active' && !order.isExpired ? (
                 <div className="space-y-6 mb-12">
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/5 space-y-4">
                     <div className="flex items-center justify-between">
@@ -234,11 +234,31 @@ function TrackOrderPage() {
                       ডাউনলোড ফাইল
                     </a>
                   )}
+                  {order.license.expires_at && (
+                    <p className="text-[9px] font-black uppercase tracking-widest text-white/20 text-center">
+                      মেয়াদ শেষ হবে: {format(new Date(order.license.expires_at), 'PPp')}
+                    </p>
+                  )}
                 </div>
-              )}
+              ) : order.isExpired ? (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 mb-12 text-center space-y-4">
+                  <Shield className="w-12 h-12 text-red-500 mx-auto opacity-50" />
+                  <div>
+                    <h3 className="text-xl font-black uppercase tracking-tight text-red-500">লাইসেন্সের মেয়াদ শেষ</h3>
+                    <p className="text-xs font-medium text-white/40 mt-2">
+                      এই অর্ডারের মেয়াদের তারিখ অতিক্রম করেছে। এক্সেস পেতে অনুগ্রহ করে নতুন করে সাবস্ক্রিপশন নিন।
+                    </p>
+                  </div>
+                  <div className="pt-4">
+                    <Link to="/pricing" className="inline-flex items-center gap-2 bg-red-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all">
+                      রিউনিউ করুন <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
 
               {/* Status Message */}
-              {order.status === 'Rejected' || order.status === 'Failed' ? (
+              {(order.status === 'Rejected' || order.status === 'Failed') && !order.isExpired ? (
                 <div className="bg-red-500/5 border border-red-500/10 rounded-2xl p-6 flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5 text-red-500" />
@@ -250,7 +270,7 @@ function TrackOrderPage() {
                     </p>
                   </div>
                 </div>
-              ) : order.status === 'Pending' || order.status === 'Payment Review' ? (
+              ) : (order.status === 'Pending' || order.status === 'Payment Review') && !order.isExpired ? (
                 <div className="bg-yellow-500/5 border border-yellow-500/10 rounded-2xl p-6 flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5 text-yellow-500" />
