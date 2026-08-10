@@ -94,7 +94,7 @@ export const checkAdminStatus = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
-    const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com', 'kivabe@gmail.com', 'popykhanum2255@gmail.com', 'ashik97355@gmail.com', 'emon@gmail.com', 'admin@vibex.com', 'ak2688469@gmail.com'];
+    const allowedEmails = ['r12130549@gmail.com'];
     
     // Check whitelist first
     if (allowedEmails.includes(data.email)) {
