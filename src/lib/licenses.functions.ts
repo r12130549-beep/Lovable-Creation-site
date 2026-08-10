@@ -3,9 +3,6 @@ import { z } from "zod";
 
 import { 
   generateLicenseKey, 
-  getLicensesForUser, 
-  resetLicenseActivations, 
-  getAllLicensesAdmin
 } from "./licenses.server";
 
 const licenseStatusSchema = z.enum(["Active", "Expired", "Suspended", "Revoked"]);
@@ -67,6 +64,7 @@ export const updateLicenseAdmin = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (data.resetActivations) {
+      const { resetLicenseActivations } = await import("./licenses.server");
       await resetLicenseActivations(data.licenseId);
     }
 
@@ -86,5 +84,6 @@ export const updateLicenseAdmin = createServerFn({ method: "POST" })
 
 export const getAdminLicenses = createServerFn({ method: "GET" })
   .handler(async () => {
+    const { getAllLicensesAdmin } = await import("./licenses.server");
     return getAllLicensesAdmin();
   });

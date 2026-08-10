@@ -1,4 +1,8 @@
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+async function getAdmin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
+
 
 export function generateLicenseKey() {
   const segment = () => Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -7,7 +11,8 @@ export function generateLicenseKey() {
 
 
 export async function getLicensesForUser(userId: string) {
-  const { data, error } = await supabaseAdmin
+  const supabase = await getAdmin();
+  const { data, error } = await supabase
     .from('licenses')
     .select(`
       *,
@@ -21,7 +26,8 @@ export async function getLicensesForUser(userId: string) {
 }
 
 export async function getAllLicensesAdmin() {
-  const { data, error } = await supabaseAdmin
+  const supabase = await getAdmin();
+  const { data, error } = await supabase
     .from('licenses')
     .select(`
       *,
@@ -35,7 +41,8 @@ export async function getAllLicensesAdmin() {
 }
 
 export async function updateLicenseStatus(licenseId: string, status: string) {
-  const { error } = await supabaseAdmin
+  const supabase = await getAdmin();
+  const { error } = await supabase
     .from('licenses')
     .update({ status })
     .eq('id', licenseId);
@@ -45,7 +52,8 @@ export async function updateLicenseStatus(licenseId: string, status: string) {
 
 export async function resetLicenseActivations(licenseId: string) {
   // Using any to bypass local type mismatch if types.ts hasn't updated yet
-  const { error } = await supabaseAdmin
+  const supabase = await getAdmin();
+  const { error } = await supabase
     .from('licenses')
     .update({ activated_devices: 0 } as any)
     .eq('id', licenseId);
@@ -54,7 +62,8 @@ export async function resetLicenseActivations(licenseId: string) {
 }
 
 export async function extendLicenseExpiry(licenseId: string, days: number) {
-  const { data: license } = await supabaseAdmin
+  const supabase = await getAdmin();
+  const { data: license } = await supabase
     .from('licenses')
     .select('expires_at')
     .eq('id', licenseId)
@@ -65,7 +74,7 @@ export async function extendLicenseExpiry(licenseId: string, days: number) {
   const currentExpiry = new Date(license.expires_at);
   currentExpiry.setDate(currentExpiry.getDate() + days);
 
-  const { error } = await supabaseAdmin
+  const { error } = await supabase
     .from('licenses')
     .update({ expires_at: currentExpiry.toISOString() })
     .eq('id', licenseId);
