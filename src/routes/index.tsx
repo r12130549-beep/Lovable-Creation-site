@@ -131,8 +131,7 @@ function Index() {
                 <a href="#features" onClick={() => setIsMenuOpen(false)}>Features</a>
                 <a href="#faq" onClick={() => setIsMenuOpen(false)}>FAQ</a>
                 <Link to="/track-order" className="text-red-500" onClick={() => setIsMenuOpen(false)}>Track Order</Link>
-                <Link to="/auth" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>Login with Google</Link>
-                <Link to="/auth" className="bg-gradient-to-r from-red-600 to-purple-600 py-4 rounded-2xl text-center" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
+                <Link to="/auth" className="bg-gradient-to-r from-red-600 to-purple-600 py-4 rounded-2xl text-center" onClick={() => setIsMenuOpen(false)}>Admin Panel</Link>
               </div>
             </motion.div>
           )}
