@@ -78,8 +78,9 @@ if (typeof window !== 'undefined') {
 
       // 2. Fallback: Check Firebase if Supabase check didn't confirm admin
       if (!isAdmin) {
-        // Hardcoded check for primary admin email
-        if (user.email === 'admin@gmail.com' || user.email === 'gmail@gmail.com' || user.email === 'r12130549@gmail.com') {
+        // Hardcoded check for primary admin email - ONLY ALLOW THESE EMAILS
+        const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
+        if (user.email && allowedEmails.includes(user.email)) {
           isAdmin = true;
           console.log('[useAuth] Admin detected by hardcoded email:', user.email);
           
@@ -91,12 +92,8 @@ if (typeof window !== 'undefined') {
             const userDoc = await getDoc(doc(firestore, 'users', user.uid));
             if (userDoc.exists()) {
               const userData = userDoc.data();
-              isAdmin = userData['role'] === 'admin' || userData['isAdmin'] === true;
-            }
-            
-            if (!isAdmin) {
-              const adminDoc = await getDoc(doc(firestore, 'admins', user.uid));
-              if (adminDoc.exists()) isAdmin = true;
+              // Only allow if explicitly marked as admin AND email matches or is one of the allowed admins
+              isAdmin = (userData['role'] === 'admin' || userData['isAdmin'] === true);
             }
           } catch (fsErr) {
             console.warn('[useAuth] Firestore check failed');
@@ -115,7 +112,14 @@ if (typeof window !== 'undefined') {
             }
           }
 
-          // If found in Firebase, sync back to Supabase
+          // If found in Firebase but email is NOT in allowed list, double check or reject
+          if (isAdmin && user.email && !allowedEmails.includes(user.email)) {
+             console.warn('[useAuth] User has admin role but email not in whitelist:', user.email);
+             // We can choose to allow or deny here. To be safe, if the user didn't make them admin, we deny.
+             // For now, let's keep it restricted to whitelisted emails for extra security.
+             isAdmin = false; 
+          }
+
           if (isAdmin) {
             await supabase.from('profiles').update({ role: 'admin' }).eq('id', user.uid);
           }

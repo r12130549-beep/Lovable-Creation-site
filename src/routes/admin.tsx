@@ -113,7 +113,8 @@ function AdminLoginPage() {
       const user = userCredential.user;
       console.log('[AdminLogin] Firebase sign in successful:', user.email);
       
-      // Auto-sync admin status to Firestore so the user can see the pattern
+      // Removed auto-sync to Firestore to prevent unauthorized admin creation
+      /*
       try {
         const { setDoc, doc, serverTimestamp } = await import('firebase/firestore');
         const { firestore } = await import('@/lib/firebase');
@@ -127,6 +128,7 @@ function AdminLoginPage() {
       } catch (fsErr) {
         console.warn('[AdminLogin] Firestore sync failed, but login succeeded:', fsErr);
       }
+      */
 
       
       let isAdmin = false;
