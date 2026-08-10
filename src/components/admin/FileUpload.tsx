@@ -38,18 +38,12 @@ export function FileUpload({ bucket, path, onUploadComplete, accept, label }: Fi
 
       if (error) throw error;
 
-      // For private buckets like 'extensions', we store the path, not the public URL
-      if (bucket === 'extensions') {
-        setFileUrl(filePath);
-        onUploadComplete(filePath);
-      } else {
-        const { data: { publicUrl } } = supabase.storage
-          .from(bucket)
-          .getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(filePath);
 
-        setFileUrl(publicUrl);
-        onUploadComplete(publicUrl);
-      }
+      setFileUrl(publicUrl);
+      onUploadComplete(publicUrl);
 
       toast.success(`${label} uploaded successfully`);
     } catch (error: any) {
