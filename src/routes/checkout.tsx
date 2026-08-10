@@ -174,7 +174,9 @@ function CheckoutPage() {
         paymentMethod: selectedMethod.id,
         paymentStatus: "Pending",
         orderStatus: "Pending",
-        notes: `TRX: ${formData.trxId || 'N/A'}${screenshotUrl ? ` | Screenshot: ${screenshotUrl}` : ''}`,
+        transactionId: formData.trxId || 'N/A',
+        screenshotUrl: screenshotUrl || '',
+        notes: `TRX: ${formData.trxId || 'N/A'}`,
       };
 
       // 3. Create order via server function (handles Firebase)
