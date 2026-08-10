@@ -196,7 +196,7 @@ function CheckoutPage() {
       setOrderId(finalOrderId);
 
       setStep(5);
-      toast.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');
+      toast.success('অর্ডার সম্পন্ন হয়েছে!');
     } catch (err: any) {
       console.error('Order submission error:', err);
       toast.error(err?.message || 'অর্ডারটি সেভ করা যায়নি। আবার চেষ্টা করুন।');
@@ -219,7 +219,7 @@ function CheckoutPage() {
               to="/" 
               className="inline-flex items-center gap-2 text-white/40 hover:text-white transition text-[10px] font-black uppercase tracking-widest mb-6"
             >
-              <ChevronLeft className="w-3 h-3" /> Back to Store
+              <ChevronLeft className="w-3 h-3" /> হোমে ফিরুন
             </Link>
             <h1 className="text-4xl md:text-5xl font-black tracking-tight">
               SECURE <span className="text-red-500">CHECKOUT</span> <span className="text-[10px] ml-2 text-white/20">(অর্ডার ট্র্যাক করতে আইডি সেভ করুন)</span>
@@ -312,7 +312,7 @@ function CheckoutPage() {
                       onClick={handleNext} 
                       className="w-full mt-10 bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-white/10 text-[10px] uppercase tracking-widest"
                     >
-                      CONTINUE TO PAYMENT <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      পেমেন্ট অপশনে যান <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </section>
                 </motion.div>
@@ -364,12 +364,12 @@ function CheckoutPage() {
                     </div>
 
                     <div className="flex gap-4 mt-10">
-                      <button onClick={() => setStep(1)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
+                      <button onClick={() => setStep(1)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">পিছনে</button>
                       <button 
                         onClick={handleNext} 
                         className="flex-[2] bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-white/10 text-[10px] uppercase tracking-widest"
                       >
-                        REVIEW ORDER <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        অর্ডার রিভিউ করুন <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
                   </section>
@@ -391,6 +391,7 @@ function CheckoutPage() {
                       </div>
                       <div>
                         <h2 className="text-2xl font-black uppercase tracking-tight">Binance Pay Details</h2>
+
                         <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-1">Send payment via Binance Pay</p>
                       </div>
                     </div>
@@ -444,12 +445,12 @@ function CheckoutPage() {
                       </div>
                       
                       <div className="flex gap-4">
-                        <button onClick={() => setStep(2)} className="flex-1 bg-white/5 text-white/40 font-black py-5 rounded-[2rem] hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
+                        <button onClick={() => setStep(2)} className="flex-1 bg-white/5 text-white/40 font-black py-5 rounded-[2rem] hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">পিছনে</button>
                         <button 
                           onClick={handleNext}
                           className="flex-[2] bg-white text-black font-black py-5 rounded-[2rem] hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 group shadow-2xl shadow-white/10"
                         >
-                          NEXT <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                          পরবর্তী <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </button>
                       </div>
                     </div>
@@ -537,14 +538,14 @@ function CheckoutPage() {
                       </div>
 
                       <div className="flex gap-4">
-                        <button onClick={() => setStep(selectedMethod?.id === 'binance' ? 3 : 2)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
+                        <button onClick={() => setStep(selectedMethod?.id === 'binance' ? 3 : 2)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">পিছনে</button>
                         <button 
                           onClick={submitOrder} 
                           disabled={loading}
                           className="flex-[2] bg-red-600 text-white font-black py-4 rounded-2xl hover:bg-red-500 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-red-500/20 disabled:opacity-50 text-[10px] uppercase tracking-widest"
                         >
                           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                            <>SUBMIT ORDER <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                            <>অর্ডার সাবমিট করুন <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
                           )}
                         </button>
                       </div>
@@ -572,13 +573,13 @@ function CheckoutPage() {
                       onClick={() => navigate({ to: '/' })} 
                       className="bg-white text-black font-black py-4 rounded-[1.5rem] hover:bg-white/90 transition-all text-xs uppercase tracking-widest shadow-xl shadow-white/5"
                     >
-                      Back to Home
+                      হোমে ফিরুন
                     </button>
                     <Link 
                       to="/track-order" 
                       className="bg-white/5 text-white/40 font-black py-4 rounded-[1.5rem] hover:bg-white/10 transition-all text-xs uppercase tracking-widest border border-white/5"
                     >
-                      Track Order
+                      অর্ডার ট্র্যাক করুন
                     </Link>
                   </div>
                 </motion.div>
@@ -588,7 +589,7 @@ function CheckoutPage() {
 
           <aside className="sticky top-12 space-y-6">
             <section className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
-              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-6">Order Summary</h3>
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-6">অর্ডার সামারি</h3>
               
               <div className="space-y-6">
                 <div className="flex justify-between items-start gap-4">

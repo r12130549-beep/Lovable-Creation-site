@@ -317,7 +317,7 @@ function AdminPage() {
         toast.error(result.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে');
         return;
       }
-      toast.success('অর্ডার সফলভাবে তৈরি হয়েছে');
+      toast.success('অর্ডার সফল হয়েছে');
       const orderIdToCopy = result.order_id || result.orderId;
       if (orderIdToCopy) {
         window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
@@ -334,6 +334,7 @@ function AdminPage() {
     mutationFn: (data: any) => updateOrderStatusFn({ data } as any),
     onSuccess: () => {
       toast.success('অর্ডার আপডেট করা হয়েছে');
+
       setSelectedOrder(null);
       // Refresh list
       getAdminOrdersFn().then(orders => setRealtimeOrders(orders || []));
@@ -345,7 +346,7 @@ function AdminPage() {
     mutationFn: (id: string) => deleteExtensionFn({ data: { id } } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
-      toast.success('Extension deleted');
+      toast.success('প্রোডাক্ট ডিলিট করা হয়েছে');
     }
   });
 
@@ -357,7 +358,7 @@ function AdminPage() {
         return;
       }
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
-      toast.success('Extension created successfully');
+      toast.success('প্রোডাক্ট সফলভাবে অ্যাড হয়েছে');
       setIsAddingExtension(false);
     },
     onError: (err: any) => toast.error(err.message || 'Failed to create extension')
@@ -384,7 +385,7 @@ function AdminPage() {
            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-purple-600 shadow-lg shadow-red-500/20 flex items-center justify-center">
              <Shield className="w-6 h-6 text-white" />
            </div>
-           <span className="text-xl font-black uppercase">VIBEX ADMIN</span>
+           <span className="text-xl font-black uppercase">Lovable Creation</span>
         </div>
         
         <nav className="flex-1 space-y-1">
