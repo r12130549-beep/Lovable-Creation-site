@@ -4,7 +4,7 @@ import { getDatabase } from "firebase/database";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: import.meta.env['VITE_FIREBASE_API_KEY'] as string,
+  apiKey: "AIzaSyBvh8MNr3kVKt4FJlXIRGG-pVBmyC_GFO8",
   authDomain: "shark-extension.firebaseapp.com",
   projectId: "shark-extension",
   storageBucket: "shark-extension.firebasestorage.app",
