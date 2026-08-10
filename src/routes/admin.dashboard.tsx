@@ -14,7 +14,6 @@ import { getAdminUsers, toggleUserStatus, removeUser } from '@/lib/users.functio
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-// import { supabaseAdmin } from '@/integrations/supabase/client.server'; // Client-side check: should not import .server here
 import { supabase } from '@/integrations/supabase/client';
 import { FileUpload } from '@/components/admin/FileUpload';
 import { motion, AnimatePresence } from 'framer-motion';
