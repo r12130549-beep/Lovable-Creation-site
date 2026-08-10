@@ -9,10 +9,10 @@ import { useLanguage, translations } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    title: "VIBEX | Premium Browser Extension Store",
+    title: "Lovable Creation | Premium Browser Extension Store",
     meta: [
       { name: "description", content: "The hub for elite browser tools. Discover verified, high-performance extensions to supercharge your productivity." },
-      { property: "og:title", content: "VIBEX | Premium Browser Extension Store" },
+      { property: "og:title", content: "Lovable Creation | Premium Browser Extension Store" },
       { property: "og:description", content: "The hub for elite browser tools. Discover verified extensions to supercharge your productivity." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -65,7 +65,7 @@ function Index() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-purple-600 flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:rotate-6 transition-transform">
               <Zap className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">VIBEX</span>
+            <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Lovable Creation</span>
           </Link>
 
           <div className="hidden lg:flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-white/50 bg-white/5 px-4 py-2 rounded-full border border-white/5">
@@ -311,7 +311,7 @@ function Index() {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 to-purple-600 flex items-center justify-center">
                   <Zap className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-black tracking-tighter">VIBEX</span>
+                <span className="text-xl font-black tracking-tighter">Lovable Creation</span>
               </Link>
               <p className="text-white/40 text-lg max-w-sm mb-8 leading-relaxed">
                 Empowering your browser with the next generation of premium productivity tools.
