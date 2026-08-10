@@ -14,16 +14,277 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string | null
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      extensions: {
+        Row: {
+          category: string | null
+          changelog: Json | null
+          compatibility: Json | null
+          created_at: string | null
+          description: string | null
+          discount_price: number | null
+          features: Json | null
+          icon_url: string | null
+          id: string
+          name: string
+          price: number | null
+          rating: number | null
+          screenshots: string[] | null
+          slug: string
+          status: string | null
+          updated_at: string | null
+          user_count: number | null
+          version: string | null
+          zip_url: string | null
+        }
+        Insert: {
+          category?: string | null
+          changelog?: Json | null
+          compatibility?: Json | null
+          created_at?: string | null
+          description?: string | null
+          discount_price?: number | null
+          features?: Json | null
+          icon_url?: string | null
+          id?: string
+          name: string
+          price?: number | null
+          rating?: number | null
+          screenshots?: string[] | null
+          slug: string
+          status?: string | null
+          updated_at?: string | null
+          user_count?: number | null
+          version?: string | null
+          zip_url?: string | null
+        }
+        Update: {
+          category?: string | null
+          changelog?: Json | null
+          compatibility?: Json | null
+          created_at?: string | null
+          description?: string | null
+          discount_price?: number | null
+          features?: Json | null
+          icon_url?: string | null
+          id?: string
+          name?: string
+          price?: number | null
+          rating?: number | null
+          screenshots?: string[] | null
+          slug?: string
+          status?: string | null
+          updated_at?: string | null
+          user_count?: number | null
+          version?: string | null
+          zip_url?: string | null
+        }
+        Relationships: []
+      }
+      licenses: {
+        Row: {
+          activated_devices: number | null
+          created_at: string | null
+          device_limit: number | null
+          download_url: string | null
+          expires_at: string | null
+          extension_id: string
+          id: string
+          key: string
+          last_activated_at: string | null
+          order_id: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          activated_devices?: number | null
+          created_at?: string | null
+          device_limit?: number | null
+          download_url?: string | null
+          expires_at?: string | null
+          extension_id: string
+          id?: string
+          key: string
+          last_activated_at?: string | null
+          order_id?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          activated_devices?: number | null
+          created_at?: string | null
+          device_limit?: number | null
+          download_url?: string | null
+          expires_at?: string | null
+          extension_id?: string
+          id?: string
+          key?: string
+          last_activated_at?: string | null
+          order_id?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "licenses_extension_id_fkey"
+            columns: ["extension_id"]
+            isOneToOne: false
+            referencedRelation: "extensions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "licenses_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          admin_note: string | null
+          amount: number | null
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          extension_id: string | null
+          id: string
+          payment_method: string
+          payment_status: string | null
+          screenshot_url: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          amount?: number | null
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          extension_id?: string | null
+          id?: string
+          payment_method: string
+          payment_status?: string | null
+          screenshot_url?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number | null
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          extension_id?: string | null
+          id?: string
+          payment_method?: string
+          payment_status?: string | null
+          screenshot_url?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_extension_id_fkey"
+            columns: ["extension_id"]
+            isOneToOne: false
+            referencedRelation: "extensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id: string
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role:
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +411,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

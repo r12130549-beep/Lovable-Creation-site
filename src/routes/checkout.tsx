@@ -1,0 +1,619 @@
+import { createFileRoute, Link, useNavigate, useSearch } from '@tanstack/react-router';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  CreditCard, 
+  ChevronLeft, 
+  Loader2, 
+  Copy, 
+  CheckCircle2, 
+  XCircle, 
+  ArrowRight,
+  Phone,
+  Mail,
+  User,
+  ShieldCheck,
+  Smartphone,
+  Globe,
+  Wallet,
+  ArrowRightCircle,
+  FileCheck
+} from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { FileUpload } from '@/components/admin/FileUpload';
+import { useQuery } from '@tanstack/react-query';
+import { getAppSettings } from '@/lib/settings.functions';
+import { useAuth } from '@/hooks/use-auth';
+
+
+export const Route = createFileRoute('/checkout')({
+  component: CheckoutPage,
+  validateSearch: (search: Record<string, unknown>): { productId?: string; plan?: string } => {
+    return {
+      productId: (search['productId'] as string) ?? undefined,
+      plan: (search['plan'] as string) ?? undefined,
+    };
+  },
+
+});
+
+const PAYMENT_METHODS = [
+  { 
+    id: 'stripe', 
+    name: 'Stripe', 
+    type: 'automatic',
+    icon: <Globe className="w-6 h-6" />,
+    color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+  },
+  { 
+    id: 'binance', 
+    name: 'Binance Pay', 
+    type: 'manual',
+    icon: <Wallet className="w-6 h-6" />,
+    color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+  },
+  { 
+    id: 'bkash', 
+    name: 'bKash', 
+    type: 'manual',
+    icon: <Smartphone className="w-6 h-6" />,
+    color: 'bg-pink-500/10 text-pink-400 border-pink-500/20'
+  },
+  { 
+    id: 'nagad', 
+    name: 'Nagad', 
+    type: 'manual',
+    icon: <Smartphone className="w-6 h-6" />,
+    color: 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+  },
+] as const;
+
+type PaymentMethod = typeof PAYMENT_METHODS[number];
+
+function CheckoutPage() {
+  const { user: firebaseUser } = useAuth();
+  const [step, setStep] = useState(1);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({ 
+    name: firebaseUser?.displayName || '', 
+    email: firebaseUser?.email || '', 
+    phone: '', 
+    trxId: '' 
+  });
+
+  // Keep form in sync if user logs in while on page
+  useEffect(() => {
+    if (firebaseUser) {
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || firebaseUser.displayName || '',
+        email: prev.email || firebaseUser.email || '',
+      }));
+    }
+  }, [firebaseUser]);
+
+  
+  const search = useSearch({ from: '/checkout' }) as { productId?: string; plan?: string };
+  const navigate = useNavigate();
+
+  const { data: appSettings } = useQuery({
+    queryKey: ['app-settings'],
+    queryFn: () => getAppSettings(),
+  });
+
+  const getMethodDetails = (methodId: string) => {
+    if (!appSettings) return null;
+    switch(methodId) {
+      case 'binance': return { number: appSettings['binance_id'] };
+      case 'bkash': return { number: appSettings['bkash_number'] };
+      case 'nagad': return { number: appSettings['nagad_number'] };
+      default: return null;
+    }
+  };
+
+  const usdtRate = useMemo(() => Number(appSettings?.['usdt_rate']) || 130, [appSettings]);
+  const bdtAmount = useMemo(() => (search as any)['plan'] === 'premium' ? 1500 : 0, [search]);
+  const usdtAmount = useMemo(() => (bdtAmount / usdtRate).toFixed(2), [bdtAmount, usdtRate]);
+
+  const handleNext = () => {
+    if (step === 1) {
+      if (!formData.name || !formData.email || !formData.phone) {
+        toast.error('অনুগ্রহ করে সব প্রয়োজনীয় ঘর পূরণ করুন');
+        return;
+      }
+      if (!formData.email.includes('@')) {
+        toast.error('অনুগ্রহ করে একটি সঠিক ইমেল প্রদান করুন');
+        return;
+      }
+      setStep(2);
+    } else if (step === 2) {
+      if (!selectedMethod) {
+        toast.error('অনুগ্রহ করে একটি পেমেন্ট পদ্ধতি নির্বাচন করুন');
+        return;
+      }
+      if (selectedMethod.id === 'binance') {
+        setStep(3);
+      } else {
+        setStep(4);
+      }
+    } else if (step === 3) {
+      setStep(4);
+    }
+  };
+
+  const submitOrder = async () => {
+    if (!selectedMethod) return;
+    
+    if (selectedMethod.type === 'manual') {
+      if (!formData.trxId || !screenshotUrl) {
+        toast.error('অনুগ্রহ করে ট্রানজেকশন আইডি এবং পেমেন্ট স্ক্রিনশট প্রদান করুন');
+        return;
+      }
+    }
+
+    setLoading(true);
+    try {
+      const amount = (search as any)['plan'] === 'premium' ? 1500 : 0;
+      
+      const { data: orderData, error } = await supabase.from('orders').insert({
+        customer_name: formData.name,
+        customer_email: formData.email,
+        customer_phone: formData.phone,
+        user_id: firebaseUser?.uid || null,
+        payment_method: selectedMethod.id,
+        transaction_id: formData.trxId || null,
+        screenshot_url: screenshotUrl || null,
+        status: 'Pending',
+        payment_status: 'Processing',
+        extension_id: (search as any)['productId'] || null,
+        amount: amount,
+      }).select().single();
+
+      if (error) throw error;
+      
+      setOrderId((orderData as any).id);
+      setStep(5);
+      toast.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');
+    } catch (err: any) {
+      toast.error(err.message || 'Order submission failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-red-500/30">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-red-500/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full" />
+      </div>
+
+      <div className="relative max-w-5xl mx-auto px-6 py-12">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+          <div>
+            <Link 
+              to="/" 
+              className="inline-flex items-center gap-2 text-white/40 hover:text-white transition text-[10px] font-black uppercase tracking-widest mb-6"
+            >
+              <ChevronLeft className="w-3 h-3" /> Back to Store
+            </Link>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight">
+              SECURE <span className="text-red-500">CHECKOUT</span> <span className="text-[10px] ml-2 text-white/20">(অর্ডার ট্র্যাক করতে আইডি সেভ করুন)</span>
+            </h1>
+            <p className="text-white/40 mt-2 font-medium uppercase tracking-[0.2em] text-[10px]">
+              Complete your premium experience
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <div key={s} className="flex items-center gap-3">
+                <div className={`
+                  w-10 h-10 rounded-2xl flex items-center justify-center font-black transition-all duration-500
+                  ${step === s ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]' : step > s ? 'bg-green-500/20 text-green-500' : 'bg-white/5 text-white/20'}
+                `}>
+                  {step > s ? <CheckCircle2 className="w-5 h-5" /> : s}
+                </div>
+                {s < 5 && <div className={`w-8 h-[2px] rounded-full transition-colors duration-500 ${step > s ? 'bg-green-500/20' : 'bg-white/5'}`} />}
+              </div>
+            ))}
+          </div>
+        </header>
+
+        <div className="grid lg:grid-cols-[1fr_380px] gap-12 items-start">
+          <main>
+            <AnimatePresence mode="wait">
+              {step === 1 && (
+                <motion.div 
+                  key="step1"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="space-y-8"
+                >
+                  <section className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8 md:p-12 backdrop-blur-xl">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center">
+                        <User className="w-6 h-6 text-red-500" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-black uppercase tracking-tight">Customer Information</h2>
+                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-1">Tell us who you are</p>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Full Name</label>
+                        <div className="relative group">
+                          <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-red-500 transition-colors" />
+                          <input 
+                            placeholder="John Doe" 
+                            value={formData.name}
+                            onChange={e => setFormData({...formData, name: e.target.value})}
+                            disabled={!!firebaseUser}
+                            className={`w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 outline-none transition-all placeholder:text-white/10 ${!!firebaseUser ? 'opacity-50 cursor-not-allowed' : 'focus:border-red-500/50'}`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Email Address</label>
+                        <div className="relative group">
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-red-500 transition-colors" />
+                          <input 
+                            type="email" 
+                            placeholder="john@example.com" 
+                            value={formData.email}
+                            onChange={e => setFormData({...formData, email: e.target.value})}
+                            disabled={!!firebaseUser}
+                            className={`w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 outline-none transition-all placeholder:text-white/10 ${!!firebaseUser ? 'opacity-50 cursor-not-allowed' : 'focus:border-red-500/50'}`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 md:col-span-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">WhatsApp Number</label>
+                        <div className="relative group">
+                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-red-500 transition-colors" />
+                          <input 
+                            placeholder="+880 1XXX-XXXXXX" 
+                            value={formData.phone}
+                            onChange={e => setFormData({...formData, phone: e.target.value})}
+                            className="w-full bg-white/5 p-4 pl-12 rounded-2xl text-sm font-bold border border-white/5 focus:border-red-500/50 outline-none transition-all placeholder:text-white/10"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={handleNext} 
+                      className="w-full mt-10 bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-white/10 text-[10px] uppercase tracking-widest"
+                    >
+                      CONTINUE TO PAYMENT <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </section>
+                </motion.div>
+              )}
+
+              {step === 2 && (
+                <motion.div 
+                  key="step2"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="space-y-8"
+                >
+                  <section className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8 md:p-12 backdrop-blur-xl">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center">
+                        <CreditCard className="w-6 h-6 text-red-500" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-black uppercase tracking-tight">Payment Method</h2>
+                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-1">Select your preferred option</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {PAYMENT_METHODS.map(m => (
+                        <button 
+                          key={m.id} 
+                          onClick={() => setSelectedMethod(m)} 
+                          className={`
+                            group relative p-8 rounded-[2rem] border-2 transition-all duration-500 flex flex-col items-center gap-4 text-center
+                            ${selectedMethod?.id === m.id ? m.color + " ring-1 ring-inset ring-white/10" : 'border-white/5 bg-white/[0.02] hover:bg-white/5 hover:border-white/10'}
+                          `}
+                        >
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${selectedMethod?.id === m.id ? 'bg-white/10' : 'bg-white/5 group-hover:bg-white/10'}`}>
+                            {m.icon}
+                          </div>
+                          <div>
+                            <p className="font-black uppercase tracking-widest text-sm">{m.name}</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mt-1">{m.type}</p>
+                          </div>
+                          {selectedMethod?.id === m.id && (
+                            <motion.div layoutId="payment-indicator" className="absolute top-4 right-4">
+                              <CheckCircle2 className="w-5 h-5 text-inherit" />
+                            </motion.div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-4 mt-10">
+                      <button onClick={() => setStep(1)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
+                      <button 
+                        onClick={handleNext} 
+                        className="flex-[2] bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-white/10 text-[10px] uppercase tracking-widest"
+                      >
+                        REVIEW ORDER <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </div>
+                  </section>
+                </motion.div>
+              )}
+
+              {step === 3 && (
+                <motion.div 
+                  key="step3"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="space-y-8"
+                >
+                  <section className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8 md:p-12 backdrop-blur-xl">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center">
+                        <Wallet className="w-6 h-6 text-red-500" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-black uppercase tracking-tight">Binance Pay Details</h2>
+                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-1">Send payment via Binance Pay</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="bg-yellow-500/5 border border-yellow-500/10 p-8 rounded-[2rem] space-y-6">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-yellow-500 flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+                            ম্যানুয়াল ভেরিফিকেশন
+                          </span>
+                          <Wallet className="w-5 h-5 text-yellow-500/20" />
+                        </div>
+                        
+                        <p className="text-xs font-medium text-white/60 leading-relaxed">
+                          Binance App এ গিয়ে নিচের Pay ID তে USDT পাঠান।
+                        </p>
+
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 ml-1">Binance Pay ID</label>
+                            <div className="flex items-center gap-2 bg-black/40 p-4 rounded-2xl border border-white/5 group">
+                              <code className="flex-1 text-sm font-black tracking-wider text-yellow-400">{appSettings?.['binance_id']}</code>
+                              <button 
+                                onClick={() => {
+                                  navigator.clipboard.writeText(appSettings?.['binance_id'] as string || '');
+                                  toast.success('Pay ID copied!');
+                                }}
+                                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
+                              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">পরিমাণ (BDT)</p>
+                              <p className="text-sm font-black tracking-tight text-white">৳{bdtAmount}</p>
+                            </div>
+                            <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
+                              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">USDT পাঠাবেন</p>
+                              <p className="text-sm font-black tracking-tight text-yellow-500">{usdtAmount} USDT</p>
+                            </div>
+                          </div>
+
+                          <div className="text-[9px] font-black text-white/10 uppercase tracking-widest text-center py-2 border-t border-white/5 font-medium opacity-50">
+                            রেট: 1 USDT = ৳{usdtRate}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <button 
+                        onClick={handleNext}
+                        className="w-full bg-white text-black font-black py-5 rounded-[2rem] hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 group shadow-2xl shadow-white/10"
+                      >
+                        NEXT <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </div>
+                  </section>
+                </motion.div>
+              )}
+
+              {step === 4 && (
+                <motion.div 
+                  key="step4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="space-y-8"
+                >
+                  <section className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8 md:p-12 backdrop-blur-xl">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center">
+                        <FileCheck className="w-6 h-6 text-red-500" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-black uppercase tracking-tight">Verify Payment</h2>
+                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-1">Submit proof of payment</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-8">
+                      {selectedMethod?.id !== 'binance' ? (
+                        <div className="bg-red-500/5 border border-red-500/10 p-8 rounded-[2rem] text-center space-y-4">
+                          <p className="text-[10px] uppercase font-black tracking-[0.3em] text-red-500">Send Payment To</p>
+                          <div className="flex items-center justify-center gap-4">
+                            <p className="text-3xl font-black tracking-tight font-mono">{getMethodDetails(selectedMethod?.id as string)?.number}</p>
+                            <button 
+                              onClick={() => {
+                                const num = getMethodDetails(selectedMethod?.id as string)?.number;
+                                if (num) {
+                                  navigator.clipboard.writeText(num);
+                                  toast.success('Number copied!');
+                                }
+                              }}
+                              className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">
+                            Send as "Personal" Cash-in / Send Money
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="bg-yellow-500/5 border border-yellow-500/10 p-6 rounded-[2rem] flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+                              <Wallet className="w-5 h-5 text-yellow-500" />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-yellow-500">Sending to Pay ID</p>
+                              <p className="text-xs font-black tracking-widest">{appSettings?.['binance_id']}</p>
+                            </div>
+                          </div>
+                          <p className="text-xs font-black text-yellow-500">{usdtAmount} USDT</p>
+                        </div>
+                      )}
+
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Transaction ID</label>
+                          <input 
+                            placeholder="e.g. 8N7X2M9P" 
+                            value={formData.trxId}
+                            onChange={e => setFormData({...formData, trxId: e.target.value})}
+                            className="w-full bg-white/5 p-4 rounded-2xl text-sm font-bold border border-white/5 focus:border-red-500/50 outline-none transition-all"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Payment Screenshot</label>
+                          <FileUpload 
+                            bucket="order-assets"
+                            path={formData.email ? formData.email.replace(/[^a-zA-Z0-9]/g, '_') : 'guest'}
+                            label="Screenshot"
+                            onUploadComplete={(url) => setScreenshotUrl(url)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4">
+                        <button onClick={() => setStep(selectedMethod?.id === 'binance' ? 3 : 2)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
+                        <button 
+                          onClick={submitOrder} 
+                          disabled={loading}
+                          className="flex-[2] bg-red-600 text-white font-black py-4 rounded-2xl hover:bg-red-500 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-red-500/20 disabled:opacity-50 text-[10px] uppercase tracking-widest"
+                        >
+                          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                            <>SUBMIT ORDER <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+                </motion.div>
+              )}
+
+              {step === 5 && (
+                <motion.div 
+                  key="step5"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-12 md:p-20 text-center backdrop-blur-xl"
+                >
+                  <div className="w-24 h-24 bg-green-500/20 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-[0_0_50px_rgba(34,197,94,0.2)]">
+                    <CheckCircle2 className="w-12 h-12 text-green-500" />
+                  </div>
+                  <h2 className="text-4xl font-black uppercase tracking-tight mb-4">Order Received!</h2>
+                  <p className="text-white/40 max-w-md mx-auto mb-10 leading-relaxed">
+                    Your payment is being verified by our team. You will receive an email confirmation once approved. You can track your order status using your Order ID.
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                    <button 
+                      onClick={() => navigate({ to: '/' })} 
+                      className="bg-white text-black font-black py-4 rounded-[1.5rem] hover:bg-white/90 transition-all text-xs uppercase tracking-widest shadow-xl shadow-white/5"
+                    >
+                      Back to Home
+                    </button>
+                    <Link 
+                      to="/track-order" 
+                      className="bg-white/5 text-white/40 font-black py-4 rounded-[1.5rem] hover:bg-white/10 transition-all text-xs uppercase tracking-widest border border-white/5"
+                    >
+                      Track Order
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </main>
+
+          <aside className="sticky top-12 space-y-6">
+            <section className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-6">Order Summary</h3>
+              
+              <div className="space-y-6">
+                <div className="flex justify-between items-start gap-4">
+                  <div>
+                    <p className="font-black text-sm uppercase">VIBEX Premium Plan</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">One-time payment</p>
+                  </div>
+                  <p className="font-black text-red-500">$29.99</p>
+                </div>
+
+                <div className="h-[1px] bg-white/5 w-full" />
+
+                <div className="space-y-3">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
+                    <span>Subtotal</span>
+                    <span>$29.99</span>
+                  </div>
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
+                    <span>Processing Fee</span>
+                    <span>$0.00</span>
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-white/5">
+                  <div className="flex justify-between items-end">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Total Amount</p>
+                    <p className="text-3xl font-black text-white">$29.99</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="bg-red-500/5 border border-red-500/10 rounded-[2.5rem] p-8">
+              <div className="flex gap-4">
+                <ShieldCheck className="w-5 h-5 text-red-500 shrink-0" />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-red-500 mb-1">Secure Transaction</p>
+                  <p className="text-[10px] font-medium text-white/40 leading-relaxed uppercase tracking-widest">
+                    Your data is encrypted and secure. We never store credit card details.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
+}
