@@ -1,21 +1,16 @@
 import { createMiddleware } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     const request = getRequest();
 
-    if (!request?.headers) {
-      throw new Error('Unauthorized');
-    }
-
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request?.headers?.get('authorization');
     const token = (authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : undefined) as string | undefined;
     
-    // Create client manually to avoid module-scope instantiation issues
-    const supabase = createClient<Database>(
+    const supabase: SupabaseClient<Database> = createClient<Database>(
       'https://gxskutcwhatbkeaczyvd.supabase.co',
       'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY',
       {
@@ -31,7 +26,7 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     );
 
     let userId = 'guest';
-    let claims = null;
+    let claims: any = null;
 
     if (token && token.split('.').length === 3) {
       try {
