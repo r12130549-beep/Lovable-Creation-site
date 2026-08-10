@@ -33,6 +33,8 @@ import { FileUpload } from '@/components/admin/FileUpload';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { format } from 'date-fns';
+import { firestore } from '@/lib/firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
 
 export const getAdminOrdersFast = createServerFn({ method: "GET" })
   .handler(async () => {
@@ -323,10 +325,37 @@ function AdminPage() {
   });
 
   const createOrderMutation = useMutation({
-    mutationFn: (data: any) => createManualOrderFn({ data }),
+    mutationFn: async (data: any) => {
+      const orderRef = doc(collection(firestore, 'orders'));
+      const orderId = `ORDER-${crypto.randomUUID().slice(0, 9).toUpperCase()}`;
+      const now = new Date().toISOString();
+      await setDoc(orderRef, {
+        order_id: orderId,
+        customer_name: String(data.customerName || 'Guest'),
+        customer_email: String(data.email || 'guest@example.com'),
+        customer_phone: String(data.whatsapp || 'N/A'),
+        product_name: String(data.productName || 'Premium Extension'),
+        category: String(data.category || 'Extension'),
+        price: Number(data.price) || 0,
+        currency: String(data.currency || '৳'),
+        quantity: Number(data.quantity) || 1,
+        payment_method: String(data.paymentMethod || 'Manual'),
+        payment_status: String(data.paymentStatus || 'Pending'),
+        order_status: String(data.orderStatus || 'Pending'),
+        notes: String(data.notes || ''),
+        license_key: String(data.licenseKey || ''),
+        license_name: String(data.licenseName || ''),
+        download_link: String(data.downloadLink || ''),
+        expire_date: data.expireDate || null,
+        transaction_id: String(data.transactionId || 'N/A'),
+        created_at: now,
+        updated_at: now,
+      });
+      return { success: true, orderId, order_id: orderId };
+    },
     onSuccess: (result) => {
       if (!result.success || (!result.order_id && !result.orderId)) {
-        toast.error(result.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে');
+        toast.error('অর্ডার তৈরি করতে ব্যর্থ হয়েছে');
         return;
       }
       toast.success('অর্ডার সফল হয়েছে');
@@ -363,7 +392,25 @@ function AdminPage() {
   });
 
   const createExtensionMutation = useMutation({
-    mutationFn: (data: any) => createExtensionFn({ data } as any),
+    mutationFn: async (data: any) => {
+      const extensionRef = doc(collection(firestore, 'extensions'));
+      const now = new Date().toISOString();
+      const name = String(data.name || 'Untitled Extension').trim();
+      const slug = String(data.slug || `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${extensionRef.id.slice(0, 4)}`);
+      const extension = {
+        ...data,
+        id: extensionRef.id,
+        name,
+        slug,
+        price: Number(data.price) || 0,
+        icon_url: data.icon_url || null,
+        zip_url: data.zip_url || null,
+        created_at: now,
+        updated_at: now,
+      };
+      await setDoc(extensionRef, extension);
+      return { success: true, extension };
+    },
     onSuccess: (res: any) => {
       if (res && res.success === false) {
         toast.error(res.message || 'Failed to create extension');
