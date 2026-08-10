@@ -152,7 +152,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
         throw error;
       }
       
-      return { success: true, orderId: newOrder?.id, docId: newOrder?.id, order_id: newOrder?.order_id };
+      return { success: true, orderId: newOrder?.id, docId: newOrder?.id, order_id: (newOrder as any)?.order_id };
     } catch (error: any) {
       console.error("Error creating manual order:", error);
       // Fail gracefully: ensure client gets a success indicator to prevent "Error: aborted" loops
