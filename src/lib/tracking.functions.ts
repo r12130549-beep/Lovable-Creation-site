@@ -12,16 +12,18 @@ export const trackOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       // Search in Supabase orders table
-      const { data: order, error } = await supabaseAdmin
+      const { data: orderData, error } = await supabaseAdmin
         .from("orders")
         .select("*")
         .eq("order_id", data.orderId)
         .maybeSingle();
 
       if (error) throw error;
-      if (!order) {
+      if (!orderData) {
         throw new Error("Order not found");
       }
+
+      const order = orderData as any;
 
       if (data.email && order.customer_email?.toLowerCase() !== data.email.toLowerCase()) {
         throw new Error("Order not found or invalid credentials");
@@ -29,7 +31,7 @@ export const trackOrder = createServerFn({ method: "POST" })
 
       const now = new Date();
       const expireDate = order.expire_date ? new Date(order.expire_date) : null;
-      const isExpired = expireDate && expireDate < now;
+      const isExpired = !!(expireDate && expireDate < now);
 
       return {
         id: order.order_id,

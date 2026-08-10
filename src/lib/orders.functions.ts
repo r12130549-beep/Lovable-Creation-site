@@ -121,15 +121,18 @@ export const createManualOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       // Cast to any to bypass stale type definitions that are missing new columns
+      const orderId = `ORDER-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      
       const orderData: any = {
+        order_id: orderId,
         customer_name: String(data.customerName || 'Guest'),
         customer_email: String(data.email || 'guest@example.com'),
         customer_phone: String(data.whatsapp || 'N/A'),
         amount: Number(data.price) || 0,
-        price: Number(data.price) || 0, // Compatibility
+        price: Number(data.price) || 0,
         payment_method: String(data.paymentMethod || 'manual'),
         status: String(data.orderStatus || 'Pending'),
-        order_status: String(data.orderStatus || 'Pending'), // Compatibility
+        order_status: String(data.orderStatus || 'Pending'),
         transaction_id: String(data.transactionId || 'N/A'),
         screenshot_url: String(data.screenshotUrl || ''),
         user_id: String(data.uid || 'guest'),
@@ -138,7 +141,10 @@ export const createManualOrder = createServerFn({ method: "POST" })
         currency: String(data.currency || "৳"),
         quantity: Number(data.quantity) || 1,
         notes: String(data.notes || ''),
-        order_id: `ORDER-${Math.random().toString(36).substr(2, 7).toUpperCase()}`
+        license_key: data.licenseKey || '',
+        license_name: data.licenseName || '',
+        download_link: data.downloadLink || '',
+        expire_date: data.expireDate || null
       };
 
       const { data: newOrder, error } = await supabaseAdmin
@@ -152,7 +158,12 @@ export const createManualOrder = createServerFn({ method: "POST" })
         throw error;
       }
       
-      return { success: true, orderId: newOrder?.id, docId: newOrder?.id, order_id: (newOrder as any)?.order_id };
+      return { 
+        success: true, 
+        orderId: newOrder?.order_id || orderId,
+        docId: newOrder?.id,
+        order_id: newOrder?.order_id || orderId
+      };
     } catch (error: any) {
       console.error("Error creating manual order:", error);
       // Fail gracefully: ensure client gets a success indicator to prevent "Error: aborted" loops
