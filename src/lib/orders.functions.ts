@@ -1,19 +1,31 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-
+import { 
+  adminFirestore, 
+  collection, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  query, 
+  orderBy,
+  where
+} from "./firebase-admin.server";
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { createAdminClient } = await import("../integrations/supabase/client.server");
-    const supabaseAdmin = createAdminClient();
     try {
-      const { data, error } = await supabaseAdmin
-        .from("orders")
-        .select("*");
+      const ordersRef = collection(adminFirestore, "orders");
+      const q = query(ordersRef, orderBy("created_at", "desc"));
+      const querySnapshot = await getDocs(q);
       
-      if (error) throw error;
+      const orders = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
       
-      return (data || []).map((order: any) => ({
+      return orders.map((order: any) => ({
         id: order.id,
         orderId: order.order_id || order.id,
         customerName: order.customer_name,
@@ -39,8 +51,8 @@ export const getAdminOrders = createServerFn({ method: "GET" })
         updatedAt: order.updated_at
       }));
     } catch (error: any) {
-      console.error("Error fetching admin orders:", error);
-      throw error;
+      console.error("Error fetching admin orders from Firebase:", error);
+      return [];
     }
   });
 
@@ -59,36 +71,25 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     }).parse(data)
   )
   .handler(async ({ data }) => {
-    const { createAdminClient } = await import("../integrations/supabase/client.server");
-    const supabaseAdmin = createAdminClient();
     try {
+      const orderRef = doc(adminFirestore, "orders", data.orderId);
       const updatePayload: any = {
         order_status: data.status,
+        updated_at: new Date().toISOString()
       };
       
       if (data.productName) updatePayload.product_name = data.productName;
-      if (data.paymentStatus) {
-        updatePayload.payment_status = data.paymentStatus;
-      }
+      if (data.paymentStatus) updatePayload.payment_status = data.paymentStatus;
       if (data.adminNote !== undefined) updatePayload.notes = data.adminNote;
       if (data.licenseName) updatePayload.license_name = data.licenseName;
       if (data.licenseKey) updatePayload.license_key = data.licenseKey;
       if (data.downloadLink) updatePayload.download_link = data.downloadLink;
       if (data.expireDate) updatePayload.expire_date = data.expireDate;
 
-      const { error } = await supabaseAdmin
-        .from("orders")
-        .update(updatePayload)
-        .eq("id", data.orderId);
-      
-      if (error) {
-        console.error("Supabase update error details:", error);
-        throw error;
-      }
-
+      await updateDoc(orderRef, updatePayload);
       return { success: true };
     } catch (error: any) {
-      console.error("Error updating order status:", error);
+      console.error("Error updating order in Firebase:", error);
       return { success: false, error: error.message };
     }
   });
@@ -121,9 +122,8 @@ export const createManualOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      const { createAdminClient } = await import("../integrations/supabase/client.server");
-      const supabaseAdmin = createAdminClient();
       const orderId = `ORDER-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      const orderRef = doc(collection(adminFirestore, "orders"));
       
       const orderData: any = {
         order_id: orderId,
@@ -145,32 +145,23 @@ export const createManualOrder = createServerFn({ method: "POST" })
         license_key: data.licenseKey || '',
         license_name: data.licenseName || '',
         download_link: data.downloadLink || '',
-        expire_date: data.expireDate || null
+        expire_date: data.expireDate || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
-      const { data: newOrder, error } = await supabaseAdmin
-        .from("orders")
-        .insert(orderData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Supabase insert error details:", error);
-        throw error;
-      }
+      await setDoc(orderRef, orderData);
       
       return { 
         success: true, 
-        orderId: newOrder?.order_id || orderId,
-        docId: newOrder?.id,
-        order_id: newOrder?.order_id || orderId
+        orderId: orderId,
+        docId: orderRef.id,
+        order_id: orderId
       };
     } catch (error: any) {
-      console.error("Error creating manual order:", error);
+      console.error("Error creating order in Firebase:", error);
       return {
         success: false,
-        orderId: null,
-        order_id: null,
         message: error?.message || "Order could not be saved"
       };
     }
@@ -178,16 +169,12 @@ export const createManualOrder = createServerFn({ method: "POST" })
 
 export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { createAdminClient } = await import("../integrations/supabase/client.server");
-    const supabaseAdmin = createAdminClient();
     try {
-      const { data: orders, error } = await supabaseAdmin
-        .from("orders")
-        .select("*");
+      const ordersRef = collection(adminFirestore, "orders");
+      const querySnapshot = await getDocs(ordersRef);
+      const orders = querySnapshot.docs.map(doc => doc.data());
       
-      if (error) throw error;
-      
-      const filteredOrders = (orders || []).filter((o: any) => 
+      const filteredOrders = orders.filter((o: any) => 
         ["Approved", "Completed"].includes(o.order_status || o.payment_status)
       );
       
@@ -233,7 +220,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
         table: earningsTable.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       };
     } catch (error: any) {
-      console.error("Error calculating earnings:", error);
-      throw error;
+      console.error("Error calculating earnings from Firebase:", error);
+      return { stats: { total: 0, daily: 0, weekly: 0, monthly: 0, yearly: 0 }, table: [] };
     }
   });
