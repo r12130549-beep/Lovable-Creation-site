@@ -1,4 +1,4 @@
-import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit } from 'firebase/firestore';
 import { getDatabase, ref, get, set, update, push, remove } from 'firebase/database';
 
@@ -10,7 +10,12 @@ const firebaseConfig = {
   databaseURL: "https://lovable-a893f-default-rtdb.firebaseio.com",
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+let app: FirebaseApp;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApp();
+}
 
 export const adminFirestore = getFirestore(app);
 export const adminDatabase = getDatabase(app);
