@@ -144,8 +144,8 @@ function TrackOrderPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">অর্ডার আইডি</span>
                     <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg flex items-center gap-2">
-                      <code className="text-sm font-black text-white">{order.id}</code>
-                      <button onClick={() => { navigator.clipboard.writeText(order.id); toast.success('Order ID copied'); }} className="text-white/20 hover:text-red-500 transition-colors">
+                      <code className="text-sm font-black text-white">{order?.id || orderId}</code>
+                      <button onClick={() => { navigator.clipboard.writeText(order?.id || orderId); toast.success('Order ID copied'); }} className="text-white/20 hover:text-red-500 transition-colors">
                         <Copy className="w-3 h-3" />
                       </button>
                     </div>
