@@ -24,6 +24,6 @@ export const adminFirestore = getFirestore(app);
 export const adminDatabase = getDatabase(app);
 
 export { 
-  collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit,
+  collection, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit, doc,
   ref, get, set, update, push, remove
 };
