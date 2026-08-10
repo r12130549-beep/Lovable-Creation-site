@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useServerFn } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Package, Calendar, CreditCard, CheckCircle2, Clock, Shield, Download, ArrowRight, Loader2, AlertCircle, ChevronRight, FileText, Copy, ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
@@ -26,9 +26,10 @@ function TrackOrderPage() {
   const [orderId, setOrderId] = useState('');
   const [email, setEmail] = useState('');
   const [showResult, setShowResult] = useState(false);
+  const trackOrderFn = useServerFn(trackOrder);
 
   const trackMutation = useMutation({
-    mutationFn: (vars: { orderId: string; email?: string }) => trackOrder({ data: { orderId: vars.orderId, email: vars.email || undefined } as any }),
+    mutationFn: (vars: { orderId: string; email?: string }) => trackOrderFn({ data: { orderId: vars.orderId, email: vars.email || undefined } as any }),
     onSuccess: () => {
       setShowResult(true);
     },

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, useSearch } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate, useSearch, useServerFn } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CreditCard, 
@@ -72,6 +72,7 @@ function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const createManualOrderFn = useServerFn(createManualOrder);
   const [formData, setFormData] = useState({ 
     name: firebaseUser?.displayName || '', 
     email: firebaseUser?.email || '', 
@@ -180,7 +181,7 @@ function CheckoutPage() {
       };
 
       // 3. Create order via server function
-      const result = await createManualOrder({ data: orderPayload });
+      const result = await createManualOrderFn({ data: orderPayload });
       if (!result.success || !result.order_id) {
         throw new Error(result.message || 'অর্ডারটি সেভ করা যায়নি');
       }
