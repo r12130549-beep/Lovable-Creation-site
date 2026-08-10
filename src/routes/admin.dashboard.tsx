@@ -61,7 +61,7 @@ function AdminPage() {
     const fetchOrders = async () => {
       try {
         const orders = await getAdminOrders();
-        setRealtimeOrders(orders);
+        setRealtimeOrders(orders || []);
       } catch (err) {
         console.error("Error fetching admin orders:", err);
       }
@@ -113,6 +113,9 @@ function AdminPage() {
       toast.success('অর্ডার সফলভাবে তৈরি হয়েছে');
       const orderIdToCopy = result.order_id || result.orderId;
       window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
+      queryClient.invalidateQueries({ queryKey: ['admin-earnings'] });
+      // Refresh the orders list immediately
+      getAdminOrders().then(orders => setRealtimeOrders(orders || []));
       setActiveTab('orders');
     },
     onError: (err: any) => toast.error(err.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে')
