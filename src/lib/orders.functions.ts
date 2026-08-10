@@ -139,7 +139,8 @@ export const createManualOrder = createServerFn({ method: "POST" })
         license_key: data.licenseKey || '',
         license_name: data.licenseName || '',
         download_link: data.downloadLink || '',
-        expire_date: data.expireDate || null
+        expire_date: data.expireDate || null,
+        is_manual: true
       };
 
       const { data: newOrder, error } = await supabaseAdmin
