@@ -1,29 +1,16 @@
 import { createMiddleware } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     const request = getRequest();
 
-    if (!request?.headers) {
-      // In TanStack Start v1 server functions, next() must be returned
-      // If we want to block, we should throw a Response or return a value
-      // but usually middleware just provides context.
-      return next({
-        context: {
-          supabase: null as any,
-          userId: 'guest',
-          claims: null,
-        },
-      });
-    }
-
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request?.headers?.get('authorization');
     const token = (authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : undefined) as string | undefined;
     
-    const supabase = createClient<Database>(
+    const supabase: SupabaseClient<Database> = createClient<Database>(
       'https://gxskutcwhatbkeaczyvd.supabase.co',
       'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY',
       {
@@ -39,7 +26,7 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     );
 
     let userId = 'guest';
-    let claims = null;
+    let claims: any = null;
 
     if (token && token.split('.').length === 3) {
       try {
