@@ -2,10 +2,9 @@ import { createFileRoute, Link, useNavigate, Outlet, useRouterState } from '@tan
 import { motion } from 'framer-motion';
 import { ChevronLeft, ArrowRight, Loader2, Mail, Lock, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { auth, db, firestore } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { ref, get } from 'firebase/database';
-import { doc, getDoc } from 'firebase/firestore';
+import { checkAdminStatus } from '@/lib/users.functions';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
 
