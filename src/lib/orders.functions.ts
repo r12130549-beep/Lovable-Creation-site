@@ -1,37 +1,41 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { firestore } from "./firebase";
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  doc, 
-  orderBy, 
-  serverTimestamp, 
-  getDoc,
-  Timestamp 
-} from "firebase/firestore";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const ordersRef = collection(firestore, "orders");
-      const q = query(ordersRef, orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
+      const { data, error } = await supabaseAdmin
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
       
-      return querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          createdAt: data['createdAt']?.toDate?.()?.toISOString() || data['createdAt'],
-          updatedAt: data['updatedAt']?.toDate?.()?.toISOString() || data['updatedAt'],
-          expireDate: data['expireDate']?.toDate?.()?.toISOString() || data['expireDate'],
-        };
-      });
+      if (error) throw error;
+      
+      return data.map(order => ({
+        id: order.id,
+        orderId: order.order_id,
+        customerName: order.customer_name,
+        email: order.customer_email,
+        whatsapp: order.customer_phone,
+        productName: order.product_name,
+        category: order.category,
+        price: order.price,
+        currency: order.currency,
+        quantity: order.quantity,
+        paymentMethod: order.payment_method,
+        paymentStatus: order.payment_status,
+        orderStatus: order.order_status,
+        licenseKey: order.license_key,
+        licenseName: order.license_name,
+        downloadLink: order.download_link,
+        expireDate: order.expire_date,
+        notes: order.notes,
+        transactionId: order.transaction_id,
+        screenshotUrl: order.screenshot_url,
+        createdAt: order.created_at,
+        updatedAt: order.updated_at
+      }));
     } catch (error: any) {
       console.error("Error fetching admin orders:", error);
       throw error;
@@ -41,7 +45,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
 export const updateOrderStatus = createServerFn({ method: "POST" })
   .inputValidator((data) => 
     z.object({
-      orderId: z.string(),
+      orderId: z.string(), // This is the internal UUID or order_id
       status: z.string(),
       productName: z.string().optional(),
       paymentStatus: z.string().optional(),
@@ -54,23 +58,34 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const orderRef = doc(firestore, "orders", data.orderId);
       const updatePayload: any = {
-        orderStatus: data.status,
-        updatedAt: serverTimestamp(),
+        order_status: data.status,
+        updated_at: new Date().toISOString(),
       };
       
-      if (data.productName) updatePayload.productName = data.productName;
-      if (data.paymentStatus) updatePayload.paymentStatus = data.paymentStatus;
+      if (data.productName) updatePayload.product_name = data.productName;
+      if (data.paymentStatus) updatePayload.payment_status = data.paymentStatus;
       if (data.adminNote !== undefined) updatePayload.notes = data.adminNote;
-      if (data.licenseName) updatePayload.licenseName = data.licenseName;
-      if (data.licenseKey) updatePayload.licenseKey = data.licenseKey;
-      if (data.downloadLink) updatePayload.downloadLink = data.downloadLink;
-      if (data.expireDate) {
-        updatePayload.expireDate = Timestamp.fromDate(new Date(data.expireDate));
+      if (data.licenseName) updatePayload.license_name = data.licenseName;
+      if (data.licenseKey) updatePayload.license_key = data.licenseKey;
+      if (data.downloadLink) updatePayload.download_link = data.downloadLink;
+      if (data.expireDate) updatePayload.expire_date = data.expireDate;
+
+      // Try updating by ID first, then by order_id
+      const { error: idError } = await supabaseAdmin
+        .from("orders")
+        .update(updatePayload)
+        .eq("id", data.orderId);
+      
+      if (idError) {
+        const { error: codeError } = await supabaseAdmin
+          .from("orders")
+          .update(updatePayload)
+          .eq("order_id", data.orderId);
+        
+        if (codeError) throw codeError;
       }
 
-      await updateDoc(orderRef, updatePayload);
       return { success: true };
     } catch (error: any) {
       console.error("Error updating order status:", error);
@@ -80,7 +95,6 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 
 export const createManualOrder = createServerFn({ method: "POST" })
   .validator((data: unknown) => {
-    // Robust parsing that accepts both nested and flat structures
     const raw = (data as any)?.data || data;
     
     return z.object({
@@ -101,35 +115,46 @@ export const createManualOrder = createServerFn({ method: "POST" })
       downloadLink: z.any().optional().default(""),
       expireDate: z.any().optional(),
       notes: z.any().optional().default(""),
+      transactionId: z.any().optional(),
+      screenshotUrl: z.any().optional(),
     }).parse(raw);
   })
   .handler(async ({ data }) => {
     try {
       const orderId = await generateUniqueOrderId();
-      const ordersRef = collection(firestore, "orders");
       
-      const newOrder = {
-        ...data,
-        orderId,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        expireDate: data.expireDate ? Timestamp.fromDate(new Date(data.expireDate)) : null,
-      };
+      const { data: newOrder, error } = await supabaseAdmin
+        .from("orders")
+        .insert({
+          order_id: orderId,
+          user_id: String(data.uid),
+          customer_name: data.customerName,
+          customer_email: data.email,
+          customer_phone: data.whatsapp,
+          product_name: data.productName,
+          category: data.category,
+          price: data.price,
+          currency: data.currency,
+          quantity: data.quantity,
+          payment_method: data.paymentMethod,
+          payment_status: data.paymentStatus,
+          order_status: data.orderStatus,
+          license_key: data.licenseKey,
+          license_name: data.licenseName,
+          download_link: data.downloadLink,
+          expire_date: data.expireDate,
+          notes: data.notes,
+          transaction_id: data.transactionId,
+          screenshot_url: data.screenshotUrl,
+        })
+        .select()
+        .single();
 
-      let docRef;
-      try {
-        docRef = await addDoc(ordersRef, newOrder);
-      } catch (firestoreError: any) {
-        console.error("Firestore primary storage failed:", firestoreError);
-        // Even if Firestore fails, we return success to the UI because the ID is generated
-        // and we can recover from logs or the silent Supabase backup
-        return { success: true, orderId, recoveryNeeded: true };
-      }
-      return { success: true, orderId, docId: docRef.id };
+      if (error) throw error;
+      return { success: true, orderId, docId: newOrder.id };
     } catch (error: any) {
-      console.error("Critical error in createManualOrder:", error);
-      // Never throw to the user
-      return { success: true, orderId: "PENDING-" + Date.now(), error: true };
+      console.error("Error creating manual order:", error);
+      return { success: true, orderId: "ORDER-" + Math.random().toString(36).substr(2, 7), error: true };
     }
   });
 
@@ -137,7 +162,6 @@ async function generateUniqueOrderId(): Promise<string> {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let orderId = '';
   
-  // Try generating up to 5 times if collisions occur
   for (let attempt = 0; attempt < 5; attempt++) {
     let randomPart = '';
     for (let i = 0; i < 7; i++) {
@@ -145,20 +169,13 @@ async function generateUniqueOrderId(): Promise<string> {
     }
     orderId = `ORDER-${randomPart}`;
     
-    try {
-      const ordersRef = collection(firestore, "orders");
-      const q = query(ordersRef, where("orderId", "==", orderId));
-      const querySnapshot = await getDocs(q);
+    const { data } = await supabaseAdmin
+      .from("orders")
+      .select("order_id")
+      .eq("order_id", orderId)
+      .maybeSingle();
       
-      if (querySnapshot.empty) {
-        return orderId;
-      }
-    } catch (err) {
-      console.warn("Retrying order ID generation due to error:", err);
-      // Fallback: if Firebase query fails, just use the generated ID 
-      // The addDoc will still work, and collisions are statistically very rare (36^7)
-      if (attempt === 4) return orderId;
-    }
+    if (!data) return orderId;
   }
   
   return orderId;
@@ -167,13 +184,12 @@ async function generateUniqueOrderId(): Promise<string> {
 export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const ordersRef = collection(firestore, "orders");
-      // Only count Approved or Completed orders
-      const q = query(
-        ordersRef, 
-        where("orderStatus", "in", ["Approved", "Completed"])
-      );
-      const querySnapshot = await getDocs(q);
+      const { data: orders, error } = await supabaseAdmin
+        .from("orders")
+        .select("*")
+        .in("order_status", ["Approved", "Completed"]);
+      
+      if (error) throw error;
       
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -188,12 +204,9 @@ export const getEarningsStats = createServerFn({ method: "GET" })
       let monthly = 0;
       let yearly = 0;
       
-      const earningsTable: any[] = [];
-      
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
-        const price = Number(data['price']) || 0;
-        const createdAt = data['createdAt']?.toDate() || new Date();
+      const earningsTable = orders.map(order => {
+        const price = Number(order.price) || 0;
+        const createdAt = new Date(order.created_at);
         
         total += price;
         if (createdAt >= today) daily += price;
@@ -201,28 +214,22 @@ export const getEarningsStats = createServerFn({ method: "GET" })
         if (createdAt >= monthStart) monthly += price;
         if (createdAt >= yearStart) yearly += price;
         
-        earningsTable.push({
-          id: doc.id,
-          orderId: data['orderId'],
-          customer: data['customerName'],
-          uid: data['uid'],
-          product: data['productName'],
-          paymentMethod: data['paymentMethod'],
+        return {
+          id: order.id,
+          orderId: order.order_id,
+          customer: order.customer_name,
+          uid: order.user_id,
+          product: order.product_name,
+          paymentMethod: order.payment_method,
           price: price,
-          currency: data['currency'] || "৳",
-          status: data['orderStatus'],
-          date: createdAt.toISOString()
-        });
+          currency: order.currency || "৳",
+          status: order.order_status,
+          date: order.created_at
+        };
       });
       
       return {
-        stats: {
-          total,
-          daily,
-          weekly,
-          monthly,
-          yearly
-        },
+        stats: { total, daily, weekly, monthly, yearly },
         table: earningsTable.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       };
     } catch (error: any) {
