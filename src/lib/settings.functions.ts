@@ -1,33 +1,30 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { 
+  adminFirestore, 
+  collection, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc 
+} from "./firebase-admin.server";
 
 export const getAppSettings = createServerFn({ method: "GET" })
   .handler(async () => {
-    console.log("DEBUG: getAppSettings called");
     try {
-      const { createAdminClient } = await import("../integrations/supabase/client.server");
-      const supabaseAdmin = createAdminClient();
-      console.log("DEBUG: supabaseAdmin imported");
-      
-      const { data, error } = await supabaseAdmin
-        .from("app_settings")
-        .select("*");
-
-      if (error) {
-        console.warn("DEBUG: Supabase fetch error:", error.message);
-        return {};
-      }
+      const settingsRef = collection(adminFirestore, "app_settings");
+      const querySnapshot = await getDocs(settingsRef);
       
       const settings: Record<string, any> = {};
-      (data || []).forEach(item => {
-        settings[item.key] = item.value;
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        settings[data.key] = data.value;
       });
       
-      console.log("DEBUG: getAppSettings success, keys:", Object.keys(settings));
       return settings;
     } catch (error: any) {
-      console.error("DEBUG: Error in getAppSettings:", error);
-      // Return a plain object to avoid the 'forgot to return a response' error
+      console.error("Error in getAppSettings (Firebase):", error);
       return {};
     }
   });
@@ -41,25 +38,18 @@ export const updateAppSetting = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
-    console.log("DEBUG: updateAppSetting called for key:", data.key);
     try {
-      const { createAdminClient } = await import("@/integrations/supabase/client.server");
-      const supabaseAdmin = createAdminClient();
-      const { error } = await supabaseAdmin
-        .from("app_settings")
-        .upsert({ 
-          key: data.key, 
-          value: data.value,
-          updated_at: new Date().toISOString()
-        });
+      // Use the key as the document ID for app_settings
+      const settingRef = doc(adminFirestore, "app_settings", data.key);
+      await setDoc(settingRef, { 
+        key: data.key, 
+        value: data.value,
+        updated_at: new Date().toISOString()
+      }, { merge: true });
 
-      if (error) {
-        console.error("DEBUG: updateAppSetting error:", error);
-        throw error;
-      }
       return { success: true };
     } catch (e: any) {
-      console.error("DEBUG: updateAppSetting catch:", e);
+      console.error("Error in updateAppSetting (Firebase):", e);
       return { success: false, error: e.message };
     }
   });

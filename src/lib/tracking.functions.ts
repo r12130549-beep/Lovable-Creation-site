@@ -1,5 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { 
+  adminFirestore, 
+  collection, 
+  getDocs, 
+  query, 
+  where, 
+  limit 
+} from "./firebase-admin.server";
 
 export const trackOrder = createServerFn({ method: "POST" })
   .inputValidator((data) =>
@@ -9,21 +17,21 @@ export const trackOrder = createServerFn({ method: "POST" })
     }).parse(data)
   )
   .handler(async ({ data }) => {
-    const { createAdminClient } = await import("@/integrations/supabase/client.server");
-    const supabaseAdmin = createAdminClient();
     try {
-      // Search in Supabase orders table
-      const { data: orderData, error } = await supabaseAdmin
-        .from("orders")
-        .select("*")
-        .eq("order_id", data.orderId.trim().toUpperCase())
-        .maybeSingle();
-
-      if (error) throw error;
-      if (!orderData) {
+      const ordersRef = collection(adminFirestore, "orders");
+      const q = query(
+        ordersRef, 
+        where("order_id", "==", data.orderId.trim().toUpperCase()), 
+        limit(1)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
         throw new Error("Order not found");
       }
 
+      const orderData = querySnapshot.docs[0].data();
       const order = orderData as any;
 
       if (data.email && order.customer_email?.toLowerCase() !== data.email.toLowerCase()) {
@@ -58,7 +66,7 @@ export const trackOrder = createServerFn({ method: "POST" })
         }
       };
     } catch (error: any) {
-      console.error("Error tracking order:", error);
+      console.error("Error tracking order in Firebase:", error);
       throw error;
     }
   });
