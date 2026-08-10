@@ -38,7 +38,7 @@ if (typeof window !== 'undefined') {
     
     try {
       // Whitelist check first
-      const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com', 'kivabe@gmail.com', 'popykhanum2255@gmail.com'];
+      const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com', 'kivabe@gmail.com', 'popykhanum2255@gmail.com', 'ashik97355@gmail.com'];
       if (allowedEmails.includes(user.email || '')) {
         state.setUser(user, true);
         return;
