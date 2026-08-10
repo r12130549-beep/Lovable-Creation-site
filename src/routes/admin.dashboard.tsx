@@ -279,19 +279,37 @@ function AdminPage() {
                       price: Number(formData.get('price')),
                       description: formData.get('description') as string,
                       category: formData.get('category') as string,
+                      icon_url: formData.get('icon_url') as string || null,
                       status: 'published'
                     });
                   }}
                   className="p-6 bg-[#0A0A0A] border border-white/10 rounded-3xl space-y-4 mb-8"
                 >
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Name</label>
-                      <input name="name" placeholder="Extension Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Extension Icon</label>
+                      <FileUpload 
+                        bucket="extensions"
+                        path="icons"
+                        label="Icon"
+                        onUploadComplete={(url) => {
+                          const form = document.querySelector('form') as HTMLFormElement;
+                          const iconInput = form.querySelector('input[name="icon_url"]') as HTMLInputElement;
+                          if (iconInput) iconInput.value = url;
+                        }}
+                      />
+                      <input type="hidden" name="icon_url" />
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Category</label>
-                      <input name="category" placeholder="Category" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Name</label>
+                        <input name="name" placeholder="Extension Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Category</label>
+                        <input name="category" placeholder="Category" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-1">
