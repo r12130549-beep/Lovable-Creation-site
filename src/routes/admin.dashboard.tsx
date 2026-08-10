@@ -1,5 +1,18 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useServerFn } from '@tanstack/react-start';
+import { createServerFn, useServerFn } from '@tanstack/react-start';
+import { z } from "zod";
+import { 
+  adminFirestore as serverFirestore, 
+  collection as serverCollection, 
+  getDocs as serverGetDocs, 
+  doc as serverDoc, 
+  updateDoc as serverUpdateDoc, 
+  deleteDoc as serverDeleteDoc,
+  query as serverQuery, 
+  orderBy as serverOrderBy, 
+  where as serverWhere,
+  limit as serverLimit
+} from "../lib/firebase-admin.server";
 import { useAuth } from '@/hooks/use-auth';
 import { 
   BarChart3, Package, Users, ShoppingBag, Shield, Settings, 
@@ -19,6 +32,86 @@ import { FileUpload } from '@/components/admin/FileUpload';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { format } from 'date-fns';
+
+export const getAdminOrdersFast = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      const ordersRef = serverCollection(serverFirestore, "orders");
+      const q = serverQuery(ordersRef, serverOrderBy("created_at", "desc"), serverLimit(50));
+      const querySnapshot = await serverGetDocs(q);
+      
+      const orders = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      return orders.map((order: any) => ({
+        id: order.id,
+        orderId: order.order_id || order.id,
+        customerName: order.customer_name,
+        email: order.customer_email,
+        whatsapp: order.customer_phone,
+        productName: order.product_name || order.productName || "Extension",
+        category: order.category || "Extension",
+        price: order.price || order.amount || 0,
+        currency: order.currency || "৳",
+        quantity: order.quantity || 1,
+        paymentMethod: order.payment_method,
+        paymentStatus: order.payment_status || "Pending",
+        orderStatus: order.order_status || "Pending",
+        licenseKey: order.license_key,
+        licenseName: order.license_name,
+        downloadLink: order.download_link,
+        expireDate: order.expire_date,
+        notes: order.notes,
+        transactionId: order.transaction_id,
+        screenshotUrl: order.screenshot_url,
+        isManual: order.payment_method === "Manual",
+        createdAt: order.created_at,
+        updatedAt: order.updated_at
+      }));
+    } catch (error: any) {
+      console.error("Error fetching admin orders fast:", error);
+      return [];
+    }
+  });
+
+export const getAdminExtensionsFast = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      const extensionsRef = serverCollection(serverFirestore, "extensions");
+      const q = serverQuery(extensionsRef, serverOrderBy("created_at", "desc"));
+      const snapshot = await serverGetDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error: any) {
+      console.error("Error fetching extensions fast:", error);
+      return [];
+    }
+  });
+
+export const getAdminUsersFast = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      const usersRef = serverCollection(serverFirestore, "users");
+      const snapshot = await serverGetDocs(usersRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error("Error fetching users fast:", error);
+      return [];
+    }
+  });
+
+export const getAdminLicensesFast = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      const licensesRef = serverCollection(serverFirestore, "licenses");
+      const snapshot = await serverGetDocs(licensesRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error("Error fetching admin licenses fast:", error);
+      return [];
+    }
+  });
 
 export const Route = createFileRoute('/admin/dashboard')({
   component: AdminPage,
@@ -49,12 +142,14 @@ function AdminPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isAddingExtension, setIsAddingExtension] = useState(false);
   const queryClient = useQueryClient();
-  const getAdminOrdersFn = useServerFn(getAdminOrders);
+  const getAdminOrdersFn = useServerFn(getAdminOrdersFast);
   const createManualOrderFn = useServerFn(createManualOrder);
   const updateOrderStatusFn = useServerFn(updateOrderStatus);
   const createExtensionFn = useServerFn(createExtension);
   const deleteExtensionFn = useServerFn(deleteExtension);
-  const getExtensionsFn = useServerFn(getExtensions);
+  const getExtensionsFn = useServerFn(getAdminExtensionsFast);
+  const getAdminUsersFn = useServerFn(getAdminUsersFast);
+  const getAdminLicensesFn = useServerFn(getAdminLicensesFast);
 
   useEffect(() => {
     if (initialized && (!user || !isAdmin)) {
@@ -100,7 +195,7 @@ function AdminPage() {
 
   const { data: adminUsers, isLoading: usersLoading } = useQuery({
     queryKey: ['admin-users'],
-    queryFn: () => getAdminUsers(),
+    queryFn: () => getAdminUsersFn(),
     enabled: activeTab === 'users',
   });
 
@@ -112,7 +207,7 @@ function AdminPage() {
 
   const { data: licenses } = useQuery({
     queryKey: ['admin-licenses'],
-    queryFn: () => getAdminLicenses(),
+    queryFn: () => getAdminLicensesFn(),
     enabled: activeTab === 'licenses',
   });
 
