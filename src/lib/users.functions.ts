@@ -95,12 +95,14 @@ export const checkAdminStatus = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com', 'kivabe@gmail.com', 'popykhanum2255@gmail.com', 'ashik97355@gmail.com', 'emon@gmail.com', 'admin@vibex.com'];
+    
+    // Check whitelist first
     if (allowedEmails.includes(data.email)) {
       return { isAdmin: true };
     }
     
     try {
-      // We still try to check Firestore on the server
+      // Direct Admin access check using admin SDK bypasses client RLS issues
       const userRef = doc(adminFirestore, "users", data.uid);
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {

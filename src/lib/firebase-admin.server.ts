@@ -35,6 +35,9 @@ try {
   });
 }
 
+// Global reference for server-side firestore
+export const adminFirestore = db;
+
 
 export const adminFirestore = db;
 export const adminDatabase = getDatabase(app);
