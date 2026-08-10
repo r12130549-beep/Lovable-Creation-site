@@ -121,7 +121,7 @@ function TrackOrderPage() {
                   className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-3"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  {trackMutation.error.message || "Could not find order. Please check the ID."}
+                  {(trackMutation.error as any)?.message || "Could not find order. Please check the ID."}
                 </motion.div>
               )}
             </form>
