@@ -216,10 +216,10 @@ function AdminPage() {
               const formData = new FormData(e.currentTarget);
               createOrderMutation.mutate({
                 uid: "guest",
-                customerName: formData.get('customerName'),
-                email: formData.get('email'),
-                whatsapp: formData.get('whatsapp'),
-                productName: formData.get('product'),
+                customerName: formData.get('customerName')?.toString() || '',
+                email: formData.get('email')?.toString() || '',
+                whatsapp: formData.get('whatsapp')?.toString() || '',
+                productName: formData.get('product')?.toString() || '',
                 category: "General",
                 price: Number(formData.get('price')),
                 paymentMethod: "Manual"
