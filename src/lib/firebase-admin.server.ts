@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit, terminate } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit, terminate, writeBatch, FieldValue, Timestamp, connectFirestoreEmulator } from 'firebase/firestore';
 import { getDatabase, ref, get, set, update, remove, push } from 'firebase/database';
 import { firebaseConfig } from './firebase';
 
@@ -22,7 +22,11 @@ export const adminDatabase = getDatabase(app);
 
 // Helper to force a fresh connection if needed (debugging)
 export const resetFirestore = async () => {
-  await terminate(adminFirestore);
+  try {
+    await terminate(adminFirestore);
+  } catch (e) {
+    console.error("Error terminating firestore:", e);
+  }
 };
 
 // --- Re-exporting Web SDK methods as "Admin" aliases for compatibility ---
@@ -43,5 +47,8 @@ export {
   set,
   update,
   remove,
-  push
+  push,
+  writeBatch,
+  FieldValue,
+  Timestamp
 };
