@@ -30,7 +30,7 @@ function TrackOrderPage() {
   const trackOrderFn = useServerFn(trackOrder);
 
   const trackMutation = useMutation({
-    mutationFn: (vars: { orderId: string; email?: string }) => trackOrderFn({ data: { orderId: vars.orderId, email: vars.email || undefined } as any }),
+    mutationFn: (vars: { orderId: string; email?: string }) => trackOrderFn({ data: { orderId: vars.orderId, email: vars.email || null } as any }),
     onSuccess: () => {
       setShowResult(true);
     },
