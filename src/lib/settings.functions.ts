@@ -4,20 +4,29 @@ import { z } from "zod";
 
 export const getAppSettings = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
-      .from("app_settings")
-      .select("key, value");
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data, error } = await supabaseAdmin
+        .from("app_settings")
+        .select("key, value");
 
-    if (error) throw error;
-    
-    // Transform to object for easier use
-    const settings: Record<string, any> = {};
-    data.forEach(item => {
-      settings[item.key] = item.value;
-    });
-    
-    return settings;
+      if (error) {
+        console.error("Supabase error fetching settings:", error);
+        throw error;
+      }
+      
+      // Transform to object for easier use
+      const settings: Record<string, any> = {};
+      (data || []).forEach(item => {
+        settings[item.key] = item.value;
+      });
+      
+      return settings;
+    } catch (error: any) {
+      console.error("Error in getAppSettings server function:", error);
+      // Return empty object instead of throwing to prevent UI crash
+      return {};
+    }
   });
 
 export const updateAppSetting = createServerFn({ method: "POST" })

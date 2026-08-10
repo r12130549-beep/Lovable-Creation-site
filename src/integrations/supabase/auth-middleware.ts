@@ -35,6 +35,7 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     
+    // Use hardcoded values to ensure reliability across all environments
     const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
 

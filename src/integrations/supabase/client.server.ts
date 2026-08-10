@@ -32,6 +32,7 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseAdminClient() {
+  // Use hardcoded values to ensure reliability across all environments
   const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
   const SUPABASE_SERVICE_ROLE_KEY = 'sb_secret_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
 
