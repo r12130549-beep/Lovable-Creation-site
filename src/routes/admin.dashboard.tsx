@@ -790,9 +790,14 @@ function AdminPage() {
                     <select 
                       value={(queryClient.getQueryData(['app-settings']) as any)?.['server_status'] || 'Online'}
                       onChange={async (e) => {
-                        await updateAppSetting({ data: { key: 'server_status', value: e.target.value } });
-                        queryClient.invalidateQueries({ queryKey: ['app-settings'] });
-                        toast.success('Server status updated');
+                        try {
+                          await updateAppSetting({ data: { key: 'server_status', value: e.target.value } } as any);
+                          queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+                          toast.success('Server status updated');
+                        } catch (err: any) {
+                          console.error('Error updating server status:', err);
+                          toast.error('Failed to update server status');
+                        }
                       }}
                       className="bg-black border border-white/10 rounded-lg px-3 py-1 text-xs outline-none"
                     >
@@ -808,9 +813,18 @@ function AdminPage() {
                       placeholder="Show this message when offline..."
                       defaultValue={(queryClient.getQueryData(['app-settings']) as any)?.['offline_message']}
                       onBlur={async (e) => {
-                        await updateAppSetting({ data: { key: 'offline_message', value: e.target.value } });
-                        queryClient.invalidateQueries({ queryKey: ['app-settings'] });
-                        toast.success('Offline message saved');
+                        const val = e.target.value;
+                        const currentVal = (queryClient.getQueryData(['app-settings']) as any)?.['offline_message'];
+                        if (val === currentVal) return;
+                        
+                        try {
+                          await updateAppSetting({ data: { key: 'offline_message', value: val } } as any);
+                          queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+                          toast.success('Offline message saved');
+                        } catch (err: any) {
+                          console.error('Error updating offline message:', err);
+                          toast.error('Failed to save offline message');
+                        }
                       }}
                       className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm font-medium focus:border-red-500/50 outline-none h-32 resize-none"
                     />
@@ -836,9 +850,18 @@ function AdminPage() {
                       placeholder={`Enter ${field.label}`}
                       defaultValue={(queryClient.getQueryData(['app-settings']) as any)?.[field.key]}
                       onBlur={async (e) => {
-                        await updateAppSetting({ data: { key: field.key, value: e.target.value } });
-                        queryClient.invalidateQueries({ queryKey: ['app-settings'] });
-                        toast.success(`${field.label} updated`);
+                        const val = e.target.value;
+                        const currentVal = (queryClient.getQueryData(['app-settings']) as any)?.[field.key];
+                        if (val === currentVal) return;
+                        
+                        try {
+                          await updateAppSetting({ data: { key: field.key, value: val } } as any);
+                          queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+                          toast.success(`${field.label} updated`);
+                        } catch (err: any) {
+                          console.error(`Error updating ${field.key}:`, err);
+                          toast.error(`Failed to update ${field.label}`);
+                        }
                       }}
                       className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm font-bold focus:border-red-500/50 outline-none"
                     />

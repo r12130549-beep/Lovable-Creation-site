@@ -2,12 +2,11 @@ import { createFileRoute, Link, useNavigate, Outlet, useRouterState } from '@tan
 import { motion } from 'framer-motion';
 import { ChevronLeft, ArrowRight, Loader2, Mail, Lock, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { auth, db, firestore } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { ref, get } from 'firebase/database';
-import { doc, getDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
+import { checkAdminStatus } from '@/lib/users.functions';
 
 export const Route = createFileRoute('/admin')({
   component: AdminLayout,
@@ -113,67 +112,16 @@ function AdminLoginPage() {
       const user = userCredential.user;
       console.log('[AdminLogin] Firebase sign in successful:', user.email);
       
-      // Removed auto-sync to Firestore to prevent unauthorized admin creation
-      /*
-      try {
-        const { setDoc, doc, serverTimestamp } = await import('firebase/firestore');
-        const { firestore } = await import('@/lib/firebase');
-        await setDoc(doc(firestore, 'users', user.uid), {
-          email: user.email,
-          role: 'admin',
-          isAdmin: true,
-          updatedAt: serverTimestamp()
-        }, { merge: true });
-        console.log('[AdminLogin] Admin record synced to Firestore for UID:', user.uid);
-      } catch (fsErr) {
-        console.warn('[AdminLogin] Firestore sync failed, but login succeeded:', fsErr);
-      }
-      */
-
+      // Use the server function to check admin status securely
+      const result = await checkAdminStatus({ data: { email: user.email || '', uid: user.uid } } as any);
+      const isAdmin = result?.isAdmin || false;
       
-      let isAdmin = false;
-
-      // Primary hardcoded check for admin email
-      const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
-      if (user.email && allowedEmails.includes(user.email)) {
-        isAdmin = true;
-      } else {
-        // 1. Try Firestore
-        try {
-          const userDocRef = doc(firestore, 'users', user.uid);
-          const userDoc = await getDoc(userDocRef);
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            isAdmin = userData['role'] === 'admin' || userData['isAdmin'] === true;
-          }
-        } catch (fsErr: any) {
-          console.warn('[AdminLogin] Firestore check failed:', fsErr.message);
-        }
-
-        // 2. Try RTDB
-        if (!isAdmin) {
-          try {
-            const adminRef = ref(db, `admins/${user.uid}`);
-            const snapshot = await get(adminRef);
-            if (snapshot.exists()) {
-              const adminData = snapshot.val();
-              isAdmin = adminData === true || adminData?.role === 'admin' || adminData?.isAdmin === true;
-            }
-          } catch (dbErr: any) {
-            console.warn('[AdminLogin] RTDB check failed:', dbErr.message);
-          }
-        }
-      }
-      
-      // Final validation: Only allow if whitelisted
-      const isWhitelisted = user.email && allowedEmails.includes(user.email);
-      
-      if (isAdmin && isWhitelisted) {
+      if (isAdmin) {
         toast.success('অ্যাডমিন অ্যাক্সেস মঞ্জুর করা হয়েছে');
         console.log('[AdminLogin] Redirecting to dashboard...');
         navigate({ to: '/admin/dashboard' });
       } else {
-        console.log('[AdminLogin] Access denied. Admin:', isAdmin, 'Whitelisted:', isWhitelisted);
+        console.log('[AdminLogin] Access denied. Admin:', isAdmin);
         // FORCE SIGN OUT IMMEDIATELY
         await auth.signOut();
         toast.error('অ্যাক্সেস প্রত্যাখ্যান করা হয়েছে: আপনি অনুমোদিত অ্যাডমিন নন');
@@ -257,4 +205,3 @@ function AdminLoginPage() {
     </div>
   );
 }
-
