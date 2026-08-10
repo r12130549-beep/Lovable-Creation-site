@@ -355,7 +355,7 @@ function AdminPage() {
     },
     onSuccess: (result) => {
       if (!result.success || (!result.order_id && !result.orderId)) {
-        toast.error(result.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে');
+        toast.error('অর্ডার তৈরি করতে ব্যর্থ হয়েছে');
         return;
       }
       toast.success('অর্ডার সফল হয়েছে');
