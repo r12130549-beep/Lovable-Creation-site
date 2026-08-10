@@ -28,7 +28,8 @@ export const getAdminUsers = createServerFn({ method: "GET" })
 
 export const toggleUserStatus = createServerFn({ method: "POST" })
   .validator((data: any) => {
-    const raw = data?.data || data;
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+
     return z.object({
       userId: z.string(),
       isSuspended: z.boolean()
@@ -47,7 +48,8 @@ export const toggleUserStatus = createServerFn({ method: "POST" })
 
 export const removeUser = createServerFn({ method: "POST" })
   .validator((data: any) => {
-    const raw = data?.data || data;
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+
     return z.object({
       userId: z.string()
     }).parse(raw);
@@ -65,7 +67,8 @@ export const removeUser = createServerFn({ method: "POST" })
 
 export const updateUserRole = createServerFn({ method: "POST" })
   .validator((data: any) => {
-    const raw = data?.data || data;
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+
     return z.object({
       userId: z.string(),
       role: z.string()
@@ -84,7 +87,7 @@ export const updateUserRole = createServerFn({ method: "POST" })
 
 export const checkAdminStatus = createServerFn({ method: "POST" })
   .validator((data: any) => {
-    const raw = data?.data || data;
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
     return z.object({
       email: z.string().email(),
       uid: z.string()
