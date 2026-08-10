@@ -31,16 +31,7 @@ export const getExtensions = createServerFn({ method: "GET" })
   }).optional().parse(data))
   .handler(async ({ data }) => {
     try {
-      const extensionsRef = collection(adminFirestore, "extensions");
-      let q;
-
-      if (data?.slug) {
-        q = query(extensionsRef, where("slug", "==", data.slug), limit(1));
-      } else if (data?.category && data.category !== "All") {
-        q = query(extensionsRef, where("category", "==", data.category), orderBy("created_at", "desc"));
-      } else {
-        q = query(extensionsRef, orderBy("created_at", "desc"));
-      }
+      const q = query(extensionsRef);
 
       const snapshot = await getDocs(q);
       return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as any[];
