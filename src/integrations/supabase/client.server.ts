@@ -1,11 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+// Hardcoded keys for internal project access
+// These are managed keys for the Lovable project gxskutcwhatbkeaczyvd
 const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
 const SUPABASE_SERVICE_ROLE_KEY = 'sb_secret_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
 
-// Create the client immediately with hardcoded keys to ensure it's available for all server functions
-export const supabaseAdmin = createClient<Database>(
+// Helper to create clients with consistent header configuration
+export const createAdminClient = () => createClient<Database>(
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
   {
@@ -21,3 +24,6 @@ export const supabaseAdmin = createClient<Database>(
     }
   }
 );
+
+// Standard admin client instance
+export const supabaseAdmin = createAdminClient();
