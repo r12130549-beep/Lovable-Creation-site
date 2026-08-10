@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate, useSearch } from '@tanstack/react-router';
+import { useServerFn } from '@tanstack/react-start';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CreditCard, 
@@ -72,6 +73,7 @@ function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const createManualOrderFn = useServerFn(createManualOrder);
   const [formData, setFormData] = useState({ 
     name: firebaseUser?.displayName || '', 
     email: firebaseUser?.email || '', 
@@ -180,20 +182,20 @@ function CheckoutPage() {
       };
 
       // 3. Create order via server function
-      const result = await createManualOrder({ data: orderPayload });
+      const result = await createManualOrderFn({ data: orderPayload });
+      if (!result.success || !result.order_id) {
+        throw new Error(result.message || 'অর্ডারটি সেভ করা যায়নি');
+      }
       
       // 4. Update local state with the actual order ID from server
-      const finalOrderId = result.order_id || result.orderId || generatedOrderId;
+      const finalOrderId = result.order_id;
       setOrderId(finalOrderId);
 
       setStep(5);
       toast.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');
     } catch (err: any) {
       console.error('Order submission error:', err);
-      // Ensure the user never sees "Missing permissions" or "Internal server error"
-      // by forcing a success state since we've already done our best to save it
-      setStep(5);
-      toast.success('অর্ডারটি জমা দেওয়া হয়েছে (Processing)');
+      toast.error(err?.message || 'অর্ডারটি সেভ করা যায়নি। আবার চেষ্টা করুন।');
     } finally {
       setLoading(false);
     }

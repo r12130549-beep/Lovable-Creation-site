@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useServerFn } from '@tanstack/react-start';
 import { useAuth } from '@/hooks/use-auth';
 import { 
   BarChart3, Package, Users, ShoppingBag, Shield, Settings, 
@@ -48,6 +49,11 @@ function AdminPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isAddingExtension, setIsAddingExtension] = useState(false);
   const queryClient = useQueryClient();
+  const getAdminOrdersFn = useServerFn(getAdminOrders);
+  const createManualOrderFn = useServerFn(createManualOrder);
+  const updateOrderStatusFn = useServerFn(updateOrderStatus);
+  const createExtensionFn = useServerFn(createExtension);
+  const deleteExtensionFn = useServerFn(deleteExtension);
 
   useEffect(() => {
     if (initialized && (!user || !isAdmin)) {
@@ -60,7 +66,7 @@ function AdminPage() {
     
     const fetchOrders = async () => {
       try {
-        const orders = await getAdminOrders();
+        const orders = await getAdminOrdersFn();
         setRealtimeOrders(orders || []);
       } catch (err) {
         console.error("Error fetching admin orders:", err);
@@ -71,7 +77,7 @@ function AdminPage() {
     const interval = setInterval(fetchOrders, 30000); // Poll every 30s as fallback for realtime
     
     return () => clearInterval(interval);
-  }, [isAdmin]);
+  }, [isAdmin, getAdminOrdersFn]);
 
   const { data: earningsData } = useQuery({
     queryKey: ['admin-earnings'],
@@ -108,21 +114,25 @@ function AdminPage() {
   });
 
   const createOrderMutation = useMutation({
-    mutationFn: (data: any) => createManualOrder({ data }),
+    mutationFn: (data: any) => createManualOrderFn({ data }),
     onSuccess: (result) => {
+      if (!result.success || !result.order_id) {
+        toast.error(result.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে');
+        return;
+      }
       toast.success('অর্ডার সফলভাবে তৈরি হয়েছে');
-      const orderIdToCopy = result.order_id || result.orderId;
+      const orderIdToCopy = result.order_id;
       window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
       queryClient.invalidateQueries({ queryKey: ['admin-earnings'] });
       // Refresh the orders list immediately
-      getAdminOrders().then(orders => setRealtimeOrders(orders || []));
+      getAdminOrdersFn().then(orders => setRealtimeOrders(orders || []));
       setActiveTab('orders');
     },
     onError: (err: any) => toast.error(err.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে')
   });
 
   const updateOrderMutation = useMutation({
-    mutationFn: (data: any) => updateOrderStatus({ data }),
+    mutationFn: (data: any) => updateOrderStatusFn({ data }),
     onSuccess: () => {
       toast.success('অর্ডার আপডেট করা হয়েছে');
       setSelectedOrder(null);
@@ -131,7 +141,7 @@ function AdminPage() {
   });
 
   const deleteExtensionMutation = useMutation({
-    mutationFn: (id: string) => deleteExtension({ data: { id } }),
+    mutationFn: (id: string) => deleteExtensionFn({ data: { id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
       toast.success('Extension deleted');
@@ -139,7 +149,7 @@ function AdminPage() {
   });
 
   const createExtensionMutation = useMutation({
-    mutationFn: (data: any) => createExtension({ data }),
+    mutationFn: (data: any) => createExtensionFn({ data }),
     onSuccess: (res: any) => {
       if (res && res.success === false) {
         toast.error(res.message || 'Failed to create extension');

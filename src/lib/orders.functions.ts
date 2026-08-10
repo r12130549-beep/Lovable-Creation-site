@@ -34,6 +34,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
         notes: order.notes,
         transactionId: order.transaction_id,
         screenshotUrl: order.screenshot_url,
+        isManual: order.payment_method === "Manual",
         createdAt: order.created_at,
         updatedAt: order.updated_at
       }));
@@ -142,8 +143,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
         license_key: data.licenseKey || '',
         license_name: data.licenseName || '',
         download_link: data.downloadLink || '',
-        expire_date: data.expireDate || null,
-        is_manual: true
+        expire_date: data.expireDate || null
       };
 
       const { data: newOrder, error } = await supabaseAdmin
@@ -165,11 +165,11 @@ export const createManualOrder = createServerFn({ method: "POST" })
       };
     } catch (error: any) {
       console.error("Error creating manual order:", error);
-      return { 
-        success: true, 
-        orderId: "ORDER-" + Math.random().toString(36).substr(2, 7).toUpperCase(), 
-        error: true,
-        message: error.message
+      return {
+        success: false,
+        orderId: null,
+        order_id: null,
+        message: error?.message || "Order could not be saved"
       };
     }
   });
