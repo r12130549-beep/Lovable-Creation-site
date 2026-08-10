@@ -58,7 +58,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
   });
 
 export const updateOrderStatus = createServerFn({ method: "POST" })
-  .inputValidator((data) => 
+  .validator((data) => 
     z.object({
       orderId: z.string(), 
       status: z.string(),
