@@ -31,7 +31,7 @@ export const getAppSettings = createServerFn({ method: "GET" })
 
 export const updateAppSetting = createServerFn({ method: "POST" })
   .validator((data: any) => {
-    const raw = data?.data || data;
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
     return z.object({
       key: z.string(),
       value: z.any()
