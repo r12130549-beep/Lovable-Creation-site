@@ -157,7 +157,7 @@ function CheckoutPage() {
 
     setLoading(true);
     try {
-      const amount = (search as any)['plan'] === 'premium' ? 1500 : 0;
+      const amount = Number((search as any)['plan'] === 'premium' ? 1500 : 0);
       
       // 1. Generate Order ID locally for immediate UI feedback
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -175,7 +175,7 @@ function CheckoutPage() {
         whatsapp: formData.phone || 'N/A',
         productName: (search as any)['productId'] || 'Premium Extension',
         category: 'Extension',
-        price: amount,
+        price: amount || 0,
         currency: "৳",
         paymentMethod: selectedMethod.id,
         paymentStatus: "Pending",
