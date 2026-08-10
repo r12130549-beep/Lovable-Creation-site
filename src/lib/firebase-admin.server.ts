@@ -19,6 +19,8 @@ function getAdminApp() {
 }
 
 const app = getAdminApp();
+console.log("[Firebase Admin] Initialized with project:", firebaseConfig.projectId);
+
 
 // Initialize Firestore with long polling to avoid gRPC issues in serverless
 // We use a global variable to ensure we only initialize once per worker life cycle
