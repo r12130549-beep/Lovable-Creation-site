@@ -11,17 +11,27 @@ import { firebaseConfig } from './firebase';
  * Initialize Firebase Web SDK on the server with settings optimized for 
  * serverless/worker environments (disabling gRPC which can be unstable).
  */
-let app;
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApp();
+function getAdminApp() {
+  if (getApps().length === 0) {
+    return initializeApp(firebaseConfig);
+  }
+  return getApp();
 }
 
+const app = getAdminApp();
+
 // Initialize Firestore with long polling to avoid gRPC issues in serverless
-export const adminFirestore = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-});
+// Use getFirestore() if it exists to avoid "already initialized" errors
+let db;
+try {
+  db = getFirestore(app);
+} catch (e) {
+  db = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+  });
+}
+
+export const adminFirestore = db;
 export const adminDatabase = getDatabase(app);
 
 // Helper to force a fresh connection if needed
