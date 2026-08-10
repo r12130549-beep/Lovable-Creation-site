@@ -7,7 +7,7 @@ export const getAppSettings = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("app_settings")
-      .select("*");
+      .select("key, value");
 
     if (error) throw error;
     
