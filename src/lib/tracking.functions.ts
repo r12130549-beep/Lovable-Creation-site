@@ -10,12 +10,13 @@ import {
 } from "./firebase-admin.server";
 
 export const trackOrder = createServerFn({ method: "POST" })
-  .inputValidator((data) =>
-    z.object({
+  .validator((data: any) => {
+    const raw = data?.data || data;
+    return z.object({
       orderId: z.string().min(1, "Order ID is required"),
-      email: z.string().email().optional(),
-    }).parse(data)
-  )
+      email: z.string().optional().nullable(),
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
