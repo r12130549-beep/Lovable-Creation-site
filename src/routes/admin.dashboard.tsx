@@ -1,5 +1,19 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useServerFn } from '@tanstack/react-start';
+import { createServerFn, useServerFn } from '@tanstack/react-start';
+import { z } from "zod";
+import { 
+  adminFirestore as serverFirestore, 
+  collection as serverCollection, 
+  getDocs as serverGetDocs, 
+  doc as serverDoc, 
+  updateDoc as serverUpdateDoc, 
+  deleteDoc as serverDeleteDoc,
+  query as serverQuery, 
+  orderBy as serverOrderBy, 
+  where as serverWhere,
+  limit as serverLimit,
+  setDoc as serverSetDoc
+} from "../lib/firebase-admin.server";
 import { useAuth } from '@/hooks/use-auth';
 import { 
   BarChart3, Package, Users, ShoppingBag, Shield, Settings, 
@@ -8,10 +22,9 @@ import {
   Phone, Zap, Eye, Filter, Loader2, ExternalLink
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAdminLicenses, updateLicenseAdmin, createLicenseAdmin } from '@/lib/licenses.functions';
-import { deleteExtension, updateExtension, createExtension, getExtensions } from '@/lib/extensions.functions';
-import { getAdminOrders, updateOrderStatus, createManualOrder, getEarningsStats } from '@/lib/orders.functions';
-import { getAdminUsers, toggleUserStatus, removeUser } from '@/lib/users.functions';
+import { updateLicenseAdmin } from '@/lib/licenses.functions';
+import { createManualOrder, getEarningsStats } from '@/lib/orders.functions';
+import { toggleUserStatus, removeUser } from '@/lib/users.functions';
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
@@ -19,6 +32,152 @@ import { FileUpload } from '@/components/admin/FileUpload';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { format } from 'date-fns';
+
+export const getAdminOrdersFast = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      const ordersRef = serverCollection(serverFirestore, "orders");
+      const q = serverQuery(ordersRef, serverOrderBy("created_at", "desc"), serverLimit(50));
+      const querySnapshot = await serverGetDocs(q);
+      
+      const orders = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      return orders.map((order: any) => ({
+        id: order.id,
+        orderId: order.order_id || order.id,
+        customerName: order.customer_name,
+        email: order.customer_email,
+        whatsapp: order.customer_phone,
+        productName: order.product_name || order.productName || "Extension",
+        category: order.category || "Extension",
+        price: order.price || order.amount || 0,
+        currency: order.currency || "৳",
+        quantity: order.quantity || 1,
+        paymentMethod: order.payment_method,
+        paymentStatus: order.payment_status || "Pending",
+        orderStatus: order.order_status || "Pending",
+        licenseKey: order.license_key,
+        licenseName: order.license_name,
+        downloadLink: order.download_link,
+        expireDate: order.expire_date,
+        notes: order.notes,
+        transactionId: order.transaction_id,
+        screenshotUrl: order.screenshot_url,
+        isManual: order.payment_method === "Manual",
+        createdAt: order.created_at,
+        updatedAt: order.updated_at
+      }));
+    } catch (error: any) {
+      console.error("Error fetching admin orders fast:", error);
+      return [];
+    }
+  });
+
+export const getAdminExtensionsFast = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      const extensionsRef = serverCollection(serverFirestore, "extensions");
+      const q = serverQuery(extensionsRef, serverOrderBy("created_at", "desc"));
+      const snapshot = await serverGetDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error: any) {
+      console.error("Error fetching extensions fast:", error);
+      return [];
+    }
+  });
+
+export const createExtensionFast = createServerFn({ method: "POST" })
+  .validator((data: any) => z.object({
+    name: z.string(),
+    slug: z.string().optional(),
+    description: z.string().optional(),
+    price: z.number().optional(),
+    category: z.string().optional(),
+    icon_url: z.string().optional(),
+    zip_url: z.string().optional(),
+    version: z.string().optional(),
+    status: z.string().optional()
+  }).parse(data))
+  .handler(async ({ data }) => {
+    const extensionsRef = serverCollection(serverFirestore, "extensions");
+    const docRef = serverDoc(extensionsRef);
+    const payload = {
+      ...data,
+      id: docRef.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    await serverSetDoc(docRef, payload);
+    return { success: true, extension: payload };
+  });
+
+export const updateExtensionFast = createServerFn({ method: "POST" })
+  .validator((data: any) => z.object({ id: z.string(), updates: z.any() }).parse(data))
+  .handler(async ({ data }) => {
+    const docRef = serverDoc(serverFirestore, "extensions", data.id);
+    await serverUpdateDoc(docRef, { ...data.updates, updated_at: new Date().toISOString() });
+    return { success: true };
+  });
+
+export const deleteExtensionFast = createServerFn({ method: "POST" })
+  .validator((data: any) => z.object({ id: z.string() }).parse(data))
+  .handler(async ({ data }) => {
+    const docRef = serverDoc(serverFirestore, "extensions", data.id);
+    await serverDeleteDoc(docRef);
+    return { success: true };
+  });
+
+export const updateOrderStatusFast = createServerFn({ method: "POST" })
+  .validator((data: any) => z.object({ 
+    orderId: z.string(), 
+    status: z.string(),
+    productName: z.string().optional(),
+    licenseName: z.string().optional(),
+    licenseKey: z.string().optional(),
+    downloadLink: z.string().optional(),
+    expireDate: z.string().optional().nullable()
+  }).parse(data))
+  .handler(async ({ data }) => {
+    const orderRef = serverDoc(serverFirestore, "orders", data.orderId);
+    const updatePayload: any = { 
+      order_status: data.status,
+      updated_at: new Date().toISOString()
+    };
+    if (data.productName) updatePayload.product_name = data.productName;
+    if (data.licenseName) updatePayload.license_name = data.licenseName;
+    if (data.licenseKey) updatePayload.license_key = data.licenseKey;
+    if (data.downloadLink) updatePayload.download_link = data.downloadLink;
+    if (data.expireDate) updatePayload.expire_date = data.expireDate;
+    await serverUpdateDoc(orderRef, updatePayload);
+    return { success: true };
+  });
+
+export const getAdminUsersFast = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      const usersRef = serverCollection(serverFirestore, "users");
+      const snapshot = await serverGetDocs(usersRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error("Error fetching users fast:", error);
+      return [];
+    }
+  });
+
+export const getAdminLicensesFast = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      const licensesRef = serverCollection(serverFirestore, "licenses");
+      const snapshot = await serverGetDocs(licensesRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error("Error fetching admin licenses fast:", error);
+      return [];
+    }
+  });
 
 export const Route = createFileRoute('/admin/dashboard')({
   component: AdminPage,
@@ -49,12 +208,14 @@ function AdminPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isAddingExtension, setIsAddingExtension] = useState(false);
   const queryClient = useQueryClient();
-  const getAdminOrdersFn = useServerFn(getAdminOrders);
+  const getAdminOrdersFn = useServerFn(getAdminOrdersFast);
   const createManualOrderFn = useServerFn(createManualOrder);
-  const updateOrderStatusFn = useServerFn(updateOrderStatus);
-  const createExtensionFn = useServerFn(createExtension);
-  const deleteExtensionFn = useServerFn(deleteExtension);
-  const getExtensionsFn = useServerFn(getExtensions);
+  const updateOrderStatusFn = useServerFn(updateOrderStatusFast);
+  const createExtensionFn = useServerFn(createExtensionFast);
+  const deleteExtensionFn = useServerFn(deleteExtensionFast);
+  const getExtensionsFn = useServerFn(getAdminExtensionsFast);
+  const getAdminUsersFn = useServerFn(getAdminUsersFast);
+  const getAdminLicensesFn = useServerFn(getAdminLicensesFast);
 
   useEffect(() => {
     if (initialized && (!user || !isAdmin)) {
@@ -100,7 +261,7 @@ function AdminPage() {
 
   const { data: adminUsers, isLoading: usersLoading } = useQuery({
     queryKey: ['admin-users'],
-    queryFn: () => getAdminUsers(),
+    queryFn: () => getAdminUsersFn(),
     enabled: activeTab === 'users',
   });
 
@@ -112,7 +273,7 @@ function AdminPage() {
 
   const { data: licenses } = useQuery({
     queryKey: ['admin-licenses'],
-    queryFn: () => getAdminLicenses(),
+    queryFn: () => getAdminLicensesFn(),
     enabled: activeTab === 'licenses',
   });
 
@@ -137,16 +298,18 @@ function AdminPage() {
   });
 
   const updateOrderMutation = useMutation({
-    mutationFn: (data: any) => updateOrderStatusFn({ data }),
+    mutationFn: (data: any) => updateOrderStatusFn({ data } as any),
     onSuccess: () => {
       toast.success('অর্ডার আপডেট করা হয়েছে');
       setSelectedOrder(null);
+      // Refresh list
+      getAdminOrdersFn().then(orders => setRealtimeOrders(orders || []));
     },
     onError: (err: any) => toast.error(err.message || 'আপডেট ব্যর্থ হয়েছে')
   });
 
   const deleteExtensionMutation = useMutation({
-    mutationFn: (id: string) => deleteExtensionFn({ data: { id } }),
+    mutationFn: (id: string) => deleteExtensionFn({ data: { id } } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
       toast.success('Extension deleted');
@@ -154,7 +317,7 @@ function AdminPage() {
   });
 
   const createExtensionMutation = useMutation({
-    mutationFn: (data: any) => createExtensionFn({ data }),
+    mutationFn: (data: any) => createExtensionFn({ data } as any),
     onSuccess: (res: any) => {
       if (res && res.success === false) {
         toast.error(res.message || 'Failed to create extension');
