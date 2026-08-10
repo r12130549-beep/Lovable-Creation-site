@@ -362,6 +362,47 @@ function AdminPage() {
             </motion.div>
           )}
 
+          {activeTab === 'licenses' && (
+            <motion.div key="licenses" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+               <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden">
+                <table className="w-full text-left">
+                  <thead className="bg-white/5 border-b border-white/5">
+                    <tr>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">Product</th>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">License Key</th>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">User ID</th>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {licenses?.map((license: any) => (
+                      <tr key={license.id} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="px-6 py-4 text-xs font-bold">{license.product_name}</td>
+                        <td className="px-6 py-4">
+                          <code className="text-[10px] bg-white/5 px-2 py-1 rounded text-red-500">{license.license_key}</code>
+                        </td>
+                        <td className="px-6 py-4 text-[10px] text-white/40">{license.user_id}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${license.status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                            {license.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'payments' && (
+            <motion.div key="payments" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-20 text-center bg-[#0A0A0A] border border-white/5 rounded-3xl">
+              <CreditCard className="w-12 h-12 text-white/20 mx-auto mb-4" />
+              <h2 className="text-xl font-bold">Payment Methods</h2>
+              <p className="text-white/40 text-sm mt-2">Manage your gateway configurations in Website Settings.</p>
+            </motion.div>
+          )}
+
           {activeTab === 'server_status' && (
             <motion.div key="server_status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md p-8 bg-[#0A0A0A] border border-white/5 rounded-3xl space-y-8">
                <div className="flex items-center gap-4">
