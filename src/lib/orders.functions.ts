@@ -69,8 +69,9 @@ export const getAdminOrders = createServerFn({ method: "GET" })
   });
 
 export const updateOrderStatus = createServerFn({ method: "POST" })
-  .validator((data) => 
-    z.object({
+  .validator((data: any) => {
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+    return z.object({
       orderId: z.string(), 
       status: z.string(),
       productName: z.string().optional(),
@@ -80,8 +81,8 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       licenseKey: z.string().optional(),
       downloadLink: z.string().optional(),
       expireDate: z.string().optional().nullable(),
-    }).parse(data)
-  )
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     try {
       const orderRef = doc(adminFirestore, "orders", data.orderId);
@@ -108,7 +109,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 
 export const createManualOrder = createServerFn({ method: "POST" })
   .validator((data: unknown) => {
-    const raw = (data as any)?.data || data;
+    const raw = (data as any)?.data || (typeof data === 'string' ? JSON.parse(data) : data);
     
     return z.object({
       uid: z.any().optional().default("guest"),

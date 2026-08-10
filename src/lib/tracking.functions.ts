@@ -9,7 +9,7 @@ import {
 
 export const trackOrder = createServerFn({ method: "POST" })
   .validator((data: any) => {
-    const raw = data?.data || data;
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
     return z.object({
       orderId: z.string().min(1, "Order ID is required"),
       email: z.string().optional().nullable(),

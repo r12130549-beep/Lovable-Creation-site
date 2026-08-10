@@ -20,7 +20,7 @@ const num = z.any().transform((v) => (v === null || v === undefined || v === "" 
 const arr = z.any().transform((v) => (Array.isArray(v) ? v : [])).optional();
 
 const unwrap = (data: unknown) => {
-  const raw: any = data && typeof data === "object" && "data" in (data as any) ? (data as any).data : data;
+  const raw: any = data && typeof data === "object" && "data" in (data as any) ? (data as any).data : (typeof data === 'string' ? JSON.parse(data) : data);
   return raw ?? {};
 };
 

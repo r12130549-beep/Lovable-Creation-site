@@ -23,13 +23,14 @@ export const getMyLicenses = createServerFn({ method: "GET" })
   });
 
 export const createLicenseAdmin = createServerFn({ method: "POST" })
-  .validator((data: unknown) => 
-    z.object({
+  .validator((data: unknown) => {
+    const raw = (data as any)?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+    return z.object({
       userId: z.string(),
       extensionId: z.string(),
       deviceLimit: z.number().int().min(1).default(3)
-    }).parse(data)
-  )
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     try {
       const key = `VIBEX-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
@@ -58,23 +59,17 @@ export const createLicenseAdmin = createServerFn({ method: "POST" })
   });
 
 export const updateLicenseAdmin = createServerFn({ method: "POST" })
-  .validator((data: { 
-    licenseId: string; 
-    status?: "Active" | "Expired" | "Suspended" | "Revoked"; 
-    deviceLimit?: number; 
-    expiryDate?: string; 
-    resetActivations?: boolean;
-    downloadUrl?: string;
-  }) => 
-    z.object({
+  .validator((data: any) => {
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+    return z.object({
       licenseId: z.string(),
       status: licenseStatusSchema.optional(),
       deviceLimit: z.number().int().min(1).optional(),
       expiryDate: z.string().optional(),
       resetActivations: z.boolean().optional(),
       downloadUrl: z.string().optional()
-    }).parse(data)
-  )
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     try {
       const licenseRef = doc(adminFirestore, "licenses", data.licenseId);

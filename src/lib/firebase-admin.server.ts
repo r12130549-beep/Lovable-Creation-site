@@ -26,11 +26,10 @@ console.log("[Firebase Admin] Initialized with project:", firebaseConfig.project
 // We use a global variable to ensure we only initialize once per worker life cycle
 let db;
 try {
-  // If we are on the server, we must use long polling.
-  // We try to get the existing instance first.
+  // We check for an existing instance first
   db = getFirestore(app);
 } catch (e) {
-  // If it doesn't exist, we initialize it.
+  // If it doesn't exist or initialization failed, we force long polling
   db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
   });
@@ -57,7 +56,9 @@ export const wrapFirestoreCall = async (fn: any, name: string) => {
 // Helper to force a fresh connection if needed
 export const resetFirestore = async () => {
   try {
-    await terminate(adminFirestore);
+    // We terminate the current instance to free up resources
+    await terminate(db);
+    // Note: Re-initialization will happen on the next call as needed
   } catch (e) {
     console.error("Error terminating firestore:", e);
   }
