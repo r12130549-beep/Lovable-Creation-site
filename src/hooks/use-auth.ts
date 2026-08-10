@@ -52,7 +52,7 @@ if (typeof window !== 'undefined') {
       console.error('[useAuth] General error in admin status check:', error);
       
       // Fallback to basic email check if server function fails
-      const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
+      const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com', 'kivabe@gmail.com', 'popykhanum2255@gmail.com'];
       const isAdminFallback = user.email ? allowedEmails.includes(user.email) : false;
       
       state.setUser(user, isAdminFallback);
