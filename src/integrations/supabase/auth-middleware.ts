@@ -5,6 +5,7 @@ import type { Database } from './types'
 
 const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
+const SUPABASE_ANON_KEY = SUPABASE_PUBLISHABLE_KEY;
 
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
@@ -19,7 +20,7 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     
     const supabase = createClient<Database>(
       SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY,
+      SUPABASE_ANON_KEY,
       {
         global: {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
