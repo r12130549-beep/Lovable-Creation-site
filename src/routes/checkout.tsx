@@ -25,8 +25,7 @@ import { FileUpload } from '@/components/admin/FileUpload';
 import { useQuery } from '@tanstack/react-query';
 import { getAppSettings } from '@/lib/settings.functions';
 import { useAuth } from '@/hooks/use-auth';
-import { firestore } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { createManualOrder } from '@/lib/orders.functions';
 
 
 export const Route = createFileRoute('/checkout')({
@@ -186,27 +185,24 @@ function CheckoutPage() {
 
       if (sbError) console.error('Supabase insert error:', sbError);
 
-      // 3. Insert into Firebase Firestore (Source of truth for Admin Dashboard)
-      const ordersRef = collection(firestore, "orders");
-      await addDoc(ordersRef, {
-        orderId: generatedOrderId,
-        customerName: formData.name,
-        email: formData.email,
-        whatsapp: formData.phone,
-        uid: firebaseUser?.uid || 'guest',
-        productName: (search as any)['productId'] || 'Premium Extension',
-        price: amount,
-        currency: "৳",
-        paymentMethod: selectedMethod.id,
-        paymentStatus: "Pending",
-        orderStatus: "Pending",
-        txid: formData.trxId || null,
-        screenshotUrl: screenshotUrl || null,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+      // 3. Insert into Firebase Firestore (using server function to avoid permission errors)
+      const result = await createManualOrder({
+        data: {
+          uid: firebaseUser?.uid || 'guest',
+          customerName: formData.name,
+          email: formData.email,
+          whatsapp: formData.phone,
+          productName: (search as any)['productId'] || 'Premium Extension',
+          price: amount,
+          currency: "৳",
+          paymentMethod: selectedMethod.id,
+          paymentStatus: "Pending",
+          orderStatus: "Pending",
+          notes: `TRX: ${formData.trxId}`,
+        }
       });
       
-      setOrderId(generatedOrderId);
+      setOrderId(result.orderId);
       setStep(5);
       toast.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');
     } catch (err: any) {
