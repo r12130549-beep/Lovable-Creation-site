@@ -196,13 +196,13 @@ function AdminPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
                       <h3 className="font-bold flex items-center gap-2">
-                        {order.orderId}
+                        {order.orderId || order.id}
                         <span className={`text-[8px] px-2 py-0.5 rounded-full uppercase tracking-widest ${
-                          order.orderStatus === 'Approved' ? 'bg-green-500/10 text-green-500' : 
-                          order.orderStatus === 'Rejected' ? 'bg-red-500/10 text-red-500' : 
+                          order.orderStatus === 'Approved' || order.status === 'Approved' ? 'bg-green-500/10 text-green-500' : 
+                          order.orderStatus === 'Rejected' || order.status === 'Rejected' ? 'bg-red-500/10 text-red-500' : 
                           'bg-yellow-500/10 text-yellow-500'
                         }`}>
-                          {order.orderStatus}
+                          {order.orderStatus || order.status}
                         </span>
                       </h3>
                       <div className="flex items-center gap-2 bg-white/5 rounded-lg px-2 py-1 group/edit">
