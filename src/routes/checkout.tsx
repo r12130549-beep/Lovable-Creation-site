@@ -183,7 +183,7 @@ function CheckoutPage() {
       const result = await createManualOrder({ data: orderPayload });
       
       // 4. Update local state with the actual order ID from server
-      setOrderId(result.orderId || generatedOrderId);
+      setOrderId(result.order_id || result.orderId || generatedOrderId);
       
       // 4. Update local state with the actual order ID from server
       setOrderId(result.orderId || generatedOrderId);
