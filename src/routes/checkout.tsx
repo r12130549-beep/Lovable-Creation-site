@@ -196,7 +196,7 @@ function CheckoutPage() {
       setOrderId(finalOrderId);
 
       setStep(5);
-      toast.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');
+      toast.success('অর্ডার সম্পন্ন হয়েছে!');
     } catch (err: any) {
       console.error('Order submission error:', err);
       toast.error(err?.message || 'অর্ডারটি সেভ করা যায়নি। আবার চেষ্টা করুন।');
@@ -219,7 +219,7 @@ function CheckoutPage() {
               to="/" 
               className="inline-flex items-center gap-2 text-white/40 hover:text-white transition text-[10px] font-black uppercase tracking-widest mb-6"
             >
-              <ChevronLeft className="w-3 h-3" /> Back to Store
+              <ChevronLeft className="w-3 h-3" /> হোমে ফিরুন
             </Link>
             <h1 className="text-4xl md:text-5xl font-black tracking-tight">
               SECURE <span className="text-red-500">CHECKOUT</span> <span className="text-[10px] ml-2 text-white/20">(অর্ডার ট্র্যাক করতে আইডি সেভ করুন)</span>
@@ -312,7 +312,7 @@ function CheckoutPage() {
                       onClick={handleNext} 
                       className="w-full mt-10 bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-white/10 text-[10px] uppercase tracking-widest"
                     >
-                      CONTINUE TO PAYMENT <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      পেমেন্ট অপশনে যান <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </section>
                 </motion.div>
@@ -364,12 +364,12 @@ function CheckoutPage() {
                     </div>
 
                     <div className="flex gap-4 mt-10">
-                      <button onClick={() => setStep(1)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
+                      <button onClick={() => setStep(1)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">পিছনে</button>
                       <button 
                         onClick={handleNext} 
                         className="flex-[2] bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-white/10 text-[10px] uppercase tracking-widest"
                       >
-                        REVIEW ORDER <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        অর্ডার রিভিউ করুন <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
                   </section>
