@@ -3,7 +3,10 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const deleteExtension = createServerFn({ method: "POST" })
-  .inputValidator((data) => z.object({ id: z.string() }).parse(data))
+  .validator((data: any) => {
+    const raw = data?.data || data;
+    return z.object({ id: z.string() }).parse(raw);
+  })
   .handler(async ({ data }) => {
     const { error } = await supabaseAdmin
       .from("extensions")
@@ -15,12 +18,13 @@ export const deleteExtension = createServerFn({ method: "POST" })
   });
 
 export const updateExtension = createServerFn({ method: "POST" })
-  .inputValidator((data) => 
-    z.object({ 
+  .validator((data: any) => {
+    const raw = data?.data || data;
+    return z.object({ 
       id: z.string(),
       updates: z.record(z.any())
-    }).parse(data)
-  )
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     const { error } = await supabaseAdmin
       .from("extensions")
