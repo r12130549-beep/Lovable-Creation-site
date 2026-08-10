@@ -80,4 +80,32 @@ export const updateUserRole = createServerFn({ method: "POST" })
       console.error("Error updating user role:", error);
       return { success: false };
     }
+
+export const checkAdminStatus = createServerFn({ method: "POST" })
+  .validator((data: any) => {
+    const raw = data?.data || data;
+    return z.object({
+      email: z.string().email(),
+      uid: z.string()
+    }).parse(raw);
+  })
+  .handler(async ({ data }) => {
+    const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
+    if (allowedEmails.includes(data.email)) {
+      return { isAdmin: true };
+    }
+    
+    try {
+      // We still try to check Firestore on the server
+      const userRef = doc(adminFirestore, "users", data.uid);
+      const userDoc = await getDoc(userRef);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        return { isAdmin: userData['role'] === 'admin' || userData['isAdmin'] === true };
+      }
+    } catch (error) {
+      console.error("Error checking admin status on server:", error);
+    }
+    
+    return { isAdmin: false };
   });
