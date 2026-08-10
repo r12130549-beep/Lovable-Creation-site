@@ -5,11 +5,10 @@ import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
     const result = await next();
-    if (result instanceof Response) {
-      return result;
-    }
-    // TanStack Start v1 requires a Response to be returned from server routes.
-    // If next() returns context (which is common in middleware), we should handle it.
+    
+    // Server functions might return data that is NOT a Response,
+    // but the final server handler MUST return a Response.
+    // However, errorMiddleware as requestMiddleware expects result to be a Response.
     return result;
   } catch (error: any) {
     if (error instanceof Response) {
