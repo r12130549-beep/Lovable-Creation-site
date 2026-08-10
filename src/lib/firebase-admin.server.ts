@@ -39,7 +39,6 @@ try {
 export const adminFirestore = db;
 
 
-export const adminFirestore = db;
 export const adminDatabase = getDatabase(app);
 
 // Global error handler for Firestore operations to provide better feedback
