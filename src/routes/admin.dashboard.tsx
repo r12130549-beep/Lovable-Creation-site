@@ -57,31 +57,20 @@ function AdminPage() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    let unsubscribe: (() => void) | undefined;
     
-    try {
-      const q = query(collection(firestore, 'orders'), orderBy('createdAt', 'desc'));
-      unsubscribe = onSnapshot(q, (snapshot) => {
-        setRealtimeOrders(snapshot.docs.map(doc => ({ 
-          id: doc.id, 
-          ...doc.data(),
-          createdAt: doc.data()['createdAt']?.toDate?.()?.toISOString() || doc.data()['createdAt'],
-          expireDate: doc.data()['expireDate']?.toDate?.()?.toISOString() || doc.data()['expireDate']
-        })));
-      }, (error) => {
-        console.warn("Firestore snapshot error (likely permissions):", error);
-        // Fallback to server function if realtime fails
-        getAdminOrders().then(setRealtimeOrders).catch(console.error);
-      });
-    } catch (err) {
-      console.error("Firestore setup error:", err);
-      // Fallback
-      getAdminOrders().then(setRealtimeOrders).catch(console.error);
-    }
-    
-    return () => {
-      if (unsubscribe) unsubscribe();
+    const fetchOrders = async () => {
+      try {
+        const orders = await getAdminOrders();
+        setRealtimeOrders(orders);
+      } catch (err) {
+        console.error("Error fetching admin orders:", err);
+      }
     };
+
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 30000); // Poll every 30s as fallback for realtime
+    
+    return () => clearInterval(interval);
   }, [isAdmin]);
 
   const { data: earningsData } = useQuery({
@@ -202,18 +191,18 @@ function AdminPage() {
         <AnimatePresence mode="wait">
           {activeTab === 'orders' && (
             <motion.div key="orders" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              {realtimeOrders.filter(o => o.orderId?.toLowerCase().includes(searchQuery.toLowerCase()) || o.customerName?.toLowerCase().includes(searchQuery.toLowerCase())).map(order => (
+              {realtimeOrders.filter(o => (o.orderId || o.id)?.toLowerCase().includes(searchQuery.toLowerCase()) || o.customerName?.toLowerCase().includes(searchQuery.toLowerCase())).map(order => (
                 <div key={order.id} className="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl flex justify-between items-center group hover:border-red-500/30 transition-all cursor-pointer" onClick={() => setSelectedOrder(order)}>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
                       <h3 className="font-bold flex items-center gap-2">
-                        {order.orderId}
+                        {order.orderId || order.id}
                         <span className={`text-[8px] px-2 py-0.5 rounded-full uppercase tracking-widest ${
-                          order.orderStatus === 'Approved' ? 'bg-green-500/10 text-green-500' : 
-                          order.orderStatus === 'Rejected' ? 'bg-red-500/10 text-red-500' : 
+                          order.orderStatus === 'Approved' || order.status === 'Approved' ? 'bg-green-500/10 text-green-500' : 
+                          order.orderStatus === 'Rejected' || order.status === 'Rejected' ? 'bg-red-500/10 text-red-500' : 
                           'bg-yellow-500/10 text-yellow-500'
                         }`}>
-                          {order.orderStatus}
+                          {order.orderStatus || order.status}
                         </span>
                       </h3>
                       <div className="flex items-center gap-2 bg-white/5 rounded-lg px-2 py-1 group/edit">
@@ -223,7 +212,7 @@ function AdminPage() {
                           onBlur={async (e) => {
                             if (e.target.value !== order.productName) {
                               try {
-                                await updateOrderMutation.mutateAsync({ orderId: order.id, productName: e.target.value, status: order.orderStatus });
+                                await updateOrderMutation.mutateAsync({ orderId: order.id, productName: e.target.value, status: order.orderStatus || order.status });
                                 toast.success('Product name updated');
                               } catch (err) {
                                 e.target.value = order.productName;
@@ -643,18 +632,18 @@ function AdminPage() {
               </div>
             </div>
 
-            {selectedOrder.transaction_id && (
+            {(selectedOrder.transaction_id || selectedOrder.transactionId) && (
               <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Transaction ID</label>
-                <p className="font-mono text-sm text-red-500 font-bold">{selectedOrder.transaction_id}</p>
+                <p className="font-mono text-sm text-red-500 font-bold">{selectedOrder.transaction_id || selectedOrder.transactionId}</p>
               </div>
             )}
 
-            {selectedOrder.screenshot_url && (
+            {(selectedOrder.screenshot_url || selectedOrder.screenshotUrl) && (
               <div>
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-2 block">Payment Proof</label>
                 <img 
-                  src={selectedOrder.screenshot_url.startsWith('http') ? selectedOrder.screenshot_url : `${import.meta.env['VITE_SUPABASE_URL']}/storage/v1/object/public/order-assets/${selectedOrder.screenshot_url}`} 
+                  src={(selectedOrder.screenshot_url || selectedOrder.screenshotUrl).startsWith('http') ? (selectedOrder.screenshot_url || selectedOrder.screenshotUrl) : `${import.meta.env['VITE_SUPABASE_URL']}/storage/v1/object/public/order-assets/${(selectedOrder.screenshot_url || selectedOrder.screenshotUrl)}`} 
                   className="w-full rounded-2xl border border-white/10" 
                   alt="Payment Screenshot" 
                 />

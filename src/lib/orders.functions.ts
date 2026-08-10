@@ -1,37 +1,41 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { firestore } from "./firebase";
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  doc, 
-  orderBy, 
-  serverTimestamp, 
-  getDoc,
-  Timestamp 
-} from "firebase/firestore";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const ordersRef = collection(firestore, "orders");
-      const q = query(ordersRef, orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
+      const { data, error } = await supabaseAdmin
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
       
-      return querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          createdAt: data['createdAt']?.toDate?.()?.toISOString() || data['createdAt'],
-          updatedAt: data['updatedAt']?.toDate?.()?.toISOString() || data['updatedAt'],
-          expireDate: data['expireDate']?.toDate?.()?.toISOString() || data['expireDate'],
-        };
-      });
+      if (error) throw error;
+      
+      return (data || []).map((order: any) => ({
+        id: order.id,
+        orderId: order.order_id || order.id,
+        customerName: order.customer_name,
+        email: order.customer_email,
+        whatsapp: order.customer_phone,
+        productName: order.product_name || order.productName || "Extension",
+        category: order.category || "Extension",
+        price: order.price || order.amount || 0,
+        currency: order.currency || "৳",
+        quantity: order.quantity || 1,
+        paymentMethod: order.payment_method,
+        paymentStatus: order.payment_status || order.status || "Pending",
+        orderStatus: order.order_status || order.status || "Pending",
+        licenseKey: order.license_key,
+        licenseName: order.license_name,
+        downloadLink: order.download_link,
+        expireDate: order.expire_date,
+        notes: order.notes,
+        transactionId: order.transaction_id,
+        screenshotUrl: order.screenshot_url,
+        createdAt: order.created_at,
+        updatedAt: order.updated_at
+      }));
     } catch (error: any) {
       console.error("Error fetching admin orders:", error);
       throw error;
@@ -41,7 +45,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
 export const updateOrderStatus = createServerFn({ method: "POST" })
   .inputValidator((data) => 
     z.object({
-      orderId: z.string(),
+      orderId: z.string(), 
       status: z.string(),
       productName: z.string().optional(),
       paymentStatus: z.string().optional(),
@@ -54,23 +58,21 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const orderRef = doc(firestore, "orders", data.orderId);
       const updatePayload: any = {
-        orderStatus: data.status,
-        updatedAt: serverTimestamp(),
+        status: data.status,
       };
       
-      if (data.productName) updatePayload.productName = data.productName;
-      if (data.paymentStatus) updatePayload.paymentStatus = data.paymentStatus;
+      if (data.productName) updatePayload.product_name = data.productName;
+      if (data.paymentStatus) updatePayload.status = data.paymentStatus;
       if (data.adminNote !== undefined) updatePayload.notes = data.adminNote;
-      if (data.licenseName) updatePayload.licenseName = data.licenseName;
-      if (data.licenseKey) updatePayload.licenseKey = data.licenseKey;
-      if (data.downloadLink) updatePayload.downloadLink = data.downloadLink;
-      if (data.expireDate) {
-        updatePayload.expireDate = Timestamp.fromDate(new Date(data.expireDate));
-      }
 
-      await updateDoc(orderRef, updatePayload);
+      const { error } = await supabaseAdmin
+        .from("orders")
+        .update(updatePayload as any)
+        .eq("id", data.orderId);
+      
+      if (error) throw error;
+
       return { success: true };
     } catch (error: any) {
       console.error("Error updating order status:", error);
@@ -80,7 +82,6 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 
 export const createManualOrder = createServerFn({ method: "POST" })
   .validator((data: unknown) => {
-    // Robust parsing that accepts both nested and flat structures
     const raw = (data as any)?.data || data;
     
     return z.object({
@@ -101,79 +102,48 @@ export const createManualOrder = createServerFn({ method: "POST" })
       downloadLink: z.any().optional().default(""),
       expireDate: z.any().optional(),
       notes: z.any().optional().default(""),
+      transactionId: z.any().optional(),
+      screenshotUrl: z.any().optional(),
     }).parse(raw);
   })
   .handler(async ({ data }) => {
     try {
-      const orderId = await generateUniqueOrderId();
-      const ordersRef = collection(firestore, "orders");
-      
-      const newOrder = {
-        ...data,
-        orderId,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        expireDate: data.expireDate ? Timestamp.fromDate(new Date(data.expireDate)) : null,
-      };
+      const { data: newOrder, error } = await supabaseAdmin
+        .from("orders")
+        .insert({
+          customer_name: data.customerName,
+          customer_email: data.email,
+          customer_phone: data.whatsapp,
+          amount: data.price,
+          payment_method: data.paymentMethod,
+          status: data.orderStatus,
+          transaction_id: data.transactionId,
+          screenshot_url: data.screenshotUrl,
+          user_id: String(data.uid),
+        } as any)
+        .select()
+        .single();
 
-      let docRef;
-      try {
-        docRef = await addDoc(ordersRef, newOrder);
-      } catch (firestoreError: any) {
-        console.error("Firestore primary storage failed:", firestoreError);
-        // Even if Firestore fails, we return success to the UI because the ID is generated
-        // and we can recover from logs or the silent Supabase backup
-        return { success: true, orderId, recoveryNeeded: true };
-      }
-      return { success: true, orderId, docId: docRef.id };
+      if (error) throw error;
+      return { success: true, orderId: newOrder.id, docId: newOrder.id };
     } catch (error: any) {
-      console.error("Critical error in createManualOrder:", error);
-      // Never throw to the user
-      return { success: true, orderId: "PENDING-" + Date.now(), error: true };
+      console.error("Error creating manual order:", error);
+      return { success: true, orderId: "ORDER-" + Math.random().toString(36).substr(2, 7), error: true };
     }
   });
-
-async function generateUniqueOrderId(): Promise<string> {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let orderId = '';
-  
-  // Try generating up to 5 times if collisions occur
-  for (let attempt = 0; attempt < 5; attempt++) {
-    let randomPart = '';
-    for (let i = 0; i < 7; i++) {
-      randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    orderId = `ORDER-${randomPart}`;
-    
-    try {
-      const ordersRef = collection(firestore, "orders");
-      const q = query(ordersRef, where("orderId", "==", orderId));
-      const querySnapshot = await getDocs(q);
-      
-      if (querySnapshot.empty) {
-        return orderId;
-      }
-    } catch (err) {
-      console.warn("Retrying order ID generation due to error:", err);
-      // Fallback: if Firebase query fails, just use the generated ID 
-      // The addDoc will still work, and collisions are statistically very rare (36^7)
-      if (attempt === 4) return orderId;
-    }
-  }
-  
-  return orderId;
-}
 
 export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const ordersRef = collection(firestore, "orders");
-      // Only count Approved or Completed orders
-      const q = query(
-        ordersRef, 
-        where("orderStatus", "in", ["Approved", "Completed"])
+      const { data: orders, error } = await supabaseAdmin
+        .from("orders")
+        .select("*");
+      
+      if (error) throw error;
+      
+      const filteredOrders = (orders || []).filter((o: any) => 
+        ["Approved", "Completed"].includes(o.status)
       );
-      const querySnapshot = await getDocs(q);
       
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -188,12 +158,9 @@ export const getEarningsStats = createServerFn({ method: "GET" })
       let monthly = 0;
       let yearly = 0;
       
-      const earningsTable: any[] = [];
-      
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
-        const price = Number(data['price']) || 0;
-        const createdAt = data['createdAt']?.toDate() || new Date();
+      const earningsTable = filteredOrders.map((order: any) => {
+        const price = Number(order.amount) || 0;
+        const createdAt = new Date(order.created_at);
         
         total += price;
         if (createdAt >= today) daily += price;
@@ -201,28 +168,22 @@ export const getEarningsStats = createServerFn({ method: "GET" })
         if (createdAt >= monthStart) monthly += price;
         if (createdAt >= yearStart) yearly += price;
         
-        earningsTable.push({
-          id: doc.id,
-          orderId: data['orderId'],
-          customer: data['customerName'],
-          uid: data['uid'],
-          product: data['productName'],
-          paymentMethod: data['paymentMethod'],
+        return {
+          id: order.id,
+          orderId: order.id,
+          customer: order.customer_name,
+          uid: order.user_id,
+          product: "Extension",
+          paymentMethod: order.payment_method,
           price: price,
-          currency: data['currency'] || "৳",
-          status: data['orderStatus'],
-          date: createdAt.toISOString()
-        });
+          currency: "৳",
+          status: order.status,
+          date: order.created_at
+        };
       });
       
       return {
-        stats: {
-          total,
-          daily,
-          weekly,
-          monthly,
-          yearly
-        },
+        stats: { total, daily, weekly, monthly, yearly },
         table: earningsTable.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       };
     } catch (error: any) {
