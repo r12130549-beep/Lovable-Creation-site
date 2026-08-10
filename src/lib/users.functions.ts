@@ -8,33 +8,36 @@ export const getAdminUsers = createServerFn({ method: "GET" })
   });
 
 export const toggleUserStatus = createServerFn({ method: "POST" })
-  .inputValidator((data: { userId: string; isSuspended: boolean }) => 
-    z.object({
+  .validator((data: any) => {
+    const raw = data?.data || data;
+    return z.object({
       userId: z.string(),
       isSuspended: z.boolean()
-    }).parse(data)
-  )
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     return updateUserStatus(data.userId, data.isSuspended);
   });
 
 export const removeUser = createServerFn({ method: "POST" })
-  .inputValidator((data: { userId: string }) => 
-    z.object({
+  .validator((data: any) => {
+    const raw = data?.data || data;
+    return z.object({
       userId: z.string()
-    }).parse(data)
-  )
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     return deleteUser(data.userId);
   });
 
 export const updateUserRole = createServerFn({ method: "POST" })
-  .inputValidator((data: { userId: string; role: string }) => 
-    z.object({
+  .validator((data: any) => {
+    const raw = data?.data || data;
+    return z.object({
       userId: z.string(),
       role: z.string()
-    }).parse(data)
-  )
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     return updateUserRoleServer(data.userId, data.role);
   });
