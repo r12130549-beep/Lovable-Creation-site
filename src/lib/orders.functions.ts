@@ -59,14 +59,12 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const updatePayload: any = {
-        status: data.status,
-        order_status: data.status, // Schema compatibility
+        order_status: data.status,
       };
       
       if (data.productName) updatePayload.product_name = data.productName;
       if (data.paymentStatus) {
-        updatePayload.status = data.paymentStatus;
-        updatePayload.payment_status = data.paymentStatus; // Schema compatibility
+        updatePayload.payment_status = data.paymentStatus;
       }
       if (data.adminNote !== undefined) updatePayload.notes = data.adminNote;
       if (data.licenseName) updatePayload.license_name = data.licenseName;
@@ -186,7 +184,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
       if (error) throw error;
       
       const filteredOrders = (orders || []).filter((o: any) => 
-        ["Approved", "Completed"].includes(o.status)
+        ["Approved", "Completed"].includes(o.order_status || o.payment_status)
       );
       
       const now = new Date();
@@ -221,7 +219,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
           paymentMethod: order.payment_method,
           price: price,
           currency: "৳",
-          status: order.status,
+          status: order.order_status || order.payment_status,
           date: order.created_at
         };
       });
