@@ -163,7 +163,9 @@ export const createManualOrder = createServerFn({ method: "POST" })
       console.error("Error creating order in Firebase:", error);
       return {
         success: false,
-        message: error?.message || "Order could not be saved"
+        message: error?.message || "Order could not be saved",
+        order_id: null,
+        orderId: null
       };
     }
   });
