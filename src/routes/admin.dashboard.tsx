@@ -632,10 +632,10 @@ function AdminPage() {
               </div>
             </div>
 
-            {selectedOrder.transaction_id && (
+            {(selectedOrder.transaction_id || selectedOrder.transactionId) && (
               <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Transaction ID</label>
-                <p className="font-mono text-sm text-red-500 font-bold">{selectedOrder.transaction_id}</p>
+                <p className="font-mono text-sm text-red-500 font-bold">{selectedOrder.transaction_id || selectedOrder.transactionId}</p>
               </div>
             )}
 
