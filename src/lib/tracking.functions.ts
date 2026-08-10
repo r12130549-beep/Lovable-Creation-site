@@ -27,7 +27,7 @@ export const trackOrder = createServerFn({ method: "POST" })
       
       const querySnapshot = await getDocs(q);
       
-      if (querySnapshot.empty) {
+      if (querySnapshot.empty || !querySnapshot.docs[0]) {
         throw new Error("Order not found");
       }
 

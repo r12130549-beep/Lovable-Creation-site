@@ -26,7 +26,7 @@ export const Route = createFileRoute("/extensions/$slug")({
     const q = query(extensionsRef, where("slug", "==", params.slug), limit(1));
     const snapshot = await getDocs(q);
     
-    if (snapshot.empty) throw new Error("Extension not found");
+    if (snapshot.empty || !snapshot.docs[0]) throw new Error("Extension not found");
     const docSnap = snapshot.docs[0];
     return { id: docSnap.id, ...docSnap.data() } as any;
   },
