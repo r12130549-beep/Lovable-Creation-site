@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { getAppSettings } from "@/lib/settings.functions";
+import { useLanguage, translations } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,7 +24,8 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const [lang, setLang] = useState<'EN' | 'BN'>('EN');
+  const { language: lang, setLanguage: setLang } = useLanguage();
+  const t = translations[lang];
 
   const { data: settings } = useQuery({
     queryKey: ['app-settings'],
@@ -70,7 +72,7 @@ function Index() {
             <div className="flex items-center gap-2">
                <div className={`w-2 h-2 rounded-full animate-pulse ${serverStatus === 'Online' ? 'bg-green-500' : 'bg-red-500'}`} />
                <span className={serverStatus === 'Online' ? 'text-green-500' : 'text-red-500'}>
-                 Server {serverStatus}
+                 {t.serverStatus} {serverStatus}
                </span>
             </div>
             <div className="w-[1px] h-3 bg-white/10" />
@@ -79,12 +81,12 @@ function Index() {
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-widest text-white/50">
-            <Link to="/" className="hover:text-white transition-colors">Home</Link>
-            <Link to="/extensions" className="hover:text-white transition-colors">Extensions</Link>
-            <Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link>
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
-            <Link to="/track-order" className="hover:text-red-500 transition-colors bg-red-500/10 text-red-500 px-3 py-1.5 rounded-full text-[9px]">Track Order</Link>
+            <Link to="/" className="hover:text-white transition-colors">{t.home}</Link>
+            <Link to="/extensions" className="hover:text-white transition-colors">{t.extensions}</Link>
+            <Link to="/pricing" className="hover:text-white transition-colors">{t.pricing}</Link>
+            <a href="#features" className="hover:text-white transition-colors">{t.features}</a>
+            <a href="#faq" className="hover:text-white transition-colors">{t.faq}</a>
+            <Link to="/track-order" className="hover:text-red-500 transition-colors bg-red-500/10 text-red-500 px-3 py-1.5 rounded-full text-[9px]">{t.trackOrder}</Link>
           </div>
 
           <div className="hidden lg:flex items-center gap-6">
@@ -120,12 +122,12 @@ function Index() {
               className="lg:hidden absolute top-20 left-0 right-0 bg-black/95 border-b border-white/10 p-6 space-y-6 backdrop-blur-2xl z-50 overflow-y-auto max-h-[calc(100vh-80px)]"
             >
               <div className="flex flex-col gap-6 text-lg font-bold">
-                <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
-                <Link to="/extensions" onClick={() => setIsMenuOpen(false)}>Extensions</Link>
-                <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>Pricing</Link>
-                <a href="#features" onClick={() => setIsMenuOpen(false)}>Features</a>
-                <a href="#faq" onClick={() => setIsMenuOpen(false)}>FAQ</a>
-                <Link to="/track-order" className="text-red-500" onClick={() => setIsMenuOpen(false)}>Track Order</Link>
+                <Link to="/" onClick={() => setIsMenuOpen(false)}>{t.home}</Link>
+                <Link to="/extensions" onClick={() => setIsMenuOpen(false)}>{t.extensions}</Link>
+                <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>{t.pricing}</Link>
+                <a href="#features" onClick={() => setIsMenuOpen(false)}>{t.features}</a>
+                <a href="#faq" onClick={() => setIsMenuOpen(false)}>{t.faq}</a>
+                <Link to="/track-order" className="text-red-500" onClick={() => setIsMenuOpen(false)}>{t.trackOrder}</Link>
                 {/* Login option removed as requested */}
               </div>
             </motion.div>
@@ -152,13 +154,13 @@ function Index() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
               </span>
-              Marketplace v2.0 is Live
+              {t.marketplaceLive}
             </div>
             <h1 className="text-5xl md:text-7xl lg:text-[100px] leading-[0.9] font-black tracking-tight mb-10 uppercase">
-              Make Your <br />Platform Using <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-purple-500 to-red-500 bg-[length:200%_auto] animate-gradient-x">AI Tools</span>
+              {t.heroTitlePrefix} <br />{t.heroTitlePlatform} <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-purple-500 to-red-500 bg-[length:200%_auto] animate-gradient-x">{t.heroTitleAI}</span>
             </h1>
             <p className="text-lg md:text-xl text-white/40 mb-12 max-w-2xl mx-auto font-medium leading-relaxed uppercase tracking-widest text-[10px]">
-              The hub for elite browser tools. Discovery verified, high-performance extensions to supercharge your productivity.
+              {t.heroDesc}
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-6">
               <Link 
@@ -167,14 +169,14 @@ function Index() {
                 className="group relative bg-[#111] border border-white/5 hover:border-red-500/30 px-8 py-6 rounded-[2.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex flex-col items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-red-500/5 min-w-[240px]"
               >
                 <ShoppingBag className="w-8 h-8 text-red-500" />
-                BUY CREDITS
+                {t.buyCredits}
               </Link>
               <Link 
                 to="/extensions"
                 className="group relative bg-[#111] border border-white/5 hover:border-purple-500/30 px-8 py-6 rounded-[2.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex flex-col items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-purple-500/5 min-w-[240px]"
               >
                 <Zap className="w-8 h-8 text-purple-500" />
-                EXTENSION LICENSE
+                {t.extensionLicense}
               </Link>
             </div>
           </motion.div>
@@ -222,10 +224,10 @@ function Index() {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center">
             {[
-              { label: "Daily Users", value: "85K+", suffix: "Users" },
-              { label: "Extensions", value: "420+", suffix: "Tools" },
-              { label: "Success Rate", value: "99.9%", suffix: "Reliable" },
-              { label: "Satisfaction", value: "4.9/5", suffix: "Rating" },
+              { label: t.trustStats.dailyUsers, value: "85K+", suffix: "Users" },
+              { label: t.trustStats.extensions, value: "420+", suffix: "Tools" },
+              { label: t.trustStats.successRate, value: "99.9%", suffix: "Reliable" },
+              { label: t.trustStats.satisfaction, value: "4.9/5", suffix: "Rating" },
             ].map((stat, i) => (
               <motion.div 
                 key={i}
@@ -248,11 +250,11 @@ function Index() {
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
             <div className="max-w-xl">
-              <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-6">Built for the <br /> modern web.</h2>
-              <p className="text-white/40 text-lg leading-relaxed font-medium">Experience extensions that don't just work, they redefine what's possible in your browser.</p>
+              <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-6">{t.builtForWeb}</h2>
+              <p className="text-white/40 text-lg leading-relaxed font-medium">{t.heroDesc}</p>
             </div>
             <Link to="/extensions" className="text-sm font-bold uppercase tracking-widest text-red-500 flex items-center gap-2 group">
-              View all tools <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              {t.viewAllTools} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
@@ -278,8 +280,8 @@ function Index() {
       <section id="faq" className="py-32 bg-white/2 backdrop-blur-sm border-y border-white/5">
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-6">Questions?</h2>
-            <p className="text-white/40 font-medium">Everything you need to know about VIBEX.</p>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-6">{t.questions}</h2>
+            <p className="text-white/40 font-medium">{t.heroDesc}</p>
           </div>
           <div className="space-y-4">
             {[
