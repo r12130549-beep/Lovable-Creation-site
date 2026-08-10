@@ -215,6 +215,7 @@ function AdminPage() {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               createOrderMutation.mutate({
+                uid: "guest",
                 customerName: formData.get('customerName'),
                 email: formData.get('email'),
                 whatsapp: formData.get('whatsapp'),
@@ -224,10 +225,6 @@ function AdminPage() {
                 paymentMethod: "Manual"
               });
             }} className="p-8 bg-[#0A0A0A] border border-white/5 rounded-2xl space-y-4 max-w-lg">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Customer Name</label>
-                <input name="customerName" placeholder="Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
-              </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Customer Name</label>
                 <input name="customerName" placeholder="Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
