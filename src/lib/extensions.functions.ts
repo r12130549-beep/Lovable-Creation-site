@@ -87,16 +87,25 @@ export const createExtension = createServerFn({ method: "POST" })
       };
       if (data.discount_price !== undefined) payload.discount_price = data.discount_price;
 
+      // Ensure table exists and query is safe
+      if (!supabaseAdmin || !supabaseAdmin.from) {
+        throw new Error("Database client not initialized");
+      }
+
       const { data: extension, error } = await supabaseAdmin
         .from("extensions")
         .insert(payload)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Database error details:", error);
+        return { success: false, message: `Database error: ${error.message}` };
+      }
+      
       return { success: true, extension };
     } catch (error: any) {
-      console.error("Error creating extension:", error);
+      console.error("Caught error in createExtension:", error);
       return { success: false, message: error?.message || "Failed to create extension" };
     }
   });
