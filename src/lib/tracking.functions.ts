@@ -9,7 +9,8 @@ export const trackOrder = createServerFn({ method: "POST" })
     }).parse(data)
   )
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { createAdminClient } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = createAdminClient();
     try {
       // Search in Supabase orders table
       const { data: orderData, error } = await supabaseAdmin
