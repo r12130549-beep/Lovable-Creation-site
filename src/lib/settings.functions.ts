@@ -17,7 +17,7 @@ export const getAppSettings = createServerFn({ method: "GET" })
       const querySnapshot = await getDocs(settingsRef);
       
       const settings: Record<string, any> = {};
-      querySnapshot.forEach(doc => {
+      querySnapshot.forEach((doc: any) => {
         const data = doc.data() as any;
         settings[data['key']] = data['value'];
       });
