@@ -37,19 +37,24 @@ import { format } from 'date-fns';
 export const getAdminOrdersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      // Use a shorter timeout for the database call to prevent 'aborted' errors from long-running requests
       const ordersRef = serverCollection(serverFirestore, "orders");
       const querySnapshot = await serverGetDocs(ordersRef);
       
-      const orders = querySnapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const orders = querySnapshot.docs.map((doc: any) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          // Ensure critical fields are strings to avoid serialization issues
+          created_at: data.created_at || new Date(0).toISOString(),
+          customer_name: data.customer_name || 'Guest',
+          customer_email: data.customer_email || 'guest@example.com'
+        };
+      });
       
-      // Sort in memory to avoid index requirements while debugging
       orders.sort((a: any, b: any) => {
-        const dateA = new Date(a.created_at || 0).getTime();
-        const dateB = new Date(b.created_at || 0).getTime();
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
         return dateB - dateA;
       });
       
@@ -58,30 +63,30 @@ export const getAdminOrdersFast = createServerFn({ method: "GET" })
         orderId: order.order_id || order.id,
         customerName: order.customer_name,
         email: order.customer_email,
-        whatsapp: order.customer_phone,
+        whatsapp: order.customer_phone || "N/A",
         productName: order.product_name || order.productName || "Extension",
         category: order.category || "Extension",
-        price: order.price || order.amount || 0,
+        price: Number(order.price || order.amount || 0),
         currency: order.currency || "৳",
-        quantity: order.quantity || 1,
-        paymentMethod: order.payment_method,
+        quantity: Number(order.quantity || 1),
+        paymentMethod: order.payment_method || "Manual",
         paymentStatus: order.payment_status || "Pending",
         orderStatus: order.order_status || "Pending",
-        licenseKey: order.license_key,
-        licenseName: order.license_name,
-        downloadLink: order.download_link,
-        expireDate: order.expire_date,
-        notes: order.notes,
-        transactionId: order.transaction_id,
-        screenshotUrl: order.screenshot_url,
+        licenseKey: order.license_key || "",
+        licenseName: order.license_name || "",
+        downloadLink: order.download_link || "",
+        expireDate: order.expire_date || null,
+        notes: order.notes || "",
+        transactionId: order.transaction_id || "N/A",
+        screenshotUrl: order.screenshot_url || "",
         isManual: order.payment_method === "Manual",
         createdAt: order.created_at,
-        updatedAt: order.updated_at
+        updatedAt: order.updated_at || order.created_at
       }));
     } catch (error: any) {
-      console.error("Error fetching admin orders fast:", error);
-      // Return null or throw a standard error that won't cause 'aborted' on the client
-      throw new Error("Failed to fetch orders");
+      console.error("CRITICAL: Error fetching admin orders fast:", error);
+      // Fallback to empty array instead of throwing to prevent UI crash
+      return [];
     }
   });
 
