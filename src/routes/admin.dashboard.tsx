@@ -57,16 +57,24 @@ function AdminPage() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    const q = query(collection(firestore, 'orders'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setRealtimeOrders(snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data(),
-        createdAt: doc.data()['createdAt']?.toDate?.()?.toISOString() || doc.data()['createdAt'],
-        expireDate: doc.data()['expireDate']?.toDate?.()?.toISOString() || doc.data()['expireDate']
-      })));
-    });
-    return () => unsubscribe();
+    try {
+      const q = query(collection(firestore, 'orders'), orderBy('createdAt', 'desc'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setRealtimeOrders(snapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data(),
+          createdAt: doc.data()['createdAt']?.toDate?.()?.toISOString() || doc.data()['createdAt'],
+          expireDate: doc.data()['expireDate']?.toDate?.()?.toISOString() || doc.data()['expireDate']
+        })));
+      }, (error) => {
+        console.warn("Firestore snapshot error (likely permissions):", error);
+        // Fallback to server function if realtime fails
+        getAdminOrders().then(setRealtimeOrders).catch(console.error);
+      });
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Firestore setup error:", err);
+    }
   }, [isAdmin]);
 
   const { data: earningsData } = useQuery({
