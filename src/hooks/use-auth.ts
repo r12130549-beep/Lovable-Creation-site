@@ -44,7 +44,14 @@ if (typeof window !== 'undefined') {
         return;
       }
 
-      const result = await checkAdminStatus({ data: { email: user.email || '', uid: user.uid } } as any);
+      const result = await checkAdminStatus({ 
+        data: { 
+          email: user.email || '', 
+          uid: user.uid,
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || ''
+        } 
+      } as any);
       state.setUser(user, result?.isAdmin || false);
     } catch (error: any) {
       console.error('[useAuth] Error:', error);

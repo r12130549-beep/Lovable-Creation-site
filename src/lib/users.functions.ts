@@ -90,10 +90,38 @@ export const checkAdminStatus = createServerFn({ method: "POST" })
     const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
     return z.object({
       email: z.string().email(),
-      uid: z.string()
+      uid: z.string(),
+      displayName: z.string().optional(),
+      photoURL: z.string().optional()
     }).parse(raw);
   })
   .handler(async ({ data }) => {
+    // Sync user data to Firestore on every check
+    try {
+      const userRef = doc(adminFirestore, "users", data.uid);
+      const userDoc = await getDoc(userRef);
+      
+      const userData = {
+        email: data.email,
+        display_name: data.displayName || '',
+        photo_url: data.photoURL || '',
+        last_login: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          ...userData,
+          role: 'user',
+          created_at: new Date().toISOString()
+        });
+      } else {
+        await updateDoc(userRef, userData);
+      }
+    } catch (error) {
+      console.error("Error syncing user data to Firestore:", error);
+    }
+
     const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com', 'kivabe@gmail.com', 'popykhanum2255@gmail.com', 'ashik97355@gmail.com', 'emon@gmail.com', 'admin@vibex.com'];
     
     // Check whitelist first
