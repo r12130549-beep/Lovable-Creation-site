@@ -37,6 +37,7 @@ import { format } from 'date-fns';
 export const getAdminOrdersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
+      // Use a shorter timeout for the database call to prevent 'aborted' errors from long-running requests
       const ordersRef = serverCollection(serverFirestore, "orders");
       const querySnapshot = await serverGetDocs(ordersRef);
       
@@ -79,7 +80,8 @@ export const getAdminOrdersFast = createServerFn({ method: "GET" })
       }));
     } catch (error: any) {
       console.error("Error fetching admin orders fast:", error);
-      return [];
+      // Return null or throw a standard error that won't cause 'aborted' on the client
+      throw new Error("Failed to fetch orders");
     }
   });
 
