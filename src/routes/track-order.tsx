@@ -108,7 +108,7 @@ function TrackOrderPage() {
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
-                    Track Order
+                    অর্ডার ট্র্যাক করুন
                     <ArrowRight className="w-5 h-5" />
                   </>
                 )}
