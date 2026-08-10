@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
+// Using the service role key provided in context
 const SUPABASE_SERVICE_ROLE_KEY = 'sb_secret_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
 
 export const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -9,8 +10,5 @@ export const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVI
     storage: undefined,
     persistSession: false,
     autoRefreshToken: false,
-  },
-  global: {
-    headers: { 'x-application-name': 'lovable-creation-admin' }
   }
 });
