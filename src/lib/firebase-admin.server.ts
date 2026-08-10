@@ -1,4 +1,4 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getApps, getApp, FirebaseApp, initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit } from 'firebase/firestore';
 import { getDatabase, ref, get, set, update, push, remove } from 'firebase/database';
 
@@ -8,6 +8,9 @@ const firebaseConfig = {
   projectId: "lovable-a893f",
   storageBucket: "lovable-a893f.firebasestorage.app",
   databaseURL: "https://lovable-a893f-default-rtdb.firebaseio.com",
+  messagingSenderId: "755506465353",
+  appId: "1:755506465353:web:68e9ce259f56a913154d98",
+  measurementId: "G-D9RZXBYKX3"
 };
 
 let app: FirebaseApp;
