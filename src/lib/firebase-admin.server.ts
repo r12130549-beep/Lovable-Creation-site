@@ -1,22 +1,20 @@
-import { initializeApp, getApps, getApp, cert } from 'firebase-admin/app';
+import { initializeApp, getApps, getApp } from 'firebase-admin/app';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getDatabase } from 'firebase-admin/database';
+import { firebaseConfig } from './firebase';
 
 /**
- * Initialize Firebase Admin SDK using the credentials if available,
- * or using application default credentials if not.
+ * Initialize Firebase Admin SDK using the credentials if available.
  */
 let app;
 if (getApps().length === 0) {
-  // In a local environment with the service account secret, use cert()
-  // In Vercel/Cloudflare, it will look for GOOGLE_APPLICATION_CREDENTIALS
   try {
     app = initializeApp({
-      databaseURL: "https://lovable-a893f-default-rtdb.firebaseio.com"
+      projectId: firebaseConfig.projectId,
+      databaseURL: firebaseConfig.databaseURL
     });
   } catch (error) {
-    console.warn("Firebase Admin init warning (likely missing credentials):", error);
-    // Fallback to minimal initialization
+    console.warn("Firebase Admin init warning:", error);
     app = initializeApp();
   }
 } else {
