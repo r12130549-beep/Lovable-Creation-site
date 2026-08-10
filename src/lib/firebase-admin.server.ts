@@ -9,6 +9,8 @@ const firebaseConfig = {
 
 /**
  * Initialize Firebase Admin SDK.
+ * Using project ID allows the SDK to function without a service account JSON file,
+ * relying on environment credentials or public access for non-sensitive operations.
  */
 if (getApps().length === 0) {
   initializeApp(firebaseConfig);
@@ -49,7 +51,7 @@ export const getDocs = async (query: any) => {
       }
     };
   } catch (error: any) {
-    console.warn("Firestore Admin getDocs failed:", error.message);
+    console.error("Firestore Admin getDocs failed:", error.message);
     return { docs: [], empty: true, forEach: () => {} };
   }
 };
@@ -63,40 +65,20 @@ export const getDoc = async (docRef: any) => {
       id: snapshot.id
     };
   } catch (error: any) {
-    console.warn("Firestore Admin getDoc failed:", error.message);
+    console.error("Firestore Admin getDoc failed:", error.message);
     return { exists: () => false, data: () => undefined, id: docRef.id };
   }
 };
 
 export const setDoc = async (docRef: any, data: any, options?: { merge?: boolean }) => {
-  try {
-    if (options?.merge) {
-      return await docRef.set(data, { merge: true });
-    }
-    return await docRef.set(data);
-  } catch (error: any) {
-    console.error("Firestore Admin setDoc failed:", error.message);
-    throw error;
+  if (options?.merge) {
+    return await docRef.set(data, { merge: true });
   }
+  return await docRef.set(data);
 };
 
-export const updateDoc = async (docRef: any, data: any) => {
-  try {
-    return await docRef.update(data);
-  } catch (error: any) {
-    console.error("Firestore Admin updateDoc failed:", error.message);
-    throw error;
-  }
-};
-
-export const deleteDoc = async (docRef: any) => {
-  try {
-    return await docRef.delete();
-  } catch (error: any) {
-    console.error("Firestore Admin deleteDoc failed:", error.message);
-    throw error;
-  }
-};
+export const updateDoc = async (docRef: any, data: any) => await docRef.update(data);
+export const deleteDoc = async (docRef: any) => await docRef.delete();
 
 export const query = (colRef: any, ...constraints: any[]) => {
   let q = colRef;
@@ -114,14 +96,7 @@ export const limit = (val: number) => ({ type: 'limit', val });
 
 // --- Realtime Database Helpers ---
 export const ref = (db: any, path: string) => db.ref(path);
-export const get = async (nodeRef: any) => {
-  try {
-    return await nodeRef.once('value');
-  } catch (error: any) {
-    console.warn("RTDB Admin get failed:", error.message);
-    throw error;
-  }
-};
+export const get = async (nodeRef: any) => await nodeRef.once('value');
 export const set = async (nodeRef: any, val: any) => await nodeRef.set(val);
 export const update = async (nodeRef: any, val: any) => await nodeRef.update(val);
 export const remove = async (nodeRef: any) => await nodeRef.remove();
