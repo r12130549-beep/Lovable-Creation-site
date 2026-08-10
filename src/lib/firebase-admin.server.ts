@@ -5,8 +5,12 @@ import { firebaseConfig } from './firebase';
 
 /**
  * Initialize Firebase Web SDK on the server.
- * This avoids the "Could not load default credentials" error associated with the Node.js Admin SDK
- * in environments where a service account JSON is not present.
+ * Note: To bypass client-side RLS (Row Level Security) when running on the server 
+ * in an environment where the Admin SDK is problematic, we use the Web SDK.
+ * 
+ * IMPORTANT: Because this is a Web SDK instance, it still respects Firestore Security Rules.
+ * You MUST ensure your firestore.rules allow "read, write: if true" (Public) 
+ * for this specific backend project if you want the server functions to bypass auth checks.
  */
 let app;
 if (getApps().length === 0) {
