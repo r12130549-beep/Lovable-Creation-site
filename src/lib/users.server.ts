@@ -9,12 +9,7 @@ export async function getAllUsersAdmin() {
   const supabase = await getAdmin();
   const { data, error } = await supabase
     .from('profiles')
-    .select(`
-      *,
-      orders:orders(count),
-      licenses:licenses(count)
-    `)
-    .order('created_at', { ascending: false });
+    .select(`*`);
 
   if (error) throw error;
   return data;

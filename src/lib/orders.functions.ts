@@ -8,8 +8,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
     try {
       const { data, error } = await supabaseAdmin
         .from("orders")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("*");
       
       if (error) throw error;
       

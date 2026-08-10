@@ -14,12 +14,8 @@ export async function getLicensesForUser(userId: string) {
   const supabase = await getAdmin();
   const { data, error } = await supabase
     .from('licenses')
-    .select(`
-      *,
-      extension:extension_id(name, icon_url)
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .select(`*`)
+    .eq('user_id', userId);
 
   if (error) throw error;
   return data;
@@ -29,12 +25,7 @@ export async function getAllLicensesAdmin() {
   const supabase = await getAdmin();
   const { data, error } = await supabase
     .from('licenses')
-    .select(`
-      *,
-      user:profiles(full_name),
-      extension:extension_id(name)
-    `)
-    .order('created_at', { ascending: false });
+    .select(`*`);
 
   if (error) throw error;
   return data;
