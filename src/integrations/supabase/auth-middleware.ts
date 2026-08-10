@@ -3,28 +3,11 @@ import { getRequest } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 
-function createSupabaseFetch(supabaseKey: string): typeof fetch {
-  return (input, init) => {
-    const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
-    );
-
-    if (init?.headers) {
-      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
-    }
-
-    if (supabaseKey) {
-      headers.set('apikey', supabaseKey);
-    }
-    return fetch(input, { ...init, headers });
-  };
-}
+const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
 
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
-    const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
-    
     const request = getRequest();
 
     if (!request?.headers) {
@@ -46,7 +29,6 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       SUPABASE_PUBLISHABLE_KEY,
       {
         global: {
-          fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
           headers: {
             Authorization: `Bearer ${token}`,
           },
