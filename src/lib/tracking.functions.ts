@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const trackOrder = createServerFn({ method: "POST" })
   .inputValidator((data) =>
@@ -10,12 +9,13 @@ export const trackOrder = createServerFn({ method: "POST" })
     }).parse(data)
   )
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     try {
       // Search in Supabase orders table
       const { data: orderData, error } = await supabaseAdmin
         .from("orders")
         .select("*")
-        .eq("order_id", data.orderId)
+        .eq("order_id", data.orderId.trim().toUpperCase())
         .maybeSingle();
 
       if (error) throw error;
