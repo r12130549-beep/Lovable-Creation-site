@@ -15,23 +15,15 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     }
 
     const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      throw new Error('Unauthorized');
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    if (!token || token.split('.').length !== 3) {
-      throw new Error('Unauthorized');
-    }
-
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
+    
+    // Create a guest client if no token is present
     const supabase = createClient<Database>(
       SUPABASE_URL,
       SUPABASE_PUBLISHABLE_KEY,
       {
         global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         },
         auth: {
           storage: undefined,
