@@ -140,7 +140,11 @@ function AdminPage() {
 
   const createExtensionMutation = useMutation({
     mutationFn: (data: any) => createExtension({ data }),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
+      if (res && res.success === false) {
+        toast.error(res.message || 'Failed to create extension');
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
       toast.success('Extension created successfully');
       setIsAddingExtension(false);
@@ -350,12 +354,12 @@ function AdminPage() {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
                     createExtensionMutation.mutate({
-                      name: formData.get('name') as string,
-                      slug: (formData.get('name') as string).toLowerCase().replace(/ /g, '-'),
-                      price: Number(formData.get('price')),
-                      description: formData.get('description') as string,
-                      category: formData.get('category') as string,
-                      icon_url: formData.get('icon_url') as string || null,
+                      name: (formData.get('name') as string) || '',
+                      slug: ((formData.get('name') as string) || 'extension').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                      price: Number(formData.get('price')) || 0,
+                      description: (formData.get('description') as string) || '',
+                      category: (formData.get('category') as string) || '',
+                      icon_url: (formData.get('icon_url') as string) || '',
                       status: 'published'
                     });
                   }}
