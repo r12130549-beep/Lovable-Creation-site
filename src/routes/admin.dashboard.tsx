@@ -185,7 +185,7 @@ function AdminPage() {
               const formData = new FormData(e.currentTarget);
               createOrderMutation.mutate({
                 uid: formData.get('uid'),
-                customerName: formData.get('name'),
+                customerName: formData.get('customerName'),
                 email: formData.get('email'),
                 whatsapp: formData.get('whatsapp'),
                 productName: formData.get('product'),
@@ -194,13 +194,33 @@ function AdminPage() {
                 paymentMethod: "Manual"
               });
             }} className="p-8 bg-[#0A0A0A] border border-white/5 rounded-2xl space-y-4 max-w-lg">
-              <input name="uid" placeholder="UID" required className="w-full bg-white/5 p-3 rounded-xl" />
-              <input name="name" placeholder="Name" required className="w-full bg-white/5 p-3 rounded-xl" />
-              <input name="email" placeholder="Email" required className="w-full bg-white/5 p-3 rounded-xl" />
-              <input name="whatsapp" placeholder="WhatsApp" required className="w-full bg-white/5 p-3 rounded-xl" />
-              <input name="product" placeholder="Product" required className="w-full bg-white/5 p-3 rounded-xl" />
-              <input name="price" placeholder="Price" required type="number" className="w-full bg-white/5 p-3 rounded-xl" />
-              <button type="submit" className="w-full py-3 bg-red-600 rounded-xl font-bold">Create Order</button>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">UID</label>
+                <input name="uid" placeholder="UID" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Customer Name</label>
+                <input name="customerName" placeholder="Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Email</label>
+                <input name="email" placeholder="Email" type="email" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">WhatsApp</label>
+                <input name="whatsapp" placeholder="WhatsApp" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Product Name</label>
+                <input name="product" placeholder="Product" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Price (৳)</label>
+                <input name="price" placeholder="Price" required type="number" className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+              </div>
+              <button type="submit" disabled={createOrderMutation.isPending} className="w-full py-4 bg-red-600 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all flex items-center justify-center gap-2">
+                {createOrderMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Order"}
+              </button>
             </motion.form>
           )}
 
