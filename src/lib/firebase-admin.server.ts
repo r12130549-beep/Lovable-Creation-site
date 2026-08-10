@@ -1,12 +1,14 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit, terminate } from 'firebase/firestore';
 import { getDatabase, ref, get, set, update, remove, push } from 'firebase/database';
 import { firebaseConfig } from './firebase';
 
 /**
  * Initialize Firebase Web SDK on the server.
- * This avoids the "Could not load default credentials" error associated with the Node.js Admin SDK
- * in environments where a service account JSON is not present.
+ * 
+ * IMPORTANT: To resolve 'Missing or insufficient permissions' (PERMISSION_DENIED)
+ * when using the Web SDK on the server, we must ensure the Firestore rules are permissive
+ * AND the SDK is correctly handling connections in a serverless environment.
  */
 let app;
 if (getApps().length === 0) {
@@ -17,6 +19,11 @@ if (getApps().length === 0) {
 
 export const adminFirestore = getFirestore(app);
 export const adminDatabase = getDatabase(app);
+
+// Helper to force a fresh connection if needed (debugging)
+export const resetFirestore = async () => {
+  await terminate(adminFirestore);
+};
 
 // --- Re-exporting Web SDK methods as "Admin" aliases for compatibility ---
 export { 
