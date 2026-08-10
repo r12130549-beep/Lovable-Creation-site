@@ -165,7 +165,7 @@ function AdminLoginPage() {
         }
       }
       
-      // Final validation: Only allow if whitelisted OR if they were manually added (but for now, we stick to whitelist for safety)
+      // Final validation: Only allow if whitelisted
       const isWhitelisted = user.email && allowedEmails.includes(user.email);
       
       if (isAdmin && isWhitelisted) {
@@ -174,6 +174,7 @@ function AdminLoginPage() {
         navigate({ to: '/admin/dashboard' });
       } else {
         console.log('[AdminLogin] Access denied. Admin:', isAdmin, 'Whitelisted:', isWhitelisted);
+        // FORCE SIGN OUT IMMEDIATELY
         await auth.signOut();
         toast.error('অ্যাক্সেস প্রত্যাখ্যান করা হয়েছে: আপনি অনুমোদিত অ্যাডমিন নন');
       }

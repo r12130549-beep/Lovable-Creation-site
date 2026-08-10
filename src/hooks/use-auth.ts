@@ -44,85 +44,62 @@ if (typeof window !== 'undefined') {
       console.log('[useAuth] User detected:', user.email, user.uid);
       let isAdmin = false;
 
-      // 1. Sync user data to Supabase profiles table
-      try {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.uid)
-          .maybeSingle();
-
-        if (profileError) {
-          console.error('[useAuth] Supabase profile fetch error:', profileError);
+      // 1. Hardcoded check for primary admin email - ONLY ALLOW THESE EMAILS
+      const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
+      
+      if (user.email && allowedEmails.includes(user.email)) {
+        isAdmin = true;
+        console.log('[useAuth] Admin detected by hardcoded email:', user.email);
+      } else {
+        // 2. Check Firestore for role (but must be whitelisted for now)
+        try {
+          const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            // Only allow if explicitly marked as admin
+            const hasAdminRole = (userData['role'] === 'admin' || userData['isAdmin'] === true);
+            
+            // If they have the role but aren't in the whitelist, we still block them for extra safety
+            // Unless the user explicitly wants to allow manually added Firestore admins.
+            // For now, let's keep the whitelist as the final gate.
+            if (hasAdminRole && user.email && allowedEmails.includes(user.email)) {
+              isAdmin = true;
+            }
+          }
+        } catch (fsErr) {
+          console.warn('[useAuth] Firestore check failed');
         }
 
-        if (profile) {
-          isAdmin = profile.role === 'admin';
-          console.log('[useAuth] Admin status from Supabase:', isAdmin);
-        } else {
-          // If profile doesn't exist, create it (guest user by default)
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: user.uid,
-              full_name: user.displayName,
-              avatar_url: user.photoURL,
-              updated_at: new Date().toISOString()
-            });
-          
-          if (insertError) console.error('[useAuth] Supabase profile sync error:', insertError);
+        // 3. Check RTDB
+        if (!isAdmin) {
+          try {
+            const snapshot = await get(ref(db, `admins/${user.uid}`));
+            if (snapshot.exists()) {
+              const adminData = snapshot.val();
+              const hasAdminRole = adminData === true || adminData?.role === 'admin';
+              
+              if (hasAdminRole && user.email && allowedEmails.includes(user.email)) {
+                isAdmin = true;
+              }
+            }
+          } catch (dbErr) {
+            console.warn('[useAuth] RTDB check failed');
+          }
         }
-      } catch (sbErr) {
-        console.warn('[useAuth] Supabase sync failed, falling back to Firebase:', sbErr);
       }
 
-      // 2. Fallback: Check Firebase if Supabase check didn't confirm admin
-      if (!isAdmin) {
-        // Hardcoded check for primary admin email - ONLY ALLOW THESE EMAILS
-        const allowedEmails = ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com'];
-        if (user.email && allowedEmails.includes(user.email)) {
-          isAdmin = true;
-          console.log('[useAuth] Admin detected by hardcoded email:', user.email);
-          
-          // Sync admin status back to Supabase if confirmed here
-          await supabase.from('profiles').update({ role: 'admin' }).eq('id', user.uid);
-        } else {
-          // Check Firestore
-          try {
-            const userDoc = await getDoc(doc(firestore, 'users', user.uid));
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              // Only allow if explicitly marked as admin AND email matches or is one of the allowed admins
-              isAdmin = (userData['role'] === 'admin' || userData['isAdmin'] === true);
-            }
-          } catch (fsErr) {
-            console.warn('[useAuth] Firestore check failed');
-          }
-
-          // Check RTDB
-          if (!isAdmin) {
-            try {
-              const snapshot = await get(ref(db, `admins/${user.uid}`));
-              if (snapshot.exists()) {
-                const adminData = snapshot.val();
-                isAdmin = adminData === true || adminData?.role === 'admin';
-              }
-            } catch (dbErr) {
-              console.warn('[useAuth] RTDB check failed');
-            }
-          }
-
-          // If found in Firebase but email is NOT in allowed list, double check or reject
-          if (isAdmin && user.email && !allowedEmails.includes(user.email)) {
-             console.warn('[useAuth] User has admin role but email not in whitelist:', user.email);
-             // We can choose to allow or deny here. To be safe, if the user didn't make them admin, we deny.
-             // For now, let's keep it restricted to whitelisted emails for extra security.
-             isAdmin = false; 
-          }
-
-          if (isAdmin) {
-            await supabase.from('profiles').update({ role: 'admin' }).eq('id', user.uid);
-          }
+      // If we found they are admin, sync to Supabase (keeping it for legacy/redundancy if needed)
+      if (isAdmin) {
+        try {
+          await supabase.from('profiles').upsert({
+            id: user.uid,
+            full_name: user.displayName,
+            avatar_url: user.photoURL,
+            role: 'admin',
+            updated_at: new Date().toISOString()
+          });
+        } catch (sbErr) {
+           // Ignore Supabase sync errors
         }
       }
       
