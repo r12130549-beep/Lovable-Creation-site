@@ -140,7 +140,11 @@ function AdminPage() {
 
   const createExtensionMutation = useMutation({
     mutationFn: (data: any) => createExtension({ data }),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
+      if (res && res.success === false) {
+        toast.error(res.message || 'Failed to create extension');
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
       toast.success('Extension created successfully');
       setIsAddingExtension(false);
