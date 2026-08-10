@@ -31,6 +31,7 @@ export const getExtensions = createServerFn({ method: "GET" })
   }).optional().parse(data))
   .handler(async ({ data }) => {
     try {
+      const extensionsRef = collection(adminFirestore, "extensions");
       const q = query(extensionsRef);
 
       const snapshot = await getDocs(q);
