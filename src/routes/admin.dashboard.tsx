@@ -89,6 +89,18 @@ function AdminPage() {
     enabled: activeTab === 'users',
   });
 
+  const { data: settings } = useQuery({
+    queryKey: ['app-settings'],
+    queryFn: () => getAppSettings(),
+    enabled: activeTab === 'settings' || activeTab === 'server_status',
+  });
+
+  const { data: licenses } = useQuery({
+    queryKey: ['admin-licenses'],
+    queryFn: () => getAdminLicenses(),
+    enabled: activeTab === 'licenses',
+  });
+
   const createOrderMutation = useMutation({
     mutationFn: (data: any) => createManualOrder({ data }),
     onSuccess: (result) => {
