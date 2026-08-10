@@ -80,6 +80,7 @@ export const updateUserRole = createServerFn({ method: "POST" })
       console.error("Error updating user role:", error);
       return { success: false };
     }
+  });
 
 export const checkAdminStatus = createServerFn({ method: "POST" })
   .validator((data: any) => {
