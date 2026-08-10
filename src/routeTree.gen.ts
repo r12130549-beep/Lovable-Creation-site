@@ -10,33 +10,166 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ExtensionsRouteImport } from './routes/extensions'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as TrackOrderRouteImport } from './routes/track-order'
+import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as ExtensionsSlugRouteImport } from './routes/extensions.$slug'
+import { Route as ApiPublicCheckoutWebhookRouteImport } from './routes/api/public/checkout-webhook'
+import { Route as ApiPublicServerStatusRouteImport } from './routes/api/public/server-status'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExtensionsRoute = ExtensionsRouteImport.update({
+  id: '/extensions',
+  path: '/extensions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackOrderRoute = TrackOrderRouteImport.update({
+  id: '/track-order',
+  path: '/track-order',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const ExtensionsSlugRoute = ExtensionsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ExtensionsRoute,
+} as any)
+const ApiPublicCheckoutWebhookRoute =
+  ApiPublicCheckoutWebhookRouteImport.update({
+    id: '/api/public/checkout-webhook',
+    path: '/api/public/checkout-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicServerStatusRoute = ApiPublicServerStatusRouteImport.update({
+  id: '/api/public/server-status',
+  path: '/api/public/server-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRoute
+  '/extensions': typeof ExtensionsRouteWithChildren
+  '/pricing': typeof PricingRoute
+  '/track-order': typeof TrackOrderRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/extensions/$slug': typeof ExtensionsSlugRoute
+  '/api/public/checkout-webhook': typeof ApiPublicCheckoutWebhookRoute
+  '/api/public/server-status': typeof ApiPublicServerStatusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRoute
+  '/extensions': typeof ExtensionsRouteWithChildren
+  '/pricing': typeof PricingRoute
+  '/track-order': typeof TrackOrderRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/extensions/$slug': typeof ExtensionsSlugRoute
+  '/api/public/checkout-webhook': typeof ApiPublicCheckoutWebhookRoute
+  '/api/public/server-status': typeof ApiPublicServerStatusRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRoute
+  '/extensions': typeof ExtensionsRouteWithChildren
+  '/pricing': typeof PricingRoute
+  '/track-order': typeof TrackOrderRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/extensions/$slug': typeof ExtensionsSlugRoute
+  '/api/public/checkout-webhook': typeof ApiPublicCheckoutWebhookRoute
+  '/api/public/server-status': typeof ApiPublicServerStatusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/checkout'
+    | '/extensions'
+    | '/pricing'
+    | '/track-order'
+    | '/admin/dashboard'
+    | '/extensions/$slug'
+    | '/api/public/checkout-webhook'
+    | '/api/public/server-status'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/checkout'
+    | '/extensions'
+    | '/pricing'
+    | '/track-order'
+    | '/admin/dashboard'
+    | '/extensions/$slug'
+    | '/api/public/checkout-webhook'
+    | '/api/public/server-status'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/checkout'
+    | '/extensions'
+    | '/pricing'
+    | '/track-order'
+    | '/admin/dashboard'
+    | '/extensions/$slug'
+    | '/api/public/checkout-webhook'
+    | '/api/public/server-status'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  CheckoutRoute: typeof CheckoutRoute
+  ExtensionsRoute: typeof ExtensionsRouteWithChildren
+  PricingRoute: typeof PricingRoute
+  TrackOrderRoute: typeof TrackOrderRoute
+  ApiPublicCheckoutWebhookRoute: typeof ApiPublicCheckoutWebhookRoute
+  ApiPublicServerStatusRoute: typeof ApiPublicServerStatusRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +181,112 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/extensions': {
+      id: '/extensions'
+      path: '/extensions'
+      fullPath: '/extensions'
+      preLoaderRoute: typeof ExtensionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track-order': {
+      id: '/track-order'
+      path: '/track-order'
+      fullPath: '/track-order'
+      preLoaderRoute: typeof TrackOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/extensions/$slug': {
+      id: '/extensions/$slug'
+      path: '/$slug'
+      fullPath: '/extensions/$slug'
+      preLoaderRoute: typeof ExtensionsSlugRouteImport
+      parentRoute: typeof ExtensionsRoute
+    }
+    '/api/public/checkout-webhook': {
+      id: '/api/public/checkout-webhook'
+      path: '/api/public/checkout-webhook'
+      fullPath: '/api/public/checkout-webhook'
+      preLoaderRoute: typeof ApiPublicCheckoutWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/server-status': {
+      id: '/api/public/server-status'
+      path: '/api/public/server-status'
+      fullPath: '/api/public/server-status'
+      preLoaderRoute: typeof ApiPublicServerStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminDashboardRoute: typeof AdminDashboardRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminDashboardRoute: AdminDashboardRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface ExtensionsRouteChildren {
+  ExtensionsSlugRoute: typeof ExtensionsSlugRoute
+}
+
+const ExtensionsRouteChildren: ExtensionsRouteChildren = {
+  ExtensionsSlugRoute: ExtensionsSlugRoute,
+}
+
+const ExtensionsRouteWithChildren = ExtensionsRoute._addFileChildren(
+  ExtensionsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  AuthRoute: AuthRoute,
+  CheckoutRoute: CheckoutRoute,
+  ExtensionsRoute: ExtensionsRouteWithChildren,
+  PricingRoute: PricingRoute,
+  TrackOrderRoute: TrackOrderRoute,
+  ApiPublicCheckoutWebhookRoute: ApiPublicCheckoutWebhookRoute,
+  ApiPublicServerStatusRoute: ApiPublicServerStatusRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,0 +1,1 @@
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS extension_id UUID REFERENCES public.extensions(id);
