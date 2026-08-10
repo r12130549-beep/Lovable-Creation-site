@@ -114,32 +114,47 @@ export const createExtensionFast = createServerFn({ method: "POST" })
     status: z.string().optional()
   }).parse(data))
   .handler(async ({ data }) => {
-    const extensionsRef = serverCollection(serverFirestore, "extensions");
-    const docRef = serverDoc(extensionsRef);
-    const payload = {
-      ...data,
-      id: docRef.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    await serverSetDoc(docRef, payload);
-    return { success: true, extension: payload };
+    try {
+      const extensionsRef = serverCollection(serverFirestore, "extensions");
+      const docRef = serverDoc(extensionsRef);
+      const payload = {
+        ...data,
+        id: docRef.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      await serverSetDoc(docRef, payload);
+      return { success: true, extension: payload };
+    } catch (error: any) {
+      console.error("Error creating extension fast:", error);
+      return { success: false, message: error?.message || "Failed to create extension" };
+    }
   });
 
 export const updateExtensionFast = createServerFn({ method: "POST" })
   .validator((data: any) => z.object({ id: z.string(), updates: z.any() }).parse(data))
   .handler(async ({ data }) => {
-    const docRef = serverDoc(serverFirestore, "extensions", data.id);
-    await serverUpdateDoc(docRef, { ...data.updates, updated_at: new Date().toISOString() });
-    return { success: true };
+    try {
+      const docRef = serverDoc(serverFirestore, "extensions", data.id);
+      await serverUpdateDoc(docRef, { ...data.updates, updated_at: new Date().toISOString() });
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error updating extension fast:", error);
+      return { success: false, message: error?.message || "Failed to update extension" };
+    }
   });
 
 export const deleteExtensionFast = createServerFn({ method: "POST" })
   .validator((data: any) => z.object({ id: z.string() }).parse(data))
   .handler(async ({ data }) => {
-    const docRef = serverDoc(serverFirestore, "extensions", data.id);
-    await serverDeleteDoc(docRef);
-    return { success: true };
+    try {
+      const docRef = serverDoc(serverFirestore, "extensions", data.id);
+      await serverDeleteDoc(docRef);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error deleting extension fast:", error);
+      return { success: false, message: error?.message || "Failed to delete extension" };
+    }
   });
 
 export const updateOrderStatusFast = createServerFn({ method: "POST" })
@@ -153,18 +168,23 @@ export const updateOrderStatusFast = createServerFn({ method: "POST" })
     expireDate: z.string().optional().nullable()
   }).parse(data))
   .handler(async ({ data }) => {
-    const orderRef = serverDoc(serverFirestore, "orders", data.orderId);
-    const updatePayload: any = { 
-      order_status: data.status,
-      updated_at: new Date().toISOString()
-    };
-    if (data.productName) updatePayload.product_name = data.productName;
-    if (data.licenseName) updatePayload.license_name = data.licenseName;
-    if (data.licenseKey) updatePayload.license_key = data.licenseKey;
-    if (data.downloadLink) updatePayload.download_link = data.downloadLink;
-    if (data.expireDate) updatePayload.expire_date = data.expireDate;
-    await serverUpdateDoc(orderRef, updatePayload);
-    return { success: true };
+    try {
+      const orderRef = serverDoc(serverFirestore, "orders", data.orderId);
+      const updatePayload: any = { 
+        order_status: data.status,
+        updated_at: new Date().toISOString()
+      };
+      if (data.productName) updatePayload.product_name = data.productName;
+      if (data.licenseName) updatePayload.license_name = data.licenseName;
+      if (data.licenseKey) updatePayload.license_key = data.licenseKey;
+      if (data.downloadLink) updatePayload.download_link = data.downloadLink;
+      if (data.expireDate) updatePayload.expire_date = data.expireDate;
+      await serverUpdateDoc(orderRef, updatePayload);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error updating order status fast:", error);
+      return { success: false, message: error?.message || "Failed to update order status" };
+    }
   });
 
 export const getAdminUsersFast = createServerFn({ method: "GET" })
