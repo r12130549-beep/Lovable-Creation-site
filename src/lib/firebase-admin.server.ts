@@ -35,8 +35,10 @@ try {
   });
 }
 
-
+// Global reference for server-side firestore
 export const adminFirestore = db;
+
+
 export const adminDatabase = getDatabase(app);
 
 // Global error handler for Firestore operations to provide better feedback
