@@ -161,22 +161,24 @@ function CheckoutPage() {
       }
       const generatedOrderId = `ORDER-${randomPart}`;
 
-      // 2. Insert into Supabase (Legacy/Backup)
-      const { data: orderData, error: sbError } = await supabase.from('orders').insert({
-        id: generatedOrderId, // Try to use the same ID if possible, or let Supabase generate UUID
-        customer_name: formData.name,
-        customer_email: formData.email,
-        customer_phone: formData.phone,
-        user_id: firebaseUser?.uid || null,
-        payment_method: selectedMethod.id,
-        transaction_id: formData.trxId || null,
-        screenshot_url: screenshotUrl || null,
-        status: 'Pending',
-        extension_id: (search as any)['productId'] || null,
-        amount: amount,
-      } as any).select().single();
-
-      if (sbError) console.error('Supabase insert error:', sbError);
+      // 1. Insert into Supabase (Legacy/Backup) - Handled silently
+      try {
+        await supabase.from('orders').insert({
+          id: generatedOrderId,
+          customer_name: formData.name,
+          customer_email: formData.email,
+          customer_phone: formData.phone,
+          user_id: firebaseUser?.uid || null,
+          payment_method: selectedMethod.id,
+          transaction_id: formData.trxId || null,
+          screenshot_url: screenshotUrl || null,
+          status: 'Pending',
+          extension_id: (search as any)['productId'] || null,
+          amount: amount,
+        } as any);
+      } catch (sbError) {
+        console.warn('Supabase backup insert failed, continuing with Firebase:', sbError);
+      }
 
       // 3. Insert into Firebase Firestore (using server function to avoid permission errors)
       const result = await createManualOrder({

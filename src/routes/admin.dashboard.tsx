@@ -14,7 +14,7 @@ import { getAdminUsers, toggleUserStatus, removeUser } from '@/lib/users.functio
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import { supabaseAdmin } from '@/integrations/supabase/client.server';
+import { supabase } from '@/integrations/supabase/client';
 import { FileUpload } from '@/components/admin/FileUpload';
 import { motion, AnimatePresence } from 'framer-motion';
 import { firestore } from '@/lib/firebase';
@@ -78,7 +78,8 @@ function AdminPage() {
   const { data: extensions, isLoading: extensionsLoading } = useQuery({
     queryKey: ['admin-extensions'],
     queryFn: async () => {
-      const { data } = await supabaseAdmin.from('extensions').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('extensions').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
       return data || [];
     },
     enabled: activeTab === 'extensions',
