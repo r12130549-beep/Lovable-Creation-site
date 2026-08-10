@@ -790,9 +790,14 @@ function AdminPage() {
                     <select 
                       value={(queryClient.getQueryData(['app-settings']) as any)?.['server_status'] || 'Online'}
                       onChange={async (e) => {
-                        await updateAppSetting({ data: { key: 'server_status', value: e.target.value } });
-                        queryClient.invalidateQueries({ queryKey: ['app-settings'] });
-                        toast.success('Server status updated');
+                        try {
+                          await updateAppSetting({ data: { key: 'server_status', value: e.target.value } } as any);
+                          queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+                          toast.success('Server status updated');
+                        } catch (err: any) {
+                          console.error('Error updating server status:', err);
+                          toast.error('Failed to update server status');
+                        }
                       }}
                       className="bg-black border border-white/10 rounded-lg px-3 py-1 text-xs outline-none"
                     >
