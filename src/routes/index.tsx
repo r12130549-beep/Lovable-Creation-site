@@ -99,31 +99,14 @@ function Index() {
                >BN</button>
             </div>
 
-            {user ? (
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center overflow-hidden">
-                  {user.photoURL ? (
-                    <img src={user.photoURL} alt={user.displayName || 'User'} className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-5 h-5 text-white/40" />
-                  )}
-                </div>
-                <button 
-                  onClick={() => signOut()}
-                  className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center hover:bg-red-500/20 transition-all active:scale-95 group"
-                  title="Logout"
-                >
-                  <LogOut className="w-5 h-5 text-red-500 group-hover:scale-110 transition-transform" />
-                </button>
-              </div>
-            ) : (
+            <div className="flex items-center gap-4">
               <Link 
                 to="/auth" 
                 className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center hover:bg-white/10 transition-all active:scale-95"
               >
                 <User className="w-5 h-5 text-white/40" />
               </Link>
-            )}
+            </div>
           </div>
 
           {/* Mobile Toggle */}
