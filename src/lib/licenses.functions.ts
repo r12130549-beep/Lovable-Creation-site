@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
 import { 
   generateLicenseKey, 
   getLicensesForUser, 
@@ -27,6 +27,7 @@ export const createLicenseAdmin = createServerFn({ method: "POST" })
   )
 
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const key = generateLicenseKey();
     const expiry = new Date();
     expiry.setFullYear(expiry.getFullYear() + 1); // 1 year default
@@ -64,6 +65,7 @@ export const updateLicenseAdmin = createServerFn({ method: "POST" })
     }).parse(data)
   )
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (data.resetActivations) {
       await resetLicenseActivations(data.licenseId);
     }

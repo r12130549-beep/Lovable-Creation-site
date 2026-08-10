@@ -1,9 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getAllUsersAdmin, updateUserStatus, deleteUser, updateUserRole as updateUserRoleServer } from "./users.server";
+
 
 export const getAdminUsers = createServerFn({ method: "GET" })
   .handler(async () => {
+    const { getAllUsersAdmin } = await import("./users.server");
     return getAllUsersAdmin();
   });
 
@@ -16,6 +17,7 @@ export const toggleUserStatus = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
+    const { updateUserStatus } = await import("./users.server");
     return updateUserStatus(data.userId, data.isSuspended);
   });
 
@@ -27,6 +29,7 @@ export const removeUser = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
+    const { deleteUser } = await import("./users.server");
     return deleteUser(data.userId);
   });
 
@@ -39,5 +42,6 @@ export const updateUserRole = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
+    const { updateUserRole: updateUserRoleServer } = await import("./users.server");
     return updateUserRoleServer(data.userId, data.role);
   });
