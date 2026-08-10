@@ -78,7 +78,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
 
 export const createManualOrder = createServerFn({ method: "POST" })
   .inputValidator((data) => z.object({
-    uid: z.string(),
+    uid: z.string().optional().default("guest"),
     customerName: z.string(),
     email: z.string(),
     whatsapp: z.string(),
