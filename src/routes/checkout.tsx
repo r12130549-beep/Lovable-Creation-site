@@ -185,24 +185,8 @@ function CheckoutPage() {
       // 4. Update local state with the actual order ID from server
       setOrderId(result.orderId || generatedOrderId);
       
-      // 5. Silent Supabase backup (optional, don't let it block)
-      try {
-        await supabase.from('orders').insert({
-          id: result.orderId || generatedOrderId,
-          customer_name: orderPayload.customerName,
-          customer_email: orderPayload.email,
-          customer_phone: orderPayload.whatsapp,
-          user_id: firebaseUser?.uid || null,
-          payment_method: selectedMethod.id,
-          transaction_id: formData.trxId || null,
-          screenshot_url: screenshotUrl || null,
-          status: 'Pending',
-          extension_id: (search as any)['productId'] || null,
-          amount: amount,
-        } as any);
-      } catch (sbError) {
-        console.warn('Backup storage sync skipped.');
-      }
+      // 4. Update local state with the actual order ID from server
+      setOrderId(result.orderId || generatedOrderId);
 
       setStep(5);
       toast.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');
