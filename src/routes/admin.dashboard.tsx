@@ -808,9 +808,18 @@ function AdminPage() {
                       placeholder="Show this message when offline..."
                       defaultValue={(queryClient.getQueryData(['app-settings']) as any)?.['offline_message']}
                       onBlur={async (e) => {
-                        await updateAppSetting({ data: { key: 'offline_message', value: e.target.value } });
-                        queryClient.invalidateQueries({ queryKey: ['app-settings'] });
-                        toast.success('Offline message saved');
+                        const val = e.target.value;
+                        const currentVal = (queryClient.getQueryData(['app-settings']) as any)?.['offline_message'];
+                        if (val === currentVal) return;
+                        
+                        try {
+                          await updateAppSetting({ data: { key: 'offline_message', value: val } } as any);
+                          queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+                          toast.success('Offline message saved');
+                        } catch (err: any) {
+                          console.error('Error updating offline message:', err);
+                          toast.error('Failed to save offline message');
+                        }
                       }}
                       className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm font-medium focus:border-red-500/50 outline-none h-32 resize-none"
                     />
