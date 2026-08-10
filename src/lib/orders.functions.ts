@@ -77,25 +77,28 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   });
 
 export const createManualOrder = createServerFn({ method: "POST" })
-  .inputValidator((data) => z.object({
-    uid: z.string().optional().default("guest"),
-    customerName: z.any(),
-    email: z.any(),
-    whatsapp: z.any(),
-    productName: z.any(),
-    category: z.any().optional().default("General"),
-    price: z.any().transform(v => Number(v) || 0),
-    currency: z.string().optional().default("৳"),
-    quantity: z.number().optional().default(1),
-    paymentMethod: z.any(),
-    paymentStatus: z.string().optional().default("Pending"),
-    orderStatus: z.string().optional().default("Pending"),
-    licenseKey: z.string().optional(),
-    licenseName: z.string().optional(),
-    downloadLink: z.string().optional(),
-    expireDate: z.string().optional(),
-    notes: z.string().optional(),
-  }).parse(data))
+  .inputValidator((data) => {
+    const schema = z.object({
+      uid: z.string().optional().default("guest"),
+      customerName: z.any(),
+      email: z.any(),
+      whatsapp: z.any(),
+      productName: z.any(),
+      category: z.any().optional().default("General"),
+      price: z.any().transform(v => Number(v) || 0),
+      currency: z.string().optional().default("৳"),
+      quantity: z.number().optional().default(1),
+      paymentMethod: z.any(),
+      paymentStatus: z.string().optional().default("Pending"),
+      orderStatus: z.string().optional().default("Pending"),
+      licenseKey: z.string().optional(),
+      licenseName: z.string().optional(),
+      downloadLink: z.string().optional(),
+      expireDate: z.string().optional(),
+      notes: z.string().optional(),
+    });
+    return schema.parse(data);
+  })
   .handler(async ({ data }) => {
     try {
       const orderId = await generateUniqueOrderId();
