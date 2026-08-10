@@ -108,23 +108,34 @@ export const createManualOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
+      const orderData = {
+        customer_name: String(data.customerName || 'Guest'),
+        customer_email: String(data.email || 'guest@example.com'),
+        customer_phone: String(data.whatsapp || 'N/A'),
+        amount: Number(data.price) || 0,
+        payment_method: String(data.paymentMethod || 'manual'),
+        status: String(data.orderStatus || 'Pending'),
+        transaction_id: String(data.transactionId || 'N/A'),
+        screenshot_url: String(data.screenshotUrl || ''),
+        user_id: String(data.uid || 'guest'),
+        product_name: String(data.productName || 'Premium Extension'),
+        category: String(data.category || 'Extension'),
+        currency: String(data.currency || "৳"),
+        quantity: Number(data.quantity) || 1,
+        notes: String(data.notes || ''),
+        order_id: `ORDER-${Math.random().toString(36).substr(2, 7).toUpperCase()}`
+      };
+
       const { data: newOrder, error } = await supabaseAdmin
         .from("orders")
-        .insert({
-          customer_name: data.customerName,
-          customer_email: data.email,
-          customer_phone: data.whatsapp,
-          amount: data.price,
-          payment_method: data.paymentMethod,
-          status: data.orderStatus,
-          transaction_id: data.transactionId,
-          screenshot_url: data.screenshotUrl,
-          user_id: String(data.uid),
-        } as any)
+        .insert(orderData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase insert error details:", error);
+        throw error;
+      }
       return { success: true, orderId: newOrder.id, docId: newOrder.id };
     } catch (error: any) {
       console.error("Error creating manual order:", error);
