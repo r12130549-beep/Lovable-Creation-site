@@ -455,12 +455,15 @@ function CheckoutPage() {
                         </div>
                       </div>
                       
-                      <button 
-                        onClick={handleNext}
-                        className="w-full bg-white text-black font-black py-5 rounded-[2rem] hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 group shadow-2xl shadow-white/10"
-                      >
-                        NEXT <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </button>
+                      <div className="flex gap-4">
+                        <button onClick={() => setStep(2)} className="flex-1 bg-white/5 text-white/40 font-black py-5 rounded-[2rem] hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
+                        <button 
+                          onClick={handleNext}
+                          className="flex-[2] bg-white text-black font-black py-5 rounded-[2rem] hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 group shadow-2xl shadow-white/10"
+                        >
+                          NEXT <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                      </div>
                     </div>
                   </section>
                 </motion.div>
