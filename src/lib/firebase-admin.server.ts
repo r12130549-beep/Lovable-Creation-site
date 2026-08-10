@@ -23,16 +23,20 @@ console.log("[Firebase Admin] Initialized with project:", firebaseConfig.project
 
 
 // Initialize Firestore with long polling to avoid gRPC issues in serverless
-// We use a global variable to ensure we only initialize once per worker life cycle
 let db;
 try {
-  // We check for an existing instance first
-  db = getFirestore(app);
+  // Always initialize or get the existing one with proper settings
+  if (getApps().length > 0) {
+    db = getFirestore(app);
+  } else {
+    db = initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+    });
+  }
 } catch (e) {
-  // If it doesn't exist or initialization failed, we force long polling
-  db = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-  });
+  // Fallback to getFirestore if initializeFirestore fails
+  console.warn("[Firebase Admin] initializeFirestore failed, falling back to getFirestore:", e);
+  db = getFirestore(app);
 }
 
 // Global reference for server-side firestore
