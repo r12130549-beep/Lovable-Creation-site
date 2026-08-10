@@ -20,12 +20,13 @@ export const getAppSettings = createServerFn({ method: "GET" })
   });
 
 export const updateAppSetting = createServerFn({ method: "POST" })
-  .inputValidator((data) => 
-    z.object({
+  .validator((data: any) => {
+    const raw = data?.data || data;
+    return z.object({
       key: z.string(),
       value: z.any()
-    }).parse(data)
-  )
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     const { error } = await supabaseAdmin
       .from("app_settings")
