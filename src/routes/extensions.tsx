@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Star, Users, ArrowRight, Zap, Shield, LayoutDashboard, Sparkles, Filter, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { firestore } from '@/lib/firebase';
-import { collection, query, getDocs, orderBy, where } from 'firebase/firestore';
+import { useServerFn } from '@tanstack/react-start';
+import { getExtensions } from '@/lib/extensions.functions';
 
 export const Route = createFileRoute("/extensions")({
   head: () => ({
@@ -26,21 +26,12 @@ function ExtensionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [sortBy, setSortBy] = useState('popular');
+  const getExtensionsFn = useServerFn(getExtensions);
 
   const { data: extensions, isLoading } = useQuery({
     queryKey: ['extensions', activeCategory, sortBy],
     queryFn: async () => {
-      const extensionsRef = collection(firestore, 'extensions');
-      let q;
-
-      if (activeCategory !== 'All') {
-        q = query(extensionsRef, where('category', '==', activeCategory));
-      } else {
-        q = query(extensionsRef);
-      }
-
-      const snapshot = await getDocs(q);
-      let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+      const data = await getExtensionsFn({ data: { category: activeCategory } }) as any[];
 
       if (sortBy === 'price_low') {
         data.sort((a: any, b: any) => (a.price || 0) - (b.price || 0));

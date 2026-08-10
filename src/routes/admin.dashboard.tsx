@@ -17,8 +17,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { FileUpload } from '@/components/admin/FileUpload';
 import { motion, AnimatePresence } from 'framer-motion';
-import { firestore } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot, getDocs } from 'firebase/firestore';
+import { useServerFn } from '@tanstack/react-start';
+import { getExtensions } from '@/lib/extensions.functions';
 import { format } from 'date-fns';
 
 export const Route = createFileRoute('/admin/dashboard')({
@@ -54,6 +54,7 @@ function AdminPage() {
   const updateOrderStatusFn = useServerFn(updateOrderStatus);
   const createExtensionFn = useServerFn(createExtension);
   const deleteExtensionFn = useServerFn(deleteExtension);
+  const getExtensionsFn = useServerFn(getExtensions);
 
   useEffect(() => {
     if (initialized && (!user || !isAdmin)) {
@@ -88,10 +89,8 @@ function AdminPage() {
   const { data: extensions, isLoading: extensionsLoading } = useQuery({
     queryKey: ['admin-extensions'],
     queryFn: async () => {
-      const extensionsRef = collection(firestore, 'extensions');
-      const q = query(extensionsRef, orderBy('created_at', 'desc'));
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = await getExtensionsFn();
+      return data;
     },
     enabled: activeTab === 'extensions',
   });
