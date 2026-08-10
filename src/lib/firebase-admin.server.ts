@@ -26,11 +26,10 @@ console.log("[Firebase Admin] Initialized with project:", firebaseConfig.project
 // We use a global variable to ensure we only initialize once per worker life cycle
 let db;
 try {
-  // If we are on the server, we must use long polling.
-  // We try to get the existing instance first.
+  // We check for an existing instance first
   db = getFirestore(app);
 } catch (e) {
-  // If it doesn't exist, we initialize it.
+  // If it doesn't exist or initialization failed, we force long polling
   db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
   });
