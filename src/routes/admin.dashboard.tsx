@@ -224,9 +224,203 @@ function AdminPage() {
             </motion.form>
           )}
 
+          {activeTab === 'extensions' && (
+            <motion.div key="extensions" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Extensions</h2>
+                <button className="bg-red-600 px-4 py-2 rounded-xl text-xs font-bold">+ Add Extension</button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {extensions?.map((ext: any) => (
+                  <div key={ext.id} className="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-2xl">
+                        {ext.icon_url ? <img src={ext.icon_url} className="w-8 h-8 object-contain" /> : '⚡'}
+                      </div>
+                      <div className="flex gap-2">
+                        <button className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"><Edit className="w-4 h-4" /></button>
+                        <button onClick={() => deleteExtensionMutation.mutate(ext.id)} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="font-bold">{ext.name}</h3>
+                      <p className="text-xs text-white/40 line-clamp-2 mt-1">{ext.description}</p>
+                    </div>
+                    <div className="pt-4 border-t border-white/5 flex justify-between items-center">
+                      <span className="text-sm font-black">৳{ext.price}</span>
+                      <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{ext.category}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'users' && (
+            <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+               <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden">
+                <table className="w-full text-left">
+                  <thead className="bg-white/5 border-b border-white/5">
+                    <tr>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">User</th>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">Role</th>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">Joined</th>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {adminUsers?.map((user: any) => (
+                      <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-bold overflow-hidden">
+                              {user.avatar_url ? <img src={user.avatar_url} /> : user.full_name?.[0] || 'U'}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold">{user.full_name || 'No Name'}</p>
+                              <p className="text-[10px] text-white/40">{user.id}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white/40'}`}>
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-white/40">
+                          {user.created_at ? format(new Date(user.created_at), 'PP') : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <button className="text-red-500 hover:text-red-400 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
           {activeTab === 'analytics' && (
-            <motion.div key="analytics" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center p-20 bg-[#0A0A0A] border border-white/5 rounded-2xl">
-               <h2 className="text-xl font-bold">Total Earnings: ৳{earningsData?.stats.total || 0}</h2>
+            <motion.div key="analytics" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  { label: 'Total Earnings', value: `৳${earningsData?.stats.total || 0}`, icon: TrendingUp, color: 'text-green-500' },
+                  { label: 'Daily', value: `৳${earningsData?.stats.daily || 0}`, icon: Clock, color: 'text-blue-500' },
+                  { label: 'Monthly', value: `৳${earningsData?.stats.monthly || 0}`, icon: ShoppingBag, color: 'text-purple-500' },
+                  { label: 'Yearly', value: `৳${earningsData?.stats.yearly || 0}`, icon: BarChart3, color: 'text-red-500' },
+                ].map((stat, i) => (
+                  <div key={i} className="p-6 bg-[#0A0A0A] border border-white/5 rounded-3xl space-y-4">
+                    <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${stat.color}`}>
+                      <stat.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/20">{stat.label}</p>
+                      <p className="text-2xl font-black">{stat.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden">
+                <div className="px-6 py-4 border-b border-white/5">
+                  <h3 className="text-sm font-black uppercase tracking-widest">Earnings Breakdown</h3>
+                </div>
+                <table className="w-full text-left">
+                  <thead className="bg-white/5 border-b border-white/5">
+                    <tr>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">Order ID</th>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">Customer</th>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">Amount</th>
+                      <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {earningsData?.table.map((row: any) => (
+                      <tr key={row.id} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="px-6 py-4 text-xs font-bold text-red-500">{row.orderId}</td>
+                        <td className="px-6 py-4 text-xs font-bold">{row.customer}</td>
+                        <td className="px-6 py-4 text-xs font-black">৳{row.price}</td>
+                        <td className="px-6 py-4 text-xs text-white/40">{format(new Date(row.date), 'PP')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'server_status' && (
+            <motion.div key="server_status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md p-8 bg-[#0A0A0A] border border-white/5 rounded-3xl space-y-8">
+               <div className="flex items-center gap-4">
+                 <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center">
+                   <Zap className="w-6 h-6 text-red-500" />
+                 </div>
+                 <div>
+                   <h2 className="text-xl font-black uppercase tracking-tight">Server Control</h2>
+                   <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">Manage site availability</p>
+                 </div>
+               </div>
+               
+               <div className="space-y-6">
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                    <span className="text-xs font-bold uppercase tracking-widest">Status</span>
+                    <select 
+                      value={(queryClient.getQueryData(['app-settings']) as any)?.['server_status'] || 'Online'}
+                      onChange={async (e) => {
+                        await updateAppSetting({ key: 'server_status', value: e.target.value });
+                        queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+                        toast.success('Server status updated');
+                      }}
+                      className="bg-black border border-white/10 rounded-lg px-3 py-1 text-xs outline-none"
+                    >
+                      <option value="Online">Online</option>
+                      <option value="Offline">Offline</option>
+                      <option value="Maintenance">Maintenance</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Offline Message</label>
+                    <textarea 
+                      placeholder="Show this message when offline..."
+                      defaultValue={(queryClient.getQueryData(['app-settings']) as any)?.['offline_message']}
+                      onBlur={async (e) => {
+                        await updateAppSetting({ key: 'offline_message', value: e.target.value });
+                        queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+                        toast.success('Offline message saved');
+                      }}
+                      className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm font-medium focus:border-red-500/50 outline-none h-32 resize-none"
+                    />
+                  </div>
+               </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'settings' && (
+            <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  { label: 'Binance ID', key: 'binance_id' },
+                  { label: 'bKash Number', key: 'bkash_number' },
+                  { label: 'Nagad Number', key: 'nagad_number' },
+                  { label: 'USDT Rate', key: 'usdt_rate' },
+                ].map((field) => (
+                  <div key={field.key} className="p-6 bg-[#0A0A0A] border border-white/5 rounded-3xl space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">{field.label}</label>
+                    <input 
+                      placeholder={`Enter ${field.label}`}
+                      defaultValue={(queryClient.getQueryData(['app-settings']) as any)?.[field.key]}
+                      onBlur={async (e) => {
+                        await updateAppSetting({ key: field.key, value: e.target.value });
+                        queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+                        toast.success(`${field.label} updated`);
+                      }}
+                      className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-sm font-bold focus:border-red-500/50 outline-none"
+                    />
+                  </div>
+                ))}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
