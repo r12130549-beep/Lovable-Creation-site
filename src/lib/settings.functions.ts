@@ -6,16 +6,17 @@ export const getAppSettings = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      
+      // Attempt to fetch settings, but don't crash if database is unavailable
       const { data, error } = await supabaseAdmin
         .from("app_settings")
         .select("key, value");
 
       if (error) {
-        console.error("Supabase error fetching settings:", error);
-        throw error;
+        console.warn("Supabase warning fetching settings (possibly table doesn't exist yet):", error.message);
+        return {};
       }
       
-      // Transform to object for easier use
       const settings: Record<string, any> = {};
       (data || []).forEach(item => {
         settings[item.key] = item.value;
@@ -23,8 +24,7 @@ export const getAppSettings = createServerFn({ method: "GET" })
       
       return settings;
     } catch (error: any) {
-      console.error("Error in getAppSettings server function:", error);
-      // Return empty object instead of throwing to prevent UI crash
+      console.warn("Silent catch in getAppSettings:", error.message);
       return {};
     }
   });
