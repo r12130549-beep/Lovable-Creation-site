@@ -168,10 +168,9 @@ function CheckoutPage() {
         transaction_id: formData.trxId || null,
         screenshot_url: screenshotUrl || null,
         status: 'Pending',
-        payment_status: 'Processing',
         extension_id: (search as any)['productId'] || null,
         amount: amount,
-      }).select().single();
+      } as any).select().single();
 
       if (error) throw error;
       
