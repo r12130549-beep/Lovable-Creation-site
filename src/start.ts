@@ -17,9 +17,10 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
       return error;
     }
     
+    console.error("CATASTROPHIC ERROR IN REQUEST MIDDLEWARE:", error);
+    
     const message = error?.message || String(error);
     if (message.includes("Invalid API key") || message.includes("apiKey") || message.includes("auth")) {
-       console.error("Supabase API Key Error detected, providing fallback response:", message);
        return new Response(JSON.stringify({ error: "Database configuration error", fallback: true }), {
          status: 200, 
          headers: { "content-type": "application/json" }
@@ -30,7 +31,6 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
       throw error;
     }
 
-    console.error("Server Error:", error);
     return new Response(renderErrorPage(), {
       status: 500,
       headers: { "content-type": "text/html; charset=utf-8" },
