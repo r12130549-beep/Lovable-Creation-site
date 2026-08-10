@@ -43,6 +43,7 @@ function AdminPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [realtimeOrders, setRealtimeOrders] = useState<any[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -64,17 +65,20 @@ function AdminPage() {
   useEffect(() => {
     if (!isAdmin) return;
     
-    const fetchOrders = async () => {
+    const fetchOrders = async (silent = false) => {
       try {
+        if (!silent) setIsRefreshing(true);
         const orders = await getAdminOrdersFn();
         setRealtimeOrders(orders || []);
       } catch (err) {
         console.error("Error fetching admin orders:", err);
+      } finally {
+        if (!silent) setIsRefreshing(false);
       }
     };
 
     fetchOrders();
-    const interval = setInterval(fetchOrders, 30000); // Poll every 30s as fallback for realtime
+    const interval = setInterval(() => fetchOrders(true), 15000); // Poll every 15s silently
     
     return () => clearInterval(interval);
   }, [isAdmin, getAdminOrdersFn]);
@@ -198,7 +202,32 @@ function AdminPage() {
 
       <main className="flex-1 p-10 bg-[#050505]">
         <header className="flex justify-between items-center mb-10">
-          <h1 className="text-3xl font-black uppercase">{activeTab}</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-black uppercase">{activeTab}</h1>
+            {activeTab === 'orders' && (
+              <button 
+                onClick={() => {
+                  const fetchOrders = async () => {
+                    try {
+                      setIsRefreshing(true);
+                      const orders = await getAdminOrdersFn();
+                      setRealtimeOrders(orders || []);
+                    } catch (err) {
+                      console.error("Error fetching admin orders:", err);
+                    } finally {
+                      setIsRefreshing(false);
+                    }
+                  };
+                  fetchOrders();
+                }}
+                disabled={isRefreshing}
+                className="p-2 hover:bg-white/5 rounded-xl transition-all"
+                title="Refresh Orders"
+              >
+                <Clock className={`w-4 h-4 text-white/40 ${isRefreshing ? 'animate-spin text-red-500' : ''}`} />
+              </button>
+            )}
+          </div>
           <input 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
