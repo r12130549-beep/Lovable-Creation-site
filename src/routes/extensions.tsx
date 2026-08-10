@@ -58,9 +58,9 @@ function ExtensionsPage() {
     }
   });
 
-  const filteredExtensions = extensions?.filter(ext => 
-    ext.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ext.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredExtensions = (extensions || []).filter((ext: any) => 
+    (ext.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (ext.description || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

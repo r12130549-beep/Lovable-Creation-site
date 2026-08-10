@@ -7,7 +7,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { firestore } from '@/lib/firebase';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 
 export const Route = createFileRoute("/extensions/$slug")({
   head: ({ loaderData }) => ({
@@ -21,13 +22,12 @@ export const Route = createFileRoute("/extensions/$slug")({
     ],
   }),
   loader: async ({ params }: { params: any }) => {
-    const { data, error } = await supabase
-      .from("extensions")
-      .select("*")
-      .eq("slug", params.slug)
-      .single();
-    if (error || !data) throw new Error("Extension not found");
-    return data;
+    const extensionsRef = collection(firestore, "extensions");
+    const q = query(extensionsRef, where("slug", "==", params.slug), limit(1));
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) throw new Error("Extension not found");
+    return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
   },
   component: ExtensionDetailsPage,
 });

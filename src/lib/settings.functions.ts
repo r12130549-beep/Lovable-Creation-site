@@ -18,8 +18,8 @@ export const getAppSettings = createServerFn({ method: "GET" })
       
       const settings: Record<string, any> = {};
       querySnapshot.forEach(doc => {
-        const data = doc.data();
-        settings[data.key] = data.value;
+        const data = doc.data() as any;
+        settings[data['key']] = data['value'];
       });
       
       return settings;
