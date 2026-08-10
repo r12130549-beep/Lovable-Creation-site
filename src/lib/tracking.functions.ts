@@ -10,12 +10,13 @@ import {
 } from "./firebase-admin.server";
 
 export const trackOrder = createServerFn({ method: "POST" })
-  .inputValidator((data) =>
-    z.object({
+  .validator((data: any) => {
+    const raw = data?.data || data;
+    return z.object({
       orderId: z.string().min(1, "Order ID is required"),
-      email: z.string().email().optional(),
-    }).parse(data)
-  )
+      email: z.string().optional().nullable(),
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
@@ -44,7 +45,7 @@ export const trackOrder = createServerFn({ method: "POST" })
       const isExpired = !!(expireDate && expireDate < now);
 
       return {
-        id: order.order_id,
+        id: order.order_id || querySnapshot.docs[0].id,
         customer_name: order.customer_name,
         customer_email: order.customer_email,
         payment_method: order.payment_method,

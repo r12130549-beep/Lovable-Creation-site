@@ -30,7 +30,7 @@ function TrackOrderPage() {
   const trackOrderFn = useServerFn(trackOrder);
 
   const trackMutation = useMutation({
-    mutationFn: (vars: { orderId: string; email?: string }) => trackOrderFn({ data: { orderId: vars.orderId, email: vars.email || undefined } as any }),
+    mutationFn: (vars: { orderId: string; email?: string }) => trackOrderFn({ data: { orderId: vars.orderId, email: vars.email || null } as any }),
     onSuccess: () => {
       setShowResult(true);
     },
@@ -121,7 +121,7 @@ function TrackOrderPage() {
                   className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-3"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  {trackMutation.error.message || "Could not find order. Please check the ID."}
+                  {(trackMutation.error as any)?.message || "Could not find order. Please check the ID."}
                 </motion.div>
               )}
             </form>
@@ -144,8 +144,8 @@ function TrackOrderPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">অর্ডার আইডি</span>
                     <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg flex items-center gap-2">
-                      <code className="text-sm font-black text-white">{order.id}</code>
-                      <button onClick={() => { navigator.clipboard.writeText(order.id); toast.success('Order ID copied'); }} className="text-white/20 hover:text-red-500 transition-colors">
+                      <code className="text-sm font-black text-white">{order?.id || orderId}</code>
+                      <button onClick={() => { navigator.clipboard.writeText(order?.id || orderId); toast.success('Order ID copied'); }} className="text-white/20 hover:text-red-500 transition-colors">
                         <Copy className="w-3 h-3" />
                       </button>
                     </div>
@@ -160,8 +160,8 @@ function TrackOrderPage() {
                   <div className="text-right hidden md:block">
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/20 mb-1">অর্ডার স্ট্যাটাস</p>
                     <p className={`text-xs font-black uppercase tracking-widest ${
-                      ['Approved', 'Paid', 'Completed', 'Ready'].includes(order.status) ? 'text-green-500' : 'text-yellow-500'
-                    }`}>{order.status}</p>
+                      ['Approved', 'Paid', 'Completed', 'Ready'].includes(order?.status || '') ? 'text-green-500' : 'text-yellow-500'
+                    }`}>{order?.status || 'Pending'}</p>
                   </div>
                   <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
                     <Package className="w-6 h-6 text-red-500" />
@@ -176,7 +176,7 @@ function TrackOrderPage() {
                 </div>
                 <div>
                   <h4 className="text-xs font-black uppercase tracking-widest text-green-500 mb-1">
-                    {order.product_name || "VIBEX Secure Product"}
+                    {order?.product_name || "VIBEX Secure Product"}
                   </h4>
                   <p className="text-[10px] font-medium text-white/60 leading-relaxed">
                     পেমেন্ট কনফার্ম হওয়ার সাথে সাথে গেটওয়ে স্বয়ংক্রিয়ভাবে লাইসেন্স কী এবং ডাউনলোড লিংক পাঠিয়ে দেবে।
@@ -188,7 +188,7 @@ function TrackOrderPage() {
               <div className="grid grid-cols-2 md:grid-cols-2 gap-y-10 gap-x-12 mb-12">
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">ইমেইল</p>
-                  <p className="text-xs font-bold text-white/80">{order.customer_email}</p>
+                  <p className="text-xs font-bold text-white/80">{order?.customer_email || 'N/A'}</p>
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">প্ল্যান</p>
@@ -196,40 +196,41 @@ function TrackOrderPage() {
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">মূল্য</p>
-                  <p className="text-xs font-bold text-white/80">{order.amount || 0} {order.currency || '৳'}</p>
+                  <p className="text-xs font-bold text-white/80">{order?.amount || 0} {order?.currency || '৳'}</p>
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">পেমেন্ট</p>
-                  <p className="text-xs font-bold text-white/80 uppercase">{order.payment_method}</p>
+                  <p className="text-xs font-bold text-white/80 uppercase">{order?.payment_method || 'N/A'}</p>
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">ট্রানজেকশন আইডি</p>
-                  <p className="text-xs font-mono font-bold text-white/80">{order.transaction_id || 'N/A'}</p>
+                  <p className="text-xs font-mono font-bold text-white/80">{order?.transaction_id || 'N/A'}</p>
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/20">তারিখ</p>
-                  <p className="text-xs font-bold text-white/80">{format(new Date(order.created_at), 'd/M/yyyy')}</p>
+                  <p className="text-xs font-bold text-white/80">{order?.created_at ? format(new Date(order.created_at), 'd/M/yyyy') : 'N/A'}</p>
                 </div>
               </div>
 
               {/* License/Download Section - The core request */}
-              {order.license?.status === 'Active' && !order.isExpired ? (
+              {order?.license?.status === 'Active' && !order?.isExpired ? (
                 <div className="space-y-6 mb-12">
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/5 space-y-4">
                     <div className="flex items-center justify-between">
                       <p className="text-[9px] font-black uppercase tracking-widest text-red-500">আপনার লাইসেন্স কী</p>
-                      <button onClick={() => { navigator.clipboard.writeText(order.license.key); toast.success('License Key copied'); }} className="text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
+                      <button onClick={() => { navigator.clipboard.writeText(order?.license?.key || ''); toast.success('License Key copied'); }} className="text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
                         Copy <Copy className="w-3 h-3" />
                       </button>
                     </div>
                     <code className="block w-full p-4 bg-black/40 border border-white/5 rounded-xl text-xs font-mono text-white tracking-widest break-all select-all">
-                      {order.license.key}
+                      {order?.license?.key}
                     </code>
                   </div>
                   
-                  {order.license.download_url && (
+                  {order?.license?.download_url && (
                     <a 
                       href={order.license.download_url} 
+
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="w-full bg-white text-black py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-gray-200 transition-all shadow-xl active:scale-95"
@@ -238,13 +239,14 @@ function TrackOrderPage() {
                       ডাউনলোড ফাইল
                     </a>
                   )}
-                  {order.license.expires_at && (
+                  {order?.license?.expires_at && (
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/20 text-center">
                       মেয়াদ শেষ হবে: {format(new Date(order.license.expires_at), 'PPp')}
+
                     </p>
                   )}
                 </div>
-              ) : order.isExpired ? (
+              ) : order?.isExpired ? (
                 <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 mb-12 text-center space-y-4">
                   <Shield className="w-12 h-12 text-red-500 mx-auto opacity-50" />
                   <div>
@@ -262,7 +264,7 @@ function TrackOrderPage() {
               ) : null}
 
               {/* Status Message */}
-              {(order.status === 'Rejected' || order.status === 'Failed') && !order.isExpired ? (
+              {(order?.status === 'Rejected' || order?.status === 'Failed') && !order?.isExpired ? (
                 <div className="bg-red-500/5 border border-red-500/10 rounded-2xl p-6 flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5 text-red-500" />
@@ -270,11 +272,11 @@ function TrackOrderPage() {
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-widest text-red-500 mb-1">পেমেন্ট সময় শেষ</h4>
                     <p className="text-[10px] font-medium text-white/60 leading-relaxed">
-                      {order.admin_note || "৩০ মিনিটের মধ্যে পেমেন্ট না হওয়ায় এই অর্ডারটি স্বয়ংক্রিয়ভাবে বাতিল হয়েছে। অনুগ্রহ করে নতুন অর্ডার দিন।"}
+                      {order?.admin_note || "৩০ মিনিটের মধ্যে পেমেন্ট না হওয়ায় এই অর্ডারটি স্বয়ংক্রিয়ভাবে বাতিল হয়েছে। অনুগ্রহ করে নতুন অর্ডার দিন।"}
                     </p>
                   </div>
                 </div>
-              ) : (order.status === 'Pending' || order.status === 'Payment Review') && !order.isExpired ? (
+              ) : (order?.status === 'Pending' || order?.status === 'Payment Review') && !order?.isExpired ? (
                 <div className="bg-yellow-500/5 border border-yellow-500/10 rounded-2xl p-6 flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5 text-yellow-500" />

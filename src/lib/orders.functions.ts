@@ -10,14 +10,15 @@ import {
   updateDoc, 
   query, 
   orderBy,
-  where
+  where,
+  limit
 } from "./firebase-admin.server";
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const q = query(ordersRef, orderBy("created_at", "desc"));
+      const q = query(ordersRef, orderBy("created_at", "desc"), limit(50));
       const querySnapshot = await getDocs(q);
       
       const orders = querySnapshot.docs.map(doc => ({
@@ -162,7 +163,9 @@ export const createManualOrder = createServerFn({ method: "POST" })
       console.error("Error creating order in Firebase:", error);
       return {
         success: false,
-        message: error?.message || "Order could not be saved"
+        message: error?.message || "Order could not be saved",
+        order_id: null,
+        orderId: null
       };
     }
   });
@@ -171,7 +174,8 @@ export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const querySnapshot = await getDocs(ordersRef);
+      const q = query(ordersRef, orderBy("created_at", "desc"), limit(200));
+      const querySnapshot = await getDocs(q);
       const orders = querySnapshot.docs.map(doc => doc.data());
       
       const filteredOrders = orders.filter((o: any) => 
