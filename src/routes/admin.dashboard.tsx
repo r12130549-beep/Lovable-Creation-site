@@ -20,7 +20,7 @@ import {
   BarChart3, Package, Users, ShoppingBag, Shield, Settings, 
   Plus, Search, CheckCircle2, XCircle, CreditCard, Download, 
   TrendingUp, Clock, Edit, Trash2, Check, Copy, User, Mail, 
-  Phone, Zap, Eye, Filter, Loader2, ExternalLink
+  Phone, Zap, Eye, Filter, Loader2, ExternalLink, AlertCircle
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateLicenseAdmin } from '@/lib/licenses.functions';
@@ -364,7 +364,7 @@ function AdminPage() {
         </nav>
       </aside>
 
-      <main className="flex-1 p-10 bg-[#050505]">
+      <main className="flex-1 p-10 bg-[#050505] relative">
         <header className="flex justify-between items-center mb-10">
           <div className="flex items-center gap-4">
             <h1 className="text-3xl font-black uppercase">{activeTab}</h1>
@@ -392,12 +392,22 @@ function AdminPage() {
               </button>
             )}
           </div>
-          <input 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
-            className="bg-[#0A0A0A] border border-white/5 rounded-2xl py-3 px-6 text-sm w-64 focus:outline-none focus:ring-1 focus:ring-red-500"
-          />
+
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 bg-red-500/10 border border-red-500/20 px-6 py-3 rounded-2xl">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              <p className="text-red-500 text-xs font-black uppercase tracking-widest">
+                Missing or insufficient permissions.
+              </p>
+            </div>
+
+            <input 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+              className="bg-[#0A0A0A] border border-white/5 rounded-2xl py-3 px-6 text-sm w-64 focus:outline-none focus:ring-1 focus:ring-red-500"
+            />
+          </div>
         </header>
 
         <AnimatePresence mode="wait">
