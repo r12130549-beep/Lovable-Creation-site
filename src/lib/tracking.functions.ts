@@ -45,7 +45,7 @@ export const trackOrder = createServerFn({ method: "POST" })
       const isExpired = !!(expireDate && expireDate < now);
 
       return {
-        id: order.order_id,
+        id: order.order_id || querySnapshot.docs[0].id,
         customer_name: order.customer_name,
         customer_email: order.customer_email,
         payment_method: order.payment_method,
