@@ -6,17 +6,10 @@ import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
     const result = await next();
-    if (result === undefined) {
-      // Return a basic Response if next() returns undefined to avoid TanStack Start error
-      return new Response("OK", { status: 200 });
-    }
     return result;
   } catch (error: any) {
     if (error instanceof Response) {
       return error;
-    }
-    if (error != null && typeof error === "object" && "statusCode" in error) {
-      throw error;
     }
     
     // Check if it's a Supabase API key error
@@ -29,7 +22,11 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
        });
     }
 
-    console.error(error);
+    if (error != null && typeof error === "object" && "statusCode" in error) {
+      throw error;
+    }
+
+    console.error("Server Error:", error);
     return new Response(renderErrorPage(), {
       status: 500,
       headers: { "content-type": "text/html; charset=utf-8" },
