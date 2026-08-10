@@ -160,7 +160,7 @@ function TrackOrderPage() {
                   <div className="text-right hidden md:block">
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/20 mb-1">অর্ডার স্ট্যাটাস</p>
                     <p className={`text-xs font-black uppercase tracking-widest ${
-                      ['Approved', 'Paid', 'Completed', 'Ready'].includes(order?.status) ? 'text-green-500' : 'text-yellow-500'
+                      ['Approved', 'Paid', 'Completed', 'Ready'].includes(order?.status || '') ? 'text-green-500' : 'text-yellow-500'
                     }`}>{order?.status || 'Pending'}</p>
                   </div>
                   <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
