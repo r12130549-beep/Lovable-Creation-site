@@ -19,7 +19,10 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       SUPABASE_ANON_KEY,
       {
         global: {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         },
         auth: {
           storage: undefined,
@@ -34,10 +37,10 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
 
     if (token && token.split('.').length === 3) {
       try {
-        const { data, error } = await supabase.auth.getClaims(token);
-        if (!error && data?.claims?.sub) {
-          userId = data.claims.sub;
-          claims = data.claims;
+        const { data, error } = await supabase.auth.getUser(token);
+        if (!error && data?.user) {
+          userId = data.user.id;
+          claims = data.user;
         }
       } catch (e) {
         // Silent guest fallback

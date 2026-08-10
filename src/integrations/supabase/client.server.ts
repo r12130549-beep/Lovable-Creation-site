@@ -9,6 +9,11 @@ export const supabaseAdmin = createClient<Database>(
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
   {
+    global: {
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+      },
+    },
     auth: {
       storage: undefined,
       persistSession: false,
