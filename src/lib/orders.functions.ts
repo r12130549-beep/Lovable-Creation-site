@@ -11,14 +11,15 @@ import {
   query, 
   orderBy,
   where,
-  limit
+  limit,
+  Timestamp
 } from "./firebase-admin.server";
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const q = query(ordersRef, orderBy("created_at", "desc"), limit(50));
+      const q = query(ordersRef, orderBy("created_at", "desc"));
       const querySnapshot = await getDocs(q);
       
       const orders = querySnapshot.docs.map((doc: any) => ({
@@ -148,7 +149,8 @@ export const createManualOrder = createServerFn({ method: "POST" })
         download_link: data.downloadLink || '',
         expire_date: data.expireDate || null,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        timestamp: new Date().getTime() // Add numeric timestamp for easier sorting
       };
 
       await setDoc(orderRef, orderData);
