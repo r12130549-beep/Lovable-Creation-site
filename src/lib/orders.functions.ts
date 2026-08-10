@@ -58,6 +58,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     }).parse(data)
   )
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     try {
       const updatePayload: any = {
         order_status: data.status,
