@@ -46,6 +46,7 @@ function AdminPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [isAddingExtension, setIsAddingExtension] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -128,13 +129,22 @@ function AdminPage() {
     }
   });
 
+  const createExtensionMutation = useMutation({
+    mutationFn: (data: any) => createExtension({ data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
+      toast.success('Extension created successfully');
+      setIsAddingExtension(false);
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to create extension')
+  });
+
   const filteredOrders = useMemo(() => {
     return realtimeOrders.filter(order => {
       const searchStr = searchQuery.toLowerCase();
       const matchesSearch = 
         order.orderId?.toLowerCase().includes(searchStr) ||
         order.email?.toLowerCase().includes(searchStr) ||
-        order.uid?.toLowerCase().includes(searchStr) ||
         order.customerName?.toLowerCase().includes(searchStr);
       
       const matchesStatus = statusFilter === 'all' || order.orderStatus === statusFilter;
@@ -205,7 +215,6 @@ function AdminPage() {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               createOrderMutation.mutate({
-                uid: formData.get('uid'),
                 customerName: formData.get('customerName'),
                 email: formData.get('email'),
                 whatsapp: formData.get('whatsapp'),
@@ -216,8 +225,8 @@ function AdminPage() {
               });
             }} className="p-8 bg-[#0A0A0A] border border-white/5 rounded-2xl space-y-4 max-w-lg">
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">UID</label>
-                <input name="uid" placeholder="UID" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Customer Name</label>
+                <input name="customerName" placeholder="Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Customer Name</label>
@@ -249,8 +258,58 @@ function AdminPage() {
             <motion.div key="extensions" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold">Extensions</h2>
-                <button className="bg-red-600 px-4 py-2 rounded-xl text-xs font-bold">+ Add Extension</button>
+                <button 
+                  onClick={() => setIsAddingExtension(true)}
+                  className="bg-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:bg-red-700 active:scale-95"
+                >
+                  + Add Extension
+                </button>
               </div>
+
+              {isAddingExtension && (
+                <motion.form 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    createExtensionMutation.mutate({
+                      name: formData.get('name') as string,
+                      slug: (formData.get('name') as string).toLowerCase().replace(/ /g, '-'),
+                      price: Number(formData.get('price')),
+                      description: formData.get('description') as string,
+                      category: formData.get('category') as string,
+                      status: 'published'
+                    });
+                  }}
+                  className="p-6 bg-[#0A0A0A] border border-white/10 rounded-3xl space-y-4 mb-8"
+                >
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Name</label>
+                      <input name="name" placeholder="Extension Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Category</label>
+                      <input name="category" placeholder="Category" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Price (৳)</label>
+                    <input name="price" placeholder="Price" type="number" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Description</label>
+                    <textarea name="description" placeholder="Description" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none h-24" />
+                  </div>
+                  <div className="flex gap-4">
+                    <button type="button" onClick={() => setIsAddingExtension(false)} className="flex-1 py-3 bg-white/5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-white/10">Cancel</button>
+                    <button type="submit" disabled={createExtensionMutation.isPending} className="flex-[2] py-3 bg-red-600 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-red-700 flex items-center justify-center gap-2">
+                      {createExtensionMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Extension"}
+                    </button>
+                  </div>
+                </motion.form>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {extensions?.map((ext: any) => (
                   <div key={ext.id} className="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl space-y-4">
@@ -463,7 +522,9 @@ function AdminPage() {
             <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[
-                  { label: 'Binance ID', key: 'binance_id' },
+                  { label: 'Binance ID (Pay ID)', key: 'binance_id' },
+                  { label: 'Binance Address (USDT)', key: 'binance_address' },
+                  { label: 'Binance Network (e.g. BEP20)', key: 'binance_network' },
                   { label: 'bKash Number', key: 'bkash_number' },
                   { label: 'Nagad Number', key: 'nagad_number' },
                   { label: 'USDT Rate', key: 'usdt_rate' },
@@ -487,6 +548,89 @@ function AdminPage() {
           )}
         </AnimatePresence>
       </main>
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedOrder(null)}>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-2xl bg-[#0A0A0A] border border-white/10 rounded-[2.5rem] p-8 space-y-8 overflow-y-auto max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-black uppercase tracking-tight">Order Details</h2>
+              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-white/5 rounded-full"><XCircle className="w-6 h-6 text-white/40" /></button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Customer</label>
+                  <p className="font-bold">{selectedOrder.customerName}</p>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Product</label>
+                  <p className="font-bold">{selectedOrder.productName}</p>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Price</label>
+                  <p className="font-bold">৳{selectedOrder.price}</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Email</label>
+                  <p className="font-bold">{selectedOrder.email}</p>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">WhatsApp</label>
+                  <p className="font-bold">{selectedOrder.whatsapp}</p>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Payment Method</label>
+                  <p className="font-bold uppercase">{selectedOrder.paymentMethod}</p>
+                </div>
+              </div>
+            </div>
+
+            {selectedOrder.transaction_id && (
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Transaction ID</label>
+                <p className="font-mono text-sm text-red-500 font-bold">{selectedOrder.transaction_id}</p>
+              </div>
+            )}
+
+            {selectedOrder.screenshot_url && (
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-2 block">Payment Proof</label>
+                <img 
+                  src={selectedOrder.screenshot_url.startsWith('http') ? selectedOrder.screenshot_url : `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/payments/${selectedOrder.screenshot_url}`} 
+                  className="w-full rounded-2xl border border-white/10" 
+                  alt="Payment Screenshot" 
+                />
+              </div>
+            )}
+
+            <div className="flex gap-4 pt-4">
+              <button 
+                onClick={() => {
+                  updateOrderMutation.mutate({ orderId: selectedOrder.id, status: 'Approved' });
+                }} 
+                className="flex-1 py-4 bg-green-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-green-700 transition-all shadow-xl shadow-green-600/20"
+              >
+                Approve Order
+              </button>
+              <button 
+                onClick={() => {
+                  updateOrderMutation.mutate({ orderId: selectedOrder.id, status: 'Rejected' });
+                }} 
+                className="flex-1 py-4 bg-red-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-xl shadow-red-600/20"
+              >
+                Reject Order
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
