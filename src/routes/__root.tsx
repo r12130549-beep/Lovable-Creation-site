@@ -79,10 +79,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "VIBEX | Premium Extension Store" },
+      { title: "Lovable Creation | Premium Extension Store" },
       { name: "description", content: "Premium Browser Extensions Marketplace" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "VIBEX | Premium Extension Store" },
+      { property: "og:title", content: "Lovable Creation | Premium Extension Store" },
       { property: "og:description", content: "Premium Browser Extensions Marketplace" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
