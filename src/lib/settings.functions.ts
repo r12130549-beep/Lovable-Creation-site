@@ -14,7 +14,7 @@ export const getAppSettings = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const settingsRef = collection(adminFirestore, "app_settings");
-      const querySnapshot = await getDocs(settingsRef);
+      const querySnapshot = await getDocs(collection(adminFirestore, "app_settings"));
       
       const settings: Record<string, any> = {};
       querySnapshot.forEach((doc: any) => {

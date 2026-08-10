@@ -19,7 +19,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const querySnapshot = await getDocs(ordersRef);
+      const querySnapshot = await getDocs(query(ordersRef));
       
       const orders = querySnapshot.docs.map((doc: any) => {
         const data = doc.data();

@@ -5,8 +5,6 @@ import {
   collection, 
   getDocs, 
   query, 
-  where, 
-  limit 
 } from "./firebase-admin.server";
 
 export const trackOrder = createServerFn({ method: "POST" })
@@ -20,38 +18,38 @@ export const trackOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const ordersRef = collection(adminFirestore, "orders");
-      const q = query(
-        ordersRef, 
-        where("order_id", "==", data.orderId.trim().toUpperCase()), 
-        limit(1)
+      const querySnapshot = await getDocs(query(ordersRef));
+      
+      const orders = querySnapshot.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      const searchId = data.orderId.trim().toUpperCase();
+      const order = orders.find((o: any) => 
+        (o.order_id?.toUpperCase() === searchId || o.id === data.orderId)
       );
       
-      const querySnapshot = await getDocs(q);
-      
-      if (querySnapshot.empty || !querySnapshot.docs[0]) {
-        throw new Error("Order not found");
+      if (!order) {
+        throw new Error("অর্ডারটি পাওয়া যায়নি। অনুগ্রহ করে সঠিক আইডি ব্যবহার করুন।");
       }
 
-      const orderData = querySnapshot.docs[0].data();
-      const order = orderData as any;
-
       if (data.email && order.customer_email?.toLowerCase() !== data.email.toLowerCase()) {
-        throw new Error("Order not found or invalid credentials");
+        throw new Error("অর্ডার আইডি এবং ইমেইল ম্যাচ করেনি।");
       }
 
       const now = new Date();
-      const orderDataForExpire = order as any;
-      const expireDate = orderDataForExpire?.expire_date ? new Date(orderDataForExpire.expire_date) : null;
+      const expireDate = order.expire_date ? new Date(order.expire_date) : null;
       const isExpired = !!(expireDate && expireDate < now);
 
       return {
-        id: order.order_id || querySnapshot.docs[0].id,
+        id: order.order_id || order.id,
         customer_name: order.customer_name,
         customer_email: order.customer_email,
         payment_method: order.payment_method,
-        payment_status: order.payment_status || order.status,
+        payment_status: order.payment_status || order.order_status || order.status,
         transaction_id: order.transaction_id,
-        status: order.order_status || order.status,
+        status: order.order_status || order.status || "Pending",
         amount: order.price || order.amount,
         currency: order.currency || "৳",
         admin_note: order.notes,
