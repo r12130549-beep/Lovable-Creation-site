@@ -1,10 +1,11 @@
-import { initializeApp, getApps } from 'firebase-admin/app';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getDatabase } from 'firebase-admin/database';
 
 const projectId = "lovable-a893f";
 const databaseURL = "https://lovable-a893f-default-rtdb.firebaseio.com";
 
+// Using the provided configuration for the Admin SDK
 if (getApps().length === 0) {
   initializeApp({
     projectId: projectId,
@@ -14,6 +15,7 @@ if (getApps().length === 0) {
 
 export const adminFirestore = getFirestore();
 export const adminDatabase = getDatabase();
+
 
 
 export const collection = (db: any, path: string) => db.collection(path);
