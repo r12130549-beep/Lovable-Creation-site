@@ -122,12 +122,12 @@ function Index() {
               className="lg:hidden absolute top-20 left-0 right-0 bg-black/95 border-b border-white/10 p-6 space-y-6 backdrop-blur-2xl z-50 overflow-y-auto max-h-[calc(100vh-80px)]"
             >
               <div className="flex flex-col gap-6 text-lg font-bold">
-                <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link>
-                <Link to="/extensions" onClick={() => setIsMenuOpen(false)}>Extensions</Link>
-                <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>Pricing</Link>
-                <a href="#features" onClick={() => setIsMenuOpen(false)}>Features</a>
-                <a href="#faq" onClick={() => setIsMenuOpen(false)}>FAQ</a>
-                <Link to="/track-order" className="text-red-500" onClick={() => setIsMenuOpen(false)}>Track Order</Link>
+                <Link to="/" onClick={() => setIsMenuOpen(false)}>{t.home}</Link>
+                <Link to="/extensions" onClick={() => setIsMenuOpen(false)}>{t.extensions}</Link>
+                <Link to="/pricing" onClick={() => setIsMenuOpen(false)}>{t.pricing}</Link>
+                <a href="#features" onClick={() => setIsMenuOpen(false)}>{t.features}</a>
+                <a href="#faq" onClick={() => setIsMenuOpen(false)}>{t.faq}</a>
+                <Link to="/track-order" className="text-red-500" onClick={() => setIsMenuOpen(false)}>{t.trackOrder}</Link>
                 {/* Login option removed as requested */}
               </div>
             </motion.div>
