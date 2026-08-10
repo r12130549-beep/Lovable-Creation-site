@@ -213,23 +213,24 @@ function TrackOrderPage() {
               </div>
 
               {/* License/Download Section - The core request */}
-              {order.license?.status === 'Active' && !order.isExpired ? (
+              {order?.license?.status === 'Active' && !order?.isExpired ? (
                 <div className="space-y-6 mb-12">
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/5 space-y-4">
                     <div className="flex items-center justify-between">
                       <p className="text-[9px] font-black uppercase tracking-widest text-red-500">আপনার লাইসেন্স কী</p>
-                      <button onClick={() => { navigator.clipboard.writeText(order.license.key); toast.success('License Key copied'); }} className="text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
+                      <button onClick={() => { navigator.clipboard.writeText(order?.license?.key || ''); toast.success('License Key copied'); }} className="text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
                         Copy <Copy className="w-3 h-3" />
                       </button>
                     </div>
                     <code className="block w-full p-4 bg-black/40 border border-white/5 rounded-xl text-xs font-mono text-white tracking-widest break-all select-all">
-                      {order.license.key}
+                      {order?.license?.key}
                     </code>
                   </div>
                   
-                  {order.license.download_url && (
+                  {order?.license?.download_url && (
                     <a 
                       href={order.license.download_url} 
+
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="w-full bg-white text-black py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-gray-200 transition-all shadow-xl active:scale-95"
@@ -238,9 +239,10 @@ function TrackOrderPage() {
                       ডাউনলোড ফাইল
                     </a>
                   )}
-                  {order.license.expires_at && (
+                  {order?.license?.expires_at && (
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/20 text-center">
                       মেয়াদ শেষ হবে: {format(new Date(order.license.expires_at), 'PPp')}
+
                     </p>
                   )}
                 </div>
