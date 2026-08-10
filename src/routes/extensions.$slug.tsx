@@ -27,7 +27,8 @@ export const Route = createFileRoute("/extensions/$slug")({
     const snapshot = await getDocs(q);
     
     if (snapshot.empty) throw new Error("Extension not found");
-    return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+    const docSnap = snapshot.docs[0];
+    return { id: docSnap.id, ...docSnap.data() } as any;
   },
   component: ExtensionDetailsPage,
 });

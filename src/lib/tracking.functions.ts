@@ -39,7 +39,8 @@ export const trackOrder = createServerFn({ method: "POST" })
       }
 
       const now = new Date();
-      const expireDate = order && order.expire_date ? new Date(order.expire_date) : null;
+      const orderDataForExpire = order as any;
+      const expireDate = orderDataForExpire?.expire_date ? new Date(orderDataForExpire.expire_date) : null;
       const isExpired = !!(expireDate && expireDate < now);
 
       return {

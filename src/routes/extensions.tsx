@@ -39,10 +39,8 @@ function ExtensionsPage() {
         q = query(extensionsRef);
       }
 
-      // Note: Firestore requires composite indexes for complex sorting + filtering.
-      // We'll do a simple fetch and sort in memory for now to avoid index issues.
       const snapshot = await getDocs(q);
-      let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
 
       if (sortBy === 'price_low') {
         data.sort((a: any, b: any) => (a.price || 0) - (b.price || 0));
