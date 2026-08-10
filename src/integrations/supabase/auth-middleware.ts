@@ -3,10 +3,6 @@ import { getRequest } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 
-const SUPABASE_URL = 'https://gxskutcwhatbkeaczyvd.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
-const SUPABASE_ANON_KEY = SUPABASE_PUBLISHABLE_KEY;
-
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     const request = getRequest();
@@ -18,9 +14,10 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : undefined;
     
+    // Create client manually to avoid module-scope instantiation issues
     const supabase = createClient<Database>(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY,
+      'https://gxskutcwhatbkeaczyvd.supabase.co',
+      'sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY',
       {
         global: {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
