@@ -110,8 +110,12 @@ function AdminPage() {
   const createOrderMutation = useMutation({
     mutationFn: (data: any) => createManualOrder({ data }),
     onSuccess: (result) => {
+      if (!result.success || !result.order_id) {
+        toast.error(result.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে');
+        return;
+      }
       toast.success('অর্ডার সফলভাবে তৈরি হয়েছে');
-      const orderIdToCopy = result.order_id || result.orderId;
+      const orderIdToCopy = result.order_id;
       window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
       queryClient.invalidateQueries({ queryKey: ['admin-earnings'] });
       // Refresh the orders list immediately
