@@ -243,7 +243,7 @@ const MENU = [
 
 function AdminPage() {
   const { user, isAdmin: checkIsAdmin, initialized } = useAuth();
-  const isAdmin = checkIsAdmin || (user && ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com', 'kivabe@gmail.com', 'popykhanum2255@gmail.com', 'ashik97355@gmail.com', 'emon@gmail.com', 'admin@vibex.com'].includes(user.email || ''));
+  const isAdmin = checkIsAdmin || (user && ['admin@gmail.com', 'gmail@gmail.com', 'r12130549@gmail.com', 'kivabe@gmail.com', 'popykhanum2255@gmail.com', 'ashik97355@gmail.com', 'emon@gmail.com', 'admin@vibex.com', 'ak2688469@gmail.com'].includes(user.email || ''));
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [realtimeOrders, setRealtimeOrders] = useState<any[]>([]);
