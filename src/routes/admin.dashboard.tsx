@@ -712,7 +712,7 @@ function AdminPage() {
               <div>
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-2 block">Payment Proof</label>
                 <img 
-                  src={(selectedOrder.screenshot_url || selectedOrder.screenshotUrl).startsWith('http') ? (selectedOrder.screenshot_url || selectedOrder.screenshotUrl) : `${import.meta.env['VITE_SUPABASE_URL']}/storage/v1/object/public/order-assets/${(selectedOrder.screenshot_url || selectedOrder.screenshotUrl)}`} 
+                  src={(selectedOrder.screenshot_url || selectedOrder.screenshotUrl)} 
                   className="w-full rounded-2xl border border-white/10" 
                   alt="Payment Screenshot" 
                 />
