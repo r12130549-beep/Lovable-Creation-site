@@ -25,6 +25,8 @@ import { FileUpload } from '@/components/admin/FileUpload';
 import { useQuery } from '@tanstack/react-query';
 import { getAppSettings } from '@/lib/settings.functions';
 import { useAuth } from '@/hooks/use-auth';
+import { firestore } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 
 
 export const Route = createFileRoute('/checkout')({
