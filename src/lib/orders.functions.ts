@@ -18,8 +18,8 @@ export const getAdminOrders = createServerFn({ method: "GET" })
         customerName: order.customer_name,
         email: order.customer_email,
         whatsapp: order.customer_phone,
-        productName: order.product_name || order.productName || "Unknown",
-        category: order.category,
+        productName: order.product_name || order.productName || "Extension",
+        category: order.category || "Extension",
         price: order.price || order.amount || 0,
         currency: order.currency || "৳",
         quantity: order.quantity || 1,
@@ -59,31 +59,19 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const updatePayload: any = {
-        order_status: data.status,
-        updated_at: new Date().toISOString(),
+        status: data.status,
       };
       
       if (data.productName) updatePayload.product_name = data.productName;
-      if (data.paymentStatus) updatePayload.payment_status = data.paymentStatus;
+      if (data.paymentStatus) updatePayload.status = data.paymentStatus;
       if (data.adminNote !== undefined) updatePayload.notes = data.adminNote;
-      if (data.licenseName) updatePayload.license_name = data.licenseName;
-      if (data.licenseKey) updatePayload.license_key = data.licenseKey;
-      if (data.downloadLink) updatePayload.download_link = data.downloadLink;
-      if (data.expireDate) updatePayload.expire_date = data.expireDate;
 
-      const { error: idError } = await supabaseAdmin
+      const { error } = await supabaseAdmin
         .from("orders")
-        .update(updatePayload)
+        .update(updatePayload as any)
         .eq("id", data.orderId);
       
-      if (idError) {
-        const { error: codeError } = await supabaseAdmin
-          .from("orders")
-          .update(updatePayload)
-          .eq("order_id", data.orderId);
-        
-        if (codeError) throw codeError;
-      }
+      if (error) throw error;
 
       return { success: true };
     } catch (error: any) {
@@ -120,65 +108,29 @@ export const createManualOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      const orderId = await generateUniqueOrderId();
-      
       const { data: newOrder, error } = await supabaseAdmin
         .from("orders")
         .insert({
-          order_id: orderId,
-          user_id: String(data.uid),
           customer_name: data.customerName,
           customer_email: data.email,
           customer_phone: data.whatsapp,
-          product_name: data.productName,
-          category: data.category,
-          price: data.price,
-          currency: data.currency,
-          quantity: data.quantity,
+          amount: data.price,
           payment_method: data.paymentMethod,
-          payment_status: data.paymentStatus,
-          order_status: data.orderStatus,
-          license_key: data.licenseKey,
-          license_name: data.licenseName,
-          download_link: data.downloadLink,
-          expire_date: data.expireDate,
-          notes: data.notes,
+          status: data.orderStatus,
           transaction_id: data.transactionId,
           screenshot_url: data.screenshotUrl,
+          user_id: String(data.uid),
         } as any)
         .select()
         .single();
 
       if (error) throw error;
-      return { success: true, orderId, docId: newOrder.id };
+      return { success: true, orderId: newOrder.id, docId: newOrder.id };
     } catch (error: any) {
       console.error("Error creating manual order:", error);
       return { success: true, orderId: "ORDER-" + Math.random().toString(36).substr(2, 7), error: true };
     }
   });
-
-async function generateUniqueOrderId(): Promise<string> {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let orderId = '';
-  
-  for (let attempt = 0; attempt < 5; attempt++) {
-    let randomPart = '';
-    for (let i = 0; i < 7; i++) {
-      randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    orderId = `ORDER-${randomPart}`;
-    
-    const { data } = await supabaseAdmin
-      .from("orders")
-      .select("id")
-      .eq("id", orderId)
-      .maybeSingle();
-      
-    if (!data) return orderId;
-  }
-  
-  return orderId;
-}
 
 export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
@@ -190,7 +142,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
       if (error) throw error;
       
       const filteredOrders = (orders || []).filter((o: any) => 
-        ["Approved", "Completed"].includes(o.order_status) || ["Approved", "Completed"].includes(o.status)
+        ["Approved", "Completed"].includes(o.status)
       );
       
       const now = new Date();
@@ -207,7 +159,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
       let yearly = 0;
       
       const earningsTable = filteredOrders.map((order: any) => {
-        const price = Number(order.price || order.amount) || 0;
+        const price = Number(order.amount) || 0;
         const createdAt = new Date(order.created_at);
         
         total += price;
@@ -218,14 +170,14 @@ export const getEarningsStats = createServerFn({ method: "GET" })
         
         return {
           id: order.id,
-          orderId: order.order_id || order.id,
+          orderId: order.id,
           customer: order.customer_name,
           uid: order.user_id,
-          product: order.product_name || order.productName || "Unknown",
+          product: "Extension",
           paymentMethod: order.payment_method,
           price: price,
-          currency: order.currency || "৳",
-          status: order.order_status || order.status || "Pending",
+          currency: "৳",
+          status: order.status,
           date: order.created_at
         };
       });
