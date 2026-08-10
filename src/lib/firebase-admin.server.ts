@@ -3,15 +3,18 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getDatabase } from 'firebase-admin/database';
 
 const projectId = "lovable-a893f";
+const databaseURL = "https://lovable-a893f-default-rtdb.firebaseio.com";
 
 if (getApps().length === 0) {
   initializeApp({
     projectId: projectId,
+    databaseURL: databaseURL
   });
 }
 
 export const adminFirestore = getFirestore();
 export const adminDatabase = getDatabase();
+
 
 export const collection = (db: any, path: string) => db.collection(path);
 export const doc = (dbOrCol: any, path?: string, ...segments: string[]) => {
