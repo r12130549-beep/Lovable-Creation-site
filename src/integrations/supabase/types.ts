@@ -14,76 +14,168 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string | null
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string | null
+          discount_type: string
+          discount_value: number
+          expiry_date: string | null
+          extension_id: string | null
+          id: string
+          usage_limit: number | null
+          used_count: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          discount_type: string
+          discount_value: number
+          expiry_date?: string | null
+          extension_id?: string | null
+          id?: string
+          usage_limit?: number | null
+          used_count?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          discount_type?: string
+          discount_value?: number
+          expiry_date?: string | null
+          extension_id?: string | null
+          id?: string
+          usage_limit?: number | null
+          used_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_extension_id_fkey"
+            columns: ["extension_id"]
+            isOneToOne: false
+            referencedRelation: "extensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       extensions: {
         Row: {
           category: string | null
+          changelog: Json | null
+          compatibility: Json | null
           created_at: string | null
           description: string | null
+          discount_price: number | null
+          features: Json | null
           icon_url: string | null
           id: string
           name: string
           price: number | null
           rating: number | null
+          screenshots: string[] | null
           slug: string
+          status: string | null
+          updated_at: string | null
           user_count: number | null
+          version: string | null
           zip_url: string | null
         }
         Insert: {
           category?: string | null
+          changelog?: Json | null
+          compatibility?: Json | null
           created_at?: string | null
           description?: string | null
+          discount_price?: number | null
+          features?: Json | null
           icon_url?: string | null
           id?: string
           name: string
           price?: number | null
           rating?: number | null
+          screenshots?: string[] | null
           slug: string
+          status?: string | null
+          updated_at?: string | null
           user_count?: number | null
+          version?: string | null
           zip_url?: string | null
         }
         Update: {
           category?: string | null
+          changelog?: Json | null
+          compatibility?: Json | null
           created_at?: string | null
           description?: string | null
+          discount_price?: number | null
+          features?: Json | null
           icon_url?: string | null
           id?: string
           name?: string
           price?: number | null
           rating?: number | null
+          screenshots?: string[] | null
           slug?: string
+          status?: string | null
+          updated_at?: string | null
           user_count?: number | null
+          version?: string | null
           zip_url?: string | null
         }
         Relationships: []
       }
       licenses: {
         Row: {
+          activated_devices: number | null
           created_at: string | null
           device_limit: number | null
           expires_at: string | null
           extension_id: string
           id: string
           key: string
+          order_id: string | null
           status: string | null
           user_id: string
         }
         Insert: {
+          activated_devices?: number | null
           created_at?: string | null
           device_limit?: number | null
           expires_at?: string | null
           extension_id: string
           id?: string
           key: string
+          order_id?: string | null
           status?: string | null
           user_id: string
         }
         Update: {
+          activated_devices?: number | null
           created_at?: string | null
           device_limit?: number | null
           expires_at?: string | null
           extension_id?: string
           id?: string
           key?: string
+          order_id?: string | null
           status?: string | null
           user_id?: string
         }
@@ -97,23 +189,68 @@ export type Database = {
           },
         ]
       }
+      orders: {
+        Row: {
+          amount: number | null
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          id: string
+          payment_method: string
+          screenshot_url: string | null
+          status: string
+          transaction_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          id?: string
+          payment_method: string
+          screenshot_url?: string | null
+          status?: string
+          transaction_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          id?: string
+          payment_method?: string
+          screenshot_url?: string | null
+          status?: string
+          transaction_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           full_name: string | null
           id: string
+          role: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
           full_name?: string | null
           id: string
+          role?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
           full_name?: string | null
           id?: string
+          role?: string | null
           updated_at?: string | null
         }
         Relationships: []
