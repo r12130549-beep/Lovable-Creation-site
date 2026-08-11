@@ -94,7 +94,7 @@ function CheckoutPage() {
   }, [firebaseUser]);
 
   
-  const search = useSearch({ from: '/checkout' }) as { productId?: string; plan?: string };
+  const search = useSearch({ from: '/checkout' }) as { productId?: string; plan?: string; productName?: string };
   const navigate = useNavigate();
 
   const { data: appSettings, isLoading: settingsLoading } = useQuery({
@@ -158,7 +158,11 @@ function CheckoutPage() {
 
     setLoading(true);
     try {
-      const amount = Number((search as any)['plan'] === 'premium' ? 1500 : 0);
+      const plan = (search as any)['plan'];
+      const searchProductName = (search as any)['productName'];
+      const searchProductId = (search as any)['productId'];
+      
+      const amount = Number(plan === 'premium' ? 1500 : 0);
       
       // 1. Generate Order ID locally for immediate UI feedback
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -174,7 +178,7 @@ function CheckoutPage() {
         customerName: formData.name || 'Guest',
         email: formData.email || 'guest@example.com',
         whatsapp: formData.phone || 'N/A',
-        productName: String((search as any)['productName'] || (search as any)['plan'] === 'premium' ? 'Premium Extension' : ((search as any)['productId'] || 'Premium Extension')),
+        productName: String(searchProductName || (plan === 'premium' ? 'Premium Extension' : (searchProductId || 'Premium Extension'))),
         category: 'Extension',
         price: amount || 0,
         currency: "৳",
