@@ -1,20 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { createServerFn, useServerFn } from '@tanstack/react-start';
 import { z } from "zod";
-import { 
-  adminFirestore as serverFirestore, 
-  collection as serverCollection, 
-  getDocs as serverGetDocs, 
-  doc as serverDoc, 
-  updateDoc as serverUpdateDoc, 
-  deleteDoc as serverDeleteDoc,
-  query as serverQuery, 
-  orderBy as serverOrderBy, 
-  where as serverWhere,
-  limit as serverLimit,
-  setDoc as serverSetDoc,
-  getDoc as serverGetDoc
-} from "../lib/firebase-admin.server";
 import { useAuth } from '@/hooks/use-auth';
 import { 
   BarChart3, Package, Users, ShoppingBag, Shield, Settings, 
