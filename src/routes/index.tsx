@@ -12,8 +12,8 @@ export const Route = createFileRoute("/")({
     title: "Lovable Creation | Premium Browser Extension Store",
     meta: [
       { name: "description", content: "The hub for elite browser tools. Discover verified, high-performance extensions to supercharge your productivity." },
-      { property: "og:title", content: "Lovable Creation | Premium Browser Extension Store" },
-      { property: "og:description", content: "The hub for elite browser tools. Discover verified extensions to supercharge your productivity." },
+      { property: "og:title", content: "Lovable Creation | Premium Extension Store" },
+      { property: "og:description", content: "The hub for elite browser tools. Discover verified, high-performance extensions to supercharge your productivity." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
