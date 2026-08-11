@@ -54,3 +54,23 @@ export async function deleteExtensionInCloud(id: string) {
   const { error } = await supabaseAdmin.from("extensions").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+export async function getAppSettingsFromCloud() {
+  const { data, error } = await supabaseAdmin
+    .from("app_settings")
+    .select("*");
+  if (error) throw new Error(error.message);
+  
+  const settings: Record<string, any> = {};
+  data.forEach((row: any) => {
+    settings[row.key] = row.value;
+  });
+  return settings;
+}
+
+export async function updateAppSettingInCloud(key: string, value: any) {
+  const { error } = await supabaseAdmin
+    .from("app_settings")
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+  if (error) throw new Error(error.message);
+}

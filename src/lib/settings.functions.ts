@@ -1,30 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { 
-  adminFirestore, 
-  collection, 
-  getDocs, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc 
-} from "./firebase-admin.server";
+import { getAppSettingsFromCloud, updateAppSettingInCloud } from "./cloud-data.server";
 
 export const getAppSettings = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const settingsRef = collection(adminFirestore, "app_settings");
-      const querySnapshot = await getDocs(collection(adminFirestore, "app_settings"));
-      
-      const settings: Record<string, any> = {};
-      querySnapshot.forEach((doc: any) => {
-        const data = doc.data() as any;
-        settings[data['key']] = data['value'];
-      });
-      
-      return settings;
+      return await getAppSettingsFromCloud();
     } catch (error: any) {
-      console.error("Error in getAppSettings (Firebase):", error);
+      console.error("Error in getAppSettings (Cloud):", error);
       return {};
     }
   });
@@ -39,17 +22,10 @@ export const updateAppSetting = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      // Use the key as the document ID for app_settings
-      const settingRef = doc(adminFirestore, "app_settings", data.key);
-      await setDoc(settingRef, { 
-        key: data.key, 
-        value: data.value,
-        updated_at: new Date().toISOString()
-      }, { merge: true });
-
+      await updateAppSettingInCloud(data.key, data.value);
       return { success: true };
     } catch (e: any) {
-      console.error("Error in updateAppSetting (Firebase):", e);
+      console.error("Error in updateAppSetting (Cloud):", e);
       return { success: false, error: e.message };
     }
   });
