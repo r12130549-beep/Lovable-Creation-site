@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { createExtensionInCloud, deleteExtensionInCloud, listExtensionsFromCloud, updateExtensionInCloud } from "./cloud-data.server";
 import { 
   adminFirestore, 
   collection, 
@@ -32,6 +31,7 @@ export const getExtensions = createServerFn({ method: "GET" })
   }).optional().parse(data))
   .handler(async ({ data }) => {
     try {
+      const { listExtensionsFromCloud } = await import("./cloud-data.server");
       const results = await listExtensionsFromCloud() as any[];
 
       // Manual filtering and sorting to bypass Firebase index requirements
@@ -57,6 +57,7 @@ export const deleteExtension = createServerFn({ method: "POST" })
   .validator((data: unknown) => z.object({ id: z.any().transform((v) => String(v)) }).parse(unwrap(data)))
   .handler(async ({ data }) => {
     try {
+      const { deleteExtensionInCloud } = await import("./cloud-data.server");
       await deleteExtensionInCloud(data.id);
       return { success: true };
     } catch (error: any) {
@@ -76,6 +77,7 @@ export const updateExtension = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
+      const { updateExtensionInCloud } = await import("./cloud-data.server");
       await updateExtensionInCloud(data.id, {
         ...(data.updates as any),
         updated_at: new Date().toISOString()
@@ -110,6 +112,7 @@ export const createExtension = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
+      const { createExtensionInCloud } = await import("./cloud-data.server");
       const name = data.name?.trim() || "Untitled Extension";
       const slug =
         data.slug?.trim() ||

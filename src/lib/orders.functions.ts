@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { createOrderInCloud, listOrdersFromCloud, updateOrderInCloud } from "./cloud-data.server";
 import { 
   adminFirestore, 
   collection, 
@@ -19,6 +18,7 @@ import {
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
+      const { listOrdersFromCloud } = await import("./cloud-data.server");
       const orders = await listOrdersFromCloud();
 
       orders.sort((a: any, b: any) => {
@@ -75,6 +75,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
+      const { updateOrderInCloud } = await import("./cloud-data.server");
       const updatePayload: any = {
         order_status: data.status,
         updated_at: new Date().toISOString()
@@ -124,6 +125,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
+      const { createOrderInCloud } = await import("./cloud-data.server");
       const orderId = `ORDER-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       const orderData: any = {
         order_id: orderId,
@@ -172,6 +174,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
 export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
+      const { listOrdersFromCloud } = await import("./cloud-data.server");
       const orders = await listOrdersFromCloud();
       
       const filteredOrders = orders.filter((o: any) => 
