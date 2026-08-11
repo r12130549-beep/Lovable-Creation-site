@@ -15,8 +15,8 @@ const SUPABASE_SERVICE_ROLE_KEY = getEnv('SUPABASE_SERVICE_ROLE_KEY', 'sb_secret
 
 // Helper to create clients with consistent header configuration
 export const createAdminClient = () => {
-  const url = getEnv('VITE_SUPABASE_URL', 'https://gxskutcwhatbkeaczyvd.supabase.co');
-  const key = getEnv('SUPABASE_SERVICE_ROLE_KEY', 'sb_secret_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY');
+  const url = 'https://gxskutcwhatbkeaczyvd.supabase.co';
+  const key = 'sb_secret_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY';
   
   return createClient<Database>(
     url,
@@ -24,7 +24,8 @@ export const createAdminClient = () => {
     {
       global: {
         headers: {
-          apikey: key,
+          'apikey': key,
+          'Authorization': `Bearer ${key}`
         },
       },
       auth: {
