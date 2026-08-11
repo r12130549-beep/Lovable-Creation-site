@@ -1,19 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { 
-  adminFirestore, 
-  collection, 
-  getDocs, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc, 
-  query, 
-  orderBy,
-  where,
-  limit,
-  Timestamp
-} from "./firebase-admin.server";
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
