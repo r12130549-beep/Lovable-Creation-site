@@ -183,10 +183,10 @@ export const updateOrderStatusFast = createServerFn({ method: "POST" })
 export const getAdminUsersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const usersRef = serverCollection(serverFirestore, "users");
-      const snapshot = await serverGetDocs(usersRef);
-      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
-
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data, error } = await supabaseAdmin.from("profiles").select("*");
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error("Error fetching users fast:", error);
       return [];
@@ -196,9 +196,10 @@ export const getAdminUsersFast = createServerFn({ method: "GET" })
 export const getAdminLicensesFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const licensesRef = serverCollection(serverFirestore, "licenses");
-      const snapshot = await serverGetDocs(licensesRef);
-      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data, error } = await supabaseAdmin.from("licenses").select("*");
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error("Error fetching admin licenses fast:", error);
       return [];
