@@ -31,10 +31,11 @@ import { createManualOrder } from '@/lib/orders.functions';
 
 export const Route = createFileRoute('/checkout')({
   component: CheckoutPage,
-  validateSearch: (search: Record<string, unknown>): { productId?: string; plan?: string } => {
+  validateSearch: (search: Record<string, unknown>): { productId?: string; plan?: string; productName?: string } => {
     return {
       productId: (search['productId'] as string) ?? undefined,
       plan: (search['plan'] as string) ?? undefined,
+      productName: (search['productName'] as string) ?? undefined,
     };
   },
 
@@ -173,7 +174,7 @@ function CheckoutPage() {
         customerName: formData.name || 'Guest',
         email: formData.email || 'guest@example.com',
         whatsapp: formData.phone || 'N/A',
-        productName: (search as any)['plan'] === 'premium' ? 'Premium Extension' : ((search as any)['productId'] || 'Premium Extension'),
+        productName: String((search as any)['productName'] || (search as any)['plan'] === 'premium' ? 'Premium Extension' : ((search as any)['productId'] || 'Premium Extension')),
         category: 'Extension',
         price: amount || 0,
         currency: "৳",
