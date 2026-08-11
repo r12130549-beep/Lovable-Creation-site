@@ -19,6 +19,11 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       SUPABASE_URL,
       SUPABASE_ANON_KEY,
       {
+        global: {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+          },
+        },
         auth: {
           storage: undefined,
           persistSession: false,
