@@ -59,8 +59,8 @@ function Index() {
       </div>
 
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl h-16">
+        <div className="container mx-auto px-6 h-full flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-purple-600 flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:rotate-6 transition-transform">
               <Zap className="w-6 h-6 text-white" />
@@ -68,9 +68,9 @@ function Index() {
             <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Lovable Creation</span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-white/50 bg-white/5 px-4 py-2 rounded-full border border-white/5">
+          <div className="hidden lg:flex items-center gap-3 text-[9px] font-bold uppercase tracking-widest text-white/50 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
             <div className="flex items-center gap-2">
-               <div className={`w-2 h-2 rounded-full animate-pulse ${serverStatus === 'Online' ? 'bg-green-500' : 'bg-red-500'}`} />
+               <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${serverStatus === 'Online' ? 'bg-green-500' : 'bg-red-500'}`} />
                <span className={serverStatus === 'Online' ? 'text-green-500' : 'text-red-500'}>
                  {t.serverStatus} {serverStatus}
                </span>
