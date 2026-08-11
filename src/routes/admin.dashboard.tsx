@@ -169,7 +169,8 @@ export const updateOrderStatusFast = createServerFn({ method: "POST" })
 export const getAdminUsersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { getCloudAdminClient } = await import("@/lib/cloud-client.server");
+      const supabaseAdmin = getCloudAdminClient();
       const { data, error } = await supabaseAdmin.from("profiles").select("*");
       if (error) throw error;
       return data;
@@ -182,7 +183,8 @@ export const getAdminUsersFast = createServerFn({ method: "GET" })
 export const getAdminLicensesFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { getCloudAdminClient } = await import("@/lib/cloud-client.server");
+      const supabaseAdmin = getCloudAdminClient();
       const { data, error } = await supabaseAdmin.from("licenses").select("*");
       if (error) throw error;
       return data;
