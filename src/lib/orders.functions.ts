@@ -110,6 +110,11 @@ export const createManualOrder = createServerFn({ method: "POST" })
     }).parse(raw);
   })
   .handler(async ({ data }) => {
+    // Standardize productName to avoid UUIDs being sent as product names
+    const productName = (data.productName && data.productName.length > 30 && /^[0-9a-f-]{36}$/i.test(data.productName)) 
+      ? "Premium Extension" 
+      : String(data.productName || 'Premium Extension');
+
     try {
       const { createOrderInCloud } = await import("./cloud-data.server");
       const orderId = `ORDER-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
@@ -125,7 +130,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
         transaction_id: String(data.transactionId || 'N/A'),
         screenshot_url: String(data.screenshotUrl || ''),
         user_id: String(data.uid || 'guest'),
-        product_name: String(data.productName || 'Premium Extension'),
+        product_name: productName,
         category: String(data.category || 'Extension'),
         currency: String(data.currency || "৳"),
         quantity: Number(data.quantity) || 1,

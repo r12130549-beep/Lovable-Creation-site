@@ -68,9 +68,9 @@ function Index() {
             <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Lovable Creation</span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-white/50 bg-white/5 px-4 py-2 rounded-full border border-white/5">
+          <div className="hidden lg:flex items-center gap-3 text-[9px] font-bold uppercase tracking-widest text-white/50 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
             <div className="flex items-center gap-2">
-               <div className={`w-2 h-2 rounded-full animate-pulse ${serverStatus === 'Online' ? 'bg-green-500' : 'bg-red-500'}`} />
+               <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${serverStatus === 'Online' ? 'bg-green-500' : 'bg-red-500'}`} />
                <span className={serverStatus === 'Online' ? 'text-green-500' : 'text-red-500'}>
                  {t.serverStatus} {serverStatus}
                </span>
