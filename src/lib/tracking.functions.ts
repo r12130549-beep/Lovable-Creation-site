@@ -6,7 +6,7 @@ export const trackOrder = createServerFn({ method: "POST" })
   .validator((data: any) => {
     const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
     return z.object({
-      orderId: z.string().min(1, "Order ID is required"),
+      orderId: z.any().transform(v => String(v).trim()),
       email: z.string().optional().nullable(),
     }).parse(raw);
   })
@@ -14,7 +14,7 @@ export const trackOrder = createServerFn({ method: "POST" })
     try {
       const orders = await listOrdersFromCloud();
 
-      const searchId = data.orderId.trim().toUpperCase();
+      const searchId = String(data.orderId).trim().toUpperCase();
       const order = orders.find((o: any) => 
         (o.order_id?.toUpperCase() === searchId || o.id === data.orderId)
       );
