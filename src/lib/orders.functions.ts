@@ -39,7 +39,7 @@ export const getAdminOrders = createServerFn({ method: "GET" })
         updatedAt: order.updated_at || order.created_at
       }));
     } catch (error: any) {
-      console.error("Error fetching admin orders from Firebase:", error);
+      console.error("Error fetching admin orders from Cloud:", error);
       return [];
     }
   });
@@ -78,7 +78,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       await updateOrderInCloud(data.orderId, updatePayload);
       return { success: true };
     } catch (error: any) {
-      console.error("Error updating order in Firebase:", error);
+      console.error("Error updating order in Cloud:", error);
       return { success: false, error: error.message };
     }
   });
@@ -147,7 +147,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
         order_id: orderId
       };
     } catch (error: any) {
-      console.error("Error creating order in Firebase:", error);
+      console.error("Error creating order in Cloud:", error);
       return {
         success: false,
         message: error?.message || "Order could not be saved",
@@ -209,7 +209,7 @@ export const getEarningsStats = createServerFn({ method: "GET" })
         table: earningsTable.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
       };
     } catch (error: any) {
-      console.error("Error calculating earnings from Firebase:", error);
+      console.error("Error calculating earnings from Cloud:", error);
       return { stats: { total: 0, daily: 0, weekly: 0, monthly: 0, yearly: 0 }, table: [] };
     }
   });

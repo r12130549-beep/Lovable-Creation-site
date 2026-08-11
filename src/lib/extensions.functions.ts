@@ -47,7 +47,7 @@ export const deleteExtension = createServerFn({ method: "POST" })
       await deleteExtensionInCloud(data.id);
       return { success: true };
     } catch (error: any) {
-      console.error("Error deleting extension from Firebase:", error);
+      console.error("Error deleting extension from Cloud:", error);
       throw error;
     }
   });
@@ -70,7 +70,7 @@ export const updateExtension = createServerFn({ method: "POST" })
       });
       return { success: true };
     } catch (error: any) {
-      console.error("Error updating extension in Firebase:", error);
+      console.error("Error updating extension in Cloud:", error);
       throw error;
     }
   });
@@ -129,7 +129,7 @@ export const createExtension = createServerFn({ method: "POST" })
       
       return { success: true, extension };
     } catch (error: any) {
-      console.error("Caught error in createExtension (Firebase):", error);
+      console.error("Caught error in createExtension (Cloud):", error);
       return { success: false, message: error?.message || "Failed to create extension" };
     }
   });
