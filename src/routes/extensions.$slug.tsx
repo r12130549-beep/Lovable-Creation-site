@@ -115,7 +115,7 @@ function ExtensionDetailsPage() {
               <div className="flex gap-4 w-full sm:w-auto">
                 <Link 
                   to="/checkout"
-                  search={{ productId: extension.id }}
+                  search={{ productId: extension.id, productName: extension.name }}
                   className="flex-1 sm:flex-none bg-white text-black font-black px-10 py-5 rounded-2xl text-[13px] uppercase tracking-widest hover:bg-white/90 active:scale-95 transition-all shadow-xl shadow-white/5 text-center"
                 >
                   Buy Now

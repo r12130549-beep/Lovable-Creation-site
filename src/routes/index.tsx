@@ -59,16 +59,16 @@ function Index() {
       </div>
 
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl h-16">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl h-12">
         <div className="container mx-auto px-6 h-full flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-purple-600 flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:rotate-6 transition-transform">
-              <Zap className="w-6 h-6 text-white" />
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-red-600 to-purple-600 flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:rotate-6 transition-transform">
+              <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Lovable Creation</span>
+            <span className="text-lg font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Lovable Creation</span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-3 text-[9px] font-bold uppercase tracking-widest text-white/50 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+          <div className="hidden lg:flex items-center gap-3 text-[7px] font-bold uppercase tracking-widest text-white/50 bg-white/5 px-2 py-1 rounded-full border border-white/5">
             <div className="flex items-center gap-2">
                <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${serverStatus === 'Online' ? 'bg-green-500' : 'bg-red-500'}`} />
                <span className={serverStatus === 'Online' ? 'text-green-500' : 'text-red-500'}>
@@ -80,13 +80,13 @@ function Index() {
           </div>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-widest text-white/50">
+          <div className="hidden lg:flex items-center gap-6 text-[9px] font-bold uppercase tracking-widest text-white/50">
             <Link to="/" className="hover:text-white transition-colors">{t.home}</Link>
             <Link to="/extensions" className="hover:text-white transition-colors">{t.extensions}</Link>
             <Link to="/pricing" className="hover:text-white transition-colors">{t.pricing}</Link>
             <a href="#features" className="hover:text-white transition-colors">{t.features}</a>
             <a href="#faq" className="hover:text-white transition-colors">{t.faq}</a>
-            <Link to="/track-order" className="hover:text-red-500 transition-colors bg-red-500/10 text-red-500 px-3 py-1.5 rounded-full text-[9px]">{t.trackOrder}</Link>
+            <Link to="/track-order" className="hover:text-red-500 transition-colors bg-red-500/10 text-red-500 px-2 py-1 rounded-full text-[8px]">{t.trackOrder}</Link>
           </div>
 
           <div className="hidden lg:flex items-center gap-6">
@@ -107,7 +107,7 @@ function Index() {
           </div>
 
           {/* Mobile Toggle */}
-          <button className="lg:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button className="lg:hidden p-1.5" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
@@ -119,7 +119,7 @@ function Index() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="lg:hidden absolute top-20 left-0 right-0 bg-black/95 border-b border-white/10 p-6 space-y-6 backdrop-blur-2xl z-50 overflow-y-auto max-h-[calc(100vh-80px)]"
+              className="lg:hidden absolute top-12 left-0 right-0 bg-black/95 border-b border-white/10 p-6 space-y-6 backdrop-blur-2xl z-50 overflow-y-auto max-h-[calc(100vh-80px)]"
             >
               <div className="flex flex-col gap-6 text-lg font-bold">
                 <Link to="/" onClick={() => setIsMenuOpen(false)}>{t.home}</Link>
@@ -136,7 +136,7 @@ function Index() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-32 overflow-hidden">
+      <section className="relative pt-32 pb-24 overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -149,7 +149,7 @@ function Index() {
                 {offlineMessage}
               </div>
             )}
-            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.2em] text-red-500 mb-8 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] text-red-500 mb-6 backdrop-blur-sm">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
@@ -165,7 +165,7 @@ function Index() {
             <div className="flex flex-col sm:flex-row justify-center gap-6">
               <Link 
                 to="/checkout"
-                search={{ plan: 'credits' }}
+                search={{ plan: 'credits', productName: 'Credits Pack' }}
                 className="group relative bg-[#111] border border-white/5 hover:border-red-500/30 px-8 py-6 rounded-[2.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex flex-col items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-red-500/5 min-w-[240px]"
               >
                 <ShoppingBag className="w-8 h-8 text-red-500" />

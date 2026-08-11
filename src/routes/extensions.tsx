@@ -191,7 +191,7 @@ function ExtensionsPage() {
                       </Link>
                       <Link 
                         to="/checkout"
-                        search={{ productId: ext.id }}
+                        search={{ productId: ext.id, productName: ext.name }}
                         className="bg-white text-black font-black px-3.5 py-2 rounded-xl text-[8px] uppercase tracking-widest hover:bg-white/90 active:scale-95 transition-all shadow-xl shadow-white/5 flex items-center justify-center"
                       >
                         Buy Now
