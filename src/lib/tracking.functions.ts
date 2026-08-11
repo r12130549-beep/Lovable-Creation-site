@@ -1,11 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { 
-  adminFirestore, 
-  collection, 
-  getDocs, 
-  query, 
-} from "./firebase-admin.server";
+import { listOrdersFromCloud } from "./cloud-data.server";
 
 export const trackOrder = createServerFn({ method: "POST" })
   .validator((data: any) => {
@@ -17,13 +12,7 @@ export const trackOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      const ordersRef = collection(adminFirestore, "orders");
-      const querySnapshot = await getDocs(query(ordersRef));
-      
-      const orders = querySnapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const orders = await listOrdersFromCloud();
 
       const searchId = data.orderId.trim().toUpperCase();
       const order = orders.find((o: any) => 
@@ -47,10 +36,10 @@ export const trackOrder = createServerFn({ method: "POST" })
         customer_name: order.customer_name,
         customer_email: order.customer_email,
         payment_method: order.payment_method,
-        payment_status: order.payment_status || order.order_status || order.status,
+        payment_status: order.payment_status || order.order_status,
         transaction_id: order.transaction_id,
-        status: order.order_status || order.status || "Pending",
-        amount: order.price || order.amount,
+        status: order.order_status || "Pending",
+        amount: order.price,
         currency: order.currency || "৳",
         admin_note: order.notes,
         created_at: order.created_at,
@@ -66,7 +55,7 @@ export const trackOrder = createServerFn({ method: "POST" })
         }
       };
     } catch (error: any) {
-      console.error("Error tracking order in Firebase:", error);
+      console.error("Error tracking order in Cloud:", error);
       throw error;
     }
   });

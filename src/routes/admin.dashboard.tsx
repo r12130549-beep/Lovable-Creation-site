@@ -1,20 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { createServerFn, useServerFn } from '@tanstack/react-start';
 import { z } from "zod";
-import { 
-  adminFirestore as serverFirestore, 
-  collection as serverCollection, 
-  getDocs as serverGetDocs, 
-  doc as serverDoc, 
-  updateDoc as serverUpdateDoc, 
-  deleteDoc as serverDeleteDoc,
-  query as serverQuery, 
-  orderBy as serverOrderBy, 
-  where as serverWhere,
-  limit as serverLimit,
-  setDoc as serverSetDoc,
-  getDoc as serverGetDoc
-} from "../lib/firebase-admin.server";
 import { useAuth } from '@/hooks/use-auth';
 import { 
   BarChart3, Package, Users, ShoppingBag, Shield, Settings, 
@@ -38,31 +24,14 @@ import { format } from 'date-fns';
 export const getAdminOrdersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const ordersRef = serverCollection(serverFirestore, "orders");
-      const querySnapshot = await serverGetDocs(ordersRef);
+      const { listOrdersFromCloud } = await import("../lib/cloud-data.server");
+      const orders = await listOrdersFromCloud();
       
-      const orders = querySnapshot.docs.map((doc: any) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          created_at: data.created_at || new Date(0).toISOString(),
-          customer_name: data.customer_name || 'Guest',
-          customer_email: data.customer_email || 'guest@example.com'
-        };
-      });
-
-      orders.sort((a: any, b: any) => {
-        const dateA = new Date(a.created_at).getTime();
-        const dateB = new Date(b.created_at).getTime();
-        return dateB - dateA;
-      });
-      
-      return orders.slice(0, 50).map((order: any) => ({
+      return orders.map((order: any) => ({
         id: order.id,
         orderId: order.order_id || order.id,
-        customerName: order.customer_name,
-        email: order.customer_email,
+        customerName: order.customer_name || 'Guest',
+        email: order.customer_email || 'guest@example.com',
         whatsapp: order.customer_phone || "N/A",
         productName: order.product_name || order.productName || "Extension",
         category: order.category || "Extension",
@@ -92,10 +61,8 @@ export const getAdminOrdersFast = createServerFn({ method: "GET" })
 export const getAdminExtensionsFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const extensionsRef = serverCollection(serverFirestore, "extensions");
-      const snapshot = await serverGetDocs(extensionsRef);
-      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
-
+      const { listExtensionsFromCloud } = await import("../lib/cloud-data.server");
+      return await listExtensionsFromCloud();
     } catch (error: any) {
       console.error("Error fetching extensions fast:", error);
       return [];
@@ -119,16 +86,14 @@ export const createExtensionFast = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      const extensionsRef = serverCollection(serverFirestore, "extensions");
-      const docRef = serverDoc(extensionsRef);
+      const { createExtensionInCloud } = await import("../lib/cloud-data.server");
       const payload = {
         ...data,
-        id: docRef.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
-      await serverSetDoc(docRef, payload);
-      return { success: true, extension: payload };
+      const extension = await createExtensionInCloud(payload as any);
+      return { success: true, extension };
     } catch (error: any) {
       console.error("Error creating extension fast:", error);
       return { success: false, message: error?.message || "Failed to create extension" };
@@ -142,8 +107,8 @@ export const updateExtensionFast = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      const docRef = serverDoc(serverFirestore, "extensions", data.id);
-      await serverUpdateDoc(docRef, { ...data.updates, updated_at: new Date().toISOString() });
+      const { updateExtensionInCloud } = await import("../lib/cloud-data.server");
+      await updateExtensionInCloud(data.id, data.updates);
       return { success: true };
     } catch (error: any) {
       console.error("Error updating extension fast:", error);
@@ -158,8 +123,8 @@ export const deleteExtensionFast = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      const docRef = serverDoc(serverFirestore, "extensions", data.id);
-      await serverDeleteDoc(docRef);
+      const { deleteExtensionInCloud } = await import("../lib/cloud-data.server");
+      await deleteExtensionInCloud(data.id);
       return { success: true };
     } catch (error: any) {
       console.error("Error deleting extension fast:", error);
@@ -182,7 +147,7 @@ export const updateOrderStatusFast = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      const orderRef = serverDoc(serverFirestore, "orders", data.orderId);
+      const { updateOrderInCloud } = await import("../lib/cloud-data.server");
       const updatePayload: any = { 
         order_status: data.status,
         updated_at: new Date().toISOString()
@@ -192,7 +157,8 @@ export const updateOrderStatusFast = createServerFn({ method: "POST" })
       if (data.licenseKey) updatePayload.license_key = data.licenseKey;
       if (data.downloadLink) updatePayload.download_link = data.downloadLink;
       if (data.expireDate) updatePayload.expire_date = data.expireDate;
-      await serverUpdateDoc(orderRef, updatePayload);
+      
+      await updateOrderInCloud(data.orderId, updatePayload);
       return { success: true };
     } catch (error: any) {
       console.error("Error updating order status fast:", error);
@@ -203,10 +169,10 @@ export const updateOrderStatusFast = createServerFn({ method: "POST" })
 export const getAdminUsersFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const usersRef = serverCollection(serverFirestore, "users");
-      const snapshot = await serverGetDocs(usersRef);
-      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
-
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data, error } = await supabaseAdmin.from("profiles").select("*");
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error("Error fetching users fast:", error);
       return [];
@@ -216,9 +182,10 @@ export const getAdminUsersFast = createServerFn({ method: "GET" })
 export const getAdminLicensesFast = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const licensesRef = serverCollection(serverFirestore, "licenses");
-      const snapshot = await serverGetDocs(licensesRef);
-      return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data, error } = await supabaseAdmin.from("licenses").select("*");
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error("Error fetching admin licenses fast:", error);
       return [];
