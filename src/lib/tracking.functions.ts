@@ -1,11 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { 
-  adminFirestore, 
-  collection, 
-  getDocs, 
-  query, 
-} from "./firebase-admin.server";
+import { listOrdersFromCloud } from "./cloud-data.server";
 
 export const trackOrder = createServerFn({ method: "POST" })
   .validator((data: any) => {
@@ -17,13 +12,7 @@ export const trackOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      const ordersRef = collection(adminFirestore, "orders");
-      const querySnapshot = await getDocs(query(ordersRef));
-      
-      const orders = querySnapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const orders = await listOrdersFromCloud();
 
       const searchId = data.orderId.trim().toUpperCase();
       const order = orders.find((o: any) => 
@@ -66,7 +55,7 @@ export const trackOrder = createServerFn({ method: "POST" })
         }
       };
     } catch (error: any) {
-      console.error("Error tracking order in Firebase:", error);
+      console.error("Error tracking order in Cloud:", error);
       throw error;
     }
   });
