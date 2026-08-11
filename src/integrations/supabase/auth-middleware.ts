@@ -14,6 +14,7 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     const authHeader = request?.headers?.get('authorization');
     const token = (authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : undefined) as string | undefined;
     
+    // Standard client to verify the user token
     const supabase: SupabaseClient<Database> = createClient<Database>(
       SUPABASE_URL,
       SUPABASE_ANON_KEY,
@@ -21,7 +22,6 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
         global: {
           headers: {
             'apikey': SUPABASE_ANON_KEY,
-            'Authorization': token ? `Bearer ${token}` : `Bearer ${SUPABASE_ANON_KEY}`,
           },
         },
         auth: {
