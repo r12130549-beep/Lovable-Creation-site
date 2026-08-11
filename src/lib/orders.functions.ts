@@ -1,35 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { 
-  adminFirestore, 
-  collection, 
-  getDocs, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc, 
-  query, 
-  orderBy,
-  where,
-  limit,
-  Timestamp
-} from "./firebase-admin.server";
 
 export const getAdminOrders = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const ordersRef = collection(adminFirestore, "orders");
-      // Use getDocs directly on collection to bypass query/index issues if any
-      const querySnapshot = await getDocs(ordersRef);
-      
-      const orders = querySnapshot.docs.map((doc: any) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          created_at: data.created_at || new Date(0).toISOString(),
-        };
-      });
+      const { listOrdersFromCloud } = await import("./cloud-data.server");
+      const orders = await listOrdersFromCloud();
 
       orders.sort((a: any, b: any) => {
         const dateA = new Date(a.created_at).getTime();
@@ -85,7 +61,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
-      const orderRef = doc(adminFirestore, "orders", data.orderId);
+      const { updateOrderInCloud } = await import("./cloud-data.server");
       const updatePayload: any = {
         order_status: data.status,
         updated_at: new Date().toISOString()
@@ -99,7 +75,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       if (data.downloadLink) updatePayload.download_link = data.downloadLink;
       if (data.expireDate) updatePayload.expire_date = data.expireDate;
 
-      await updateDoc(orderRef, updatePayload);
+      await updateOrderInCloud(data.orderId, updatePayload);
       return { success: true };
     } catch (error: any) {
       console.error("Error updating order in Firebase:", error);
@@ -135,9 +111,8 @@ export const createManualOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
+      const { createOrderInCloud } = await import("./cloud-data.server");
       const orderId = `ORDER-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-      const orderRef = doc(collection(adminFirestore, "orders"));
-      
       const orderData: any = {
         order_id: orderId,
         customer_name: String(data.customerName || 'Guest'),
@@ -160,16 +135,15 @@ export const createManualOrder = createServerFn({ method: "POST" })
         download_link: data.downloadLink || '',
         expire_date: data.expireDate || null,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        timestamp: new Date().getTime() // Add numeric timestamp for easier sorting
+        updated_at: new Date().toISOString()
       };
 
-      await setDoc(orderRef, orderData);
+      const savedOrder = await createOrderInCloud(orderData);
       
       return { 
         success: true, 
         orderId: orderId,
-        docId: orderRef.id,
+        docId: savedOrder.id,
         order_id: orderId
       };
     } catch (error: any) {
@@ -186,9 +160,8 @@ export const createManualOrder = createServerFn({ method: "POST" })
 export const getEarningsStats = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
-      const ordersRef = collection(adminFirestore, "orders");
-      const querySnapshot = await getDocs(ordersRef);
-      const orders = querySnapshot.docs.map((doc: any) => doc.data());
+      const { listOrdersFromCloud } = await import("./cloud-data.server");
+      const orders = await listOrdersFromCloud();
       
       const filteredOrders = orders.filter((o: any) => 
         ["Approved", "Completed"].includes(o.order_status || o.payment_status)
