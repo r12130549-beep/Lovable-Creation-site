@@ -300,7 +300,9 @@ function AdminPage() {
       toast.success('অর্ডার সফল হয়েছে');
       const orderIdToCopy = result.order_id || result.orderId;
       if (orderIdToCopy) {
-        window.prompt('অর্ডার আইডি (কপি করুন):', orderIdToCopy);
+        // Using alert for auto-update like persistence in UI interaction
+        window.alert(`অর্ডার আইডি (অটো-সেভ করা হয়েছে): ${orderIdToCopy}`);
+
       }
       queryClient.invalidateQueries({ queryKey: ['admin-earnings'] });
       // Refresh the orders list immediately
