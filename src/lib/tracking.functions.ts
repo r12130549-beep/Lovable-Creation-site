@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { listOrdersFromCloud } from "./cloud-data.server";
 
 export const trackOrder = createServerFn({ method: "POST" })
   .validator((data: any) => {
@@ -12,6 +11,7 @@ export const trackOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
+      const { listOrdersFromCloud } = await import("./cloud-data.server");
       const orders = await listOrdersFromCloud();
 
       const searchId = String(data.orderId).trim().toUpperCase();

@@ -1,10 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getAppSettingsFromCloud, updateAppSettingInCloud } from "./cloud-data.server";
 
 export const getAppSettings = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
+      const { getAppSettingsFromCloud } = await import("./cloud-data.server");
       return await getAppSettingsFromCloud();
     } catch (error: any) {
       console.error("Error in getAppSettings (Cloud):", error);
@@ -22,6 +22,7 @@ export const updateAppSetting = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     try {
+      const { updateAppSettingInCloud } = await import("./cloud-data.server");
       await updateAppSettingInCloud(data.key, data.value);
       return { success: true };
     } catch (e: any) {
