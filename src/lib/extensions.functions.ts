@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { createExtensionInCloud, deleteExtensionInCloud, listExtensionsFromCloud, updateExtensionInCloud } from "./cloud-data.server";
 import { 
   adminFirestore, 
   collection, 
@@ -31,11 +32,7 @@ export const getExtensions = createServerFn({ method: "GET" })
   }).optional().parse(data))
   .handler(async ({ data }) => {
     try {
-      const extensionsRef = collection(adminFirestore, "extensions");
-      const q = query(extensionsRef);
-
-      const snapshot = await getDocs(q);
-      const results = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as any[];
+      const results = await listExtensionsFromCloud() as any[];
 
       // Manual filtering and sorting to bypass Firebase index requirements
       let filtered = results;
@@ -60,8 +57,7 @@ export const deleteExtension = createServerFn({ method: "POST" })
   .validator((data: unknown) => z.object({ id: z.any().transform((v) => String(v)) }).parse(unwrap(data)))
   .handler(async ({ data }) => {
     try {
-      const extensionRef = doc(adminFirestore, "extensions", data.id);
-      await deleteDoc(extensionRef);
+      await deleteExtensionInCloud(data.id);
       return { success: true };
     } catch (error: any) {
       console.error("Error deleting extension from Firebase:", error);
@@ -80,8 +76,7 @@ export const updateExtension = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const extensionRef = doc(adminFirestore, "extensions", data.id);
-      await updateDoc(extensionRef, {
+      await updateExtensionInCloud(data.id, {
         ...(data.updates as any),
         updated_at: new Date().toISOString()
       });
@@ -115,8 +110,6 @@ export const createExtension = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const extensionsRef = collection(adminFirestore, "extensions");
-      
       const name = data.name?.trim() || "Untitled Extension";
       const slug =
         data.slug?.trim() ||
@@ -124,9 +117,7 @@ export const createExtension = createServerFn({ method: "POST" })
           .toString(36)
           .slice(2, 6)}`;
 
-      const extensionRef = doc(extensionsRef);
       const payload: any = {
-        id: extensionRef.id,
         name,
         slug,
         description: data.description ?? null,
@@ -145,9 +136,9 @@ export const createExtension = createServerFn({ method: "POST" })
       };
       if (data.discount_price !== undefined) payload.discount_price = data.discount_price;
 
-      await setDoc(extensionRef, payload);
+      const extension = await createExtensionInCloud(payload);
       
-      return { success: true, extension: payload };
+      return { success: true, extension };
     } catch (error: any) {
       console.error("Caught error in createExtension (Firebase):", error);
       return { success: false, message: error?.message || "Failed to create extension" };
