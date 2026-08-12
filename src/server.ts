@@ -51,6 +51,9 @@ export default {
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error: any) {
+      // The client went away mid-request; nothing to render and nothing to report.
+      if (isClientAbortError(error)) return new Response(null, { status: 499 });
+
       console.error("CATASTROPHIC ERROR:", error?.message, error?.stack);
 
       return new Response(renderErrorPage(), {
