@@ -14,6 +14,7 @@ import { createManualOrder, getAdminOrders, getEarningsStats, updateOrderStatus 
 import { createExtension, deleteExtension, getExtensions } from '@/lib/extensions.functions';
 import { toggleUserStatus, removeUser } from '@/lib/users.functions';
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
+import { getOrderAssetSignedUrl } from '@/lib/assets.functions';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { FileUpload } from '@/components/admin/FileUpload';
@@ -947,25 +948,9 @@ function AdminPage() {
             )}
 
             {(selectedOrder.screenshot_url || selectedOrder.screenshotUrl) && (
-              <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-2 block">Payment Proof</label>
-                <div className="relative group overflow-hidden rounded-2xl border border-white/10">
-                  <img 
-                    src={(selectedOrder.screenshot_url || selectedOrder.screenshotUrl)} 
-                    className="w-full object-cover" 
-                    alt="Payment Screenshot" 
-                  />
-                  <a 
-                    href={(selectedOrder.screenshot_url || selectedOrder.screenshotUrl)} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest"
-                  >
-                    <Eye className="w-4 h-4" /> View Full Image
-                  </a>
-                </div>
-              </div>
+              <PaymentProof reference={selectedOrder.screenshot_url || selectedOrder.screenshotUrl} />
             )}
+
 
             <div className="space-y-4 pt-4">
               <div className="grid grid-cols-2 gap-4">
@@ -1038,6 +1023,37 @@ function AdminPage() {
             </div>
           </motion.div>
         </div>
+      )}
+    </div>
+  );
+}
+function PaymentProof({ reference }: { reference: string }) {
+  const getSignedUrl = useServerFn(getOrderAssetSignedUrl);
+  const { data, isError } = useQuery({
+    queryKey: ['order-asset', reference],
+    queryFn: () => getSignedUrl({ data: { url: reference } }),
+    retry: false,
+  });
+
+  return (
+    <div className="space-y-4">
+      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-2 block">Payment Proof</label>
+      {isError ? (
+        <p className="text-xs text-white/40">Secure link unavailable.</p>
+      ) : data?.url ? (
+        <div className="relative group overflow-hidden rounded-2xl border border-white/10">
+          <img src={data.url} className="w-full object-cover" alt="Payment Screenshot" />
+          <a
+            href={data.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest"
+          >
+            <Eye className="w-4 h-4" /> View Full Image
+          </a>
+        </div>
+      ) : (
+        <p className="text-xs text-white/40">Loading secure preview...</p>
       )}
     </div>
   );
