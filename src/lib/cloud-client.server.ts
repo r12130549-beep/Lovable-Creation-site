@@ -3,6 +3,10 @@ import type { Database } from "@/integrations/supabase/types";
 
 let cached: SupabaseClient<Database> | null = null;
 
+// Safe public fallbacks so a deployment without env vars (e.g. Vercel) still boots.
+const FALLBACK_URL = "https://gxskutcwhatbkeaczyvd.supabase.co";
+const FALLBACK_PUBLISHABLE_KEY = "sb_publishable_pvw14Jg_3BCrZFoUsmAH3Q_6P5GRnbY";
+
 function firstDefined(...keys: string[]) {
   for (const key of keys) {
     const value = process.env[key];
@@ -18,7 +22,8 @@ export function getCloudAdminClient() {
     'SUPABASE_URL',
     'VITE_SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_URL',
-  );
+  ) ?? FALLBACK_URL;
+
   const serviceRoleKey = firstDefined(
     'SUPABASE_SERVICE_ROLE_KEY',
     'SUPABASE_SECRET_KEY',
@@ -28,13 +33,10 @@ export function getCloudAdminClient() {
     'SUPABASE_PUBLISHABLE_KEY',
     'SUPABASE_ANON_KEY',
     'VITE_SUPABASE_PUBLISHABLE_KEY',
-  );
+  ) ?? FALLBACK_PUBLISHABLE_KEY;
 
   const key = serviceRoleKey ?? fallbackKey;
 
-  if (!url || !key) {
-    throw new Error("Backend connection is not configured");
-  }
 
   cached = createClient<Database>(url, key, {
     auth: {
