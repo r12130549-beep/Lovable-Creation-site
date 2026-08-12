@@ -4,7 +4,17 @@
 let lastCapturedError: { error: unknown; at: number } | undefined;
 const TTL_MS = 5_000;
 
+// A client that navigates away / cancels mid-request aborts the socket. Node throws
+// "Error: aborted" from _http_server — harmless noise, never a real app failure.
+export function isClientAbortError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const code = (error as { code?: unknown }).code;
+  if (code === "ECONNRESET" || code === "ABORT_ERR") return true;
+  return error.name === "AbortError" || /^aborted$/i.test(error.message);
+}
+
 function record(error: unknown) {
+  if (isClientAbortError(error)) return;
   lastCapturedError = { error, at: Date.now() };
 }
 
@@ -54,6 +64,8 @@ function isErrorLike(value: unknown): value is Error {
 // recorded for consumeLastCapturedError and expanded before serialization.
 const originalConsoleError = console.error.bind(console);
 console.error = (...args: unknown[]) => {
+  // Drop client-abort noise so it never surfaces as a runtime error / error page.
+  if (args.some((arg) => isClientAbortError(arg))) return;
   const expanded = args.map((arg) => {
     if (!isErrorLike(arg)) return arg;
     record(arg);
