@@ -172,8 +172,7 @@ function Index() {
                 {t.buyCredits}
               </Link>
               <Link 
-                to="/checkout"
-                search={{ plan: 'premium', productName: 'Premium Extension License' }}
+                to="/extensions"
                 className="group relative bg-[#111] border border-white/5 hover:border-purple-500/30 px-8 py-6 rounded-[2.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex flex-col items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-purple-500/5 min-w-[240px]"
               >
                 <Zap className="w-8 h-8 text-purple-500" />
