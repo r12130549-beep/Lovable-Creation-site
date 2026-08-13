@@ -11,7 +11,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateLicenseAdmin } from '@/lib/licenses.functions';
 import { createManualOrder, getAdminOrders, getEarningsStats, updateOrderStatus } from '@/lib/orders.functions';
-import { createExtension, deleteExtension, getExtensions } from '@/lib/extensions.functions';
+import { createExtension, deleteExtension, getExtensions, updateExtension } from '@/lib/extensions.functions';
 import { toggleUserStatus, removeUser } from '@/lib/users.functions';
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
 import { getOrderAssetSignedUrl } from '@/lib/assets.functions';
@@ -223,11 +223,13 @@ function AdminPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isAddingExtension, setIsAddingExtension] = useState(false);
+  const [editingExtension, setEditingExtension] = useState<any>(null);
   const queryClient = useQueryClient();
   const getAdminOrdersFn = useServerFn(getAdminOrders);
   const createManualOrderFn = useServerFn(createManualOrder);
   const updateOrderStatusFn = useServerFn(updateOrderStatus);
   const createExtensionFn = useServerFn(createExtension);
+  const updateExtensionFn = useServerFn(updateExtension);
   const deleteExtensionFn = useServerFn(deleteExtension);
   const getExtensionsFn = useServerFn(getExtensions);
   const getAdminUsersFn = useServerFn(getAdminUsersFast);
