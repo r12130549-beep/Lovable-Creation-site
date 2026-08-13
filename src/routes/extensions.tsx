@@ -25,7 +25,7 @@ const CATEGORIES = ['All', 'AI', 'Productivity', 'Developer', 'Automation', 'Soc
 function ExtensionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('popular');
+  const [sortBy, setSortBy] = useState('price_low');
   const getExtensionsFn = useServerFn(getExtensions);
 
   const { data: extensions, isLoading } = useQuery({
