@@ -163,7 +163,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
       return {
         success: false,
         message: isPermissionError 
-          ? "সিস্টেম পারমিশন ত্রুটি। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।" 
+          ? "সিস্টেম পারমিশন ত্রুটি। অনুগ্রহ করে আবার চেষ্টা করুন অথবা অ্যাডমিনের সাথে যোগাযোগ করুন।" 
           : (error?.message || "অর্ডার তৈরি করতে ব্যর্থ হয়েছে"),
         order_id: null,
         orderId: null
