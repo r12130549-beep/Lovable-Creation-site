@@ -116,7 +116,9 @@ export const createManualOrder = createServerFn({ method: "POST" })
       : String(data.productName || 'Premium Extension');
 
     try {
+      console.log("Creating manual order for:", data.email);
       const { createOrderInCloud } = await import("./cloud-data.server");
+      
       const orderId = `ORDER-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       const orderData: any = {
         order_id: orderId,
@@ -138,24 +140,31 @@ export const createManualOrder = createServerFn({ method: "POST" })
         license_key: data.licenseKey || '',
         license_name: data.licenseName || '',
         download_link: data.downloadLink || '',
-        expire_date: data.expireDate || null,
+        expire_date: data.expire_date || data.expireDate || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
       const savedOrder = await createOrderInCloud(orderData);
+      console.log("Order saved successfully:", savedOrder?.id);
       
       return { 
         success: true, 
-        orderId: orderId,
+        orderId: orderId, 
         docId: savedOrder.id,
         order_id: orderId
       };
     } catch (error: any) {
       console.error("Error creating order in Cloud:", error);
+      // Special check for common permission issues
+      const isPermissionError = error?.message?.toLowerCase().includes('permission') || 
+                               error?.message?.toLowerCase().includes('rls');
+      
       return {
         success: false,
-        message: error?.message || "Order could not be saved",
+        message: isPermissionError 
+          ? "সিস্টেম পারমিশন ত্রুটি। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।" 
+          : (error?.message || "অর্ডার তৈরি করতে ব্যর্থ হয়েছে"),
         order_id: null,
         orderId: null
       };

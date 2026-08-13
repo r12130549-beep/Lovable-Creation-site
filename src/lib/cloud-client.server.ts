@@ -29,14 +29,21 @@ export function getCloudAdminClient() {
     'SUPABASE_SECRET_KEY',
     'SERVICE_ROLE_KEY',
   );
+  
   const fallbackKey = firstDefined(
     'SUPABASE_PUBLISHABLE_KEY',
     'SUPABASE_ANON_KEY',
     'VITE_SUPABASE_PUBLISHABLE_KEY',
   ) ?? FALLBACK_PUBLISHABLE_KEY;
 
+  // CRITICAL: We prioritize the service role key for "admin" actions, 
+  // but if it's missing, we fall back to the publishable key.
   const key = serviceRoleKey ?? fallbackKey;
 
+  // Log only the type of key being used, not the key itself
+  if (!serviceRoleKey) {
+    console.warn("Using fallback key for Cloud client. Admin actions may fail RLS.");
+  }
 
   cached = createClient<Database>(url, key, {
     auth: {
@@ -45,14 +52,10 @@ export function getCloudAdminClient() {
       autoRefreshToken: false,
     },
     global: {
-      fetch: (input, init) => {
-        const headers = new Headers(init?.headers);
-        headers.set('apikey', key);
-        if (!headers.get('Authorization')) {
-          headers.set('Authorization', `Bearer ${key}`);
-        }
-        return fetch(input, { ...init, headers });
-      },
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`
+      }
     },
   });
 
