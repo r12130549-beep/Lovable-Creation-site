@@ -477,7 +477,7 @@ function AdminPage() {
                         />
                       </div>
                     </div>
-                    <p className="text-xs text-white/40">{order.customerName} | ৳{order.price} | {order.email}</p>
+                    <p className="text-xs text-white/40">{order.customerName} | ৳{order.price}{toUsdt(order.price) ? ` (≈ ${toUsdt(order.price)} USDT)` : ''} | {order.email}</p>
                   </div>
                   <div className="flex gap-2">
                      <button onClick={(e) => { e.stopPropagation(); updateOrderMutation.mutate({ orderId: order.id, status: 'Approved' }); }} className="px-4 py-2 bg-green-600/10 text-green-500 hover:bg-green-600 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">Approve</button>
