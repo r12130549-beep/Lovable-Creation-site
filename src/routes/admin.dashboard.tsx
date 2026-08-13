@@ -286,8 +286,14 @@ function AdminPage() {
   const { data: settings } = useQuery({
     queryKey: ['app-settings'],
     queryFn: () => getAppSettings(),
-    enabled: activeTab === 'settings' || activeTab === 'server_status',
   });
+
+  const usdtRate = Number((settings as any)?.usdt_rate) || 0;
+  const toUsdt = (bdt: any) => {
+    const amount = Number(bdt) || 0;
+    if (!usdtRate) return null;
+    return (amount / usdtRate).toFixed(2);
+  };
 
   const { data: licenses } = useQuery({
     queryKey: ['admin-licenses'],
@@ -349,6 +355,16 @@ function AdminPage() {
       setIsAddingExtension(false);
     },
     onError: (err: any) => toast.error(err.message || 'Failed to create extension')
+  });
+
+  const updateExtensionMutation = useMutation({
+    mutationFn: ({ id, updates }: any) => updateExtensionFn({ data: { id, updates } } as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
+      toast.success('প্রোডাক্ট আপডেট হয়েছে');
+      setEditingExtension(null);
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to update product')
   });
 
   const filteredOrders = useMemo(() => {
