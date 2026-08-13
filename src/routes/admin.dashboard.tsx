@@ -584,29 +584,37 @@ function AdminPage() {
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold">Extensions</h2>
                 <button 
-                  onClick={() => setIsAddingExtension(true)}
+                  onClick={() => { setEditingExtension(null); setIsAddingExtension(true); }}
                   className="bg-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:bg-red-700 active:scale-95"
                 >
                   + Add Extension
                 </button>
               </div>
 
-              {isAddingExtension && (
+              {(isAddingExtension || editingExtension) && (
                 <motion.form 
+                  key={editingExtension?.id || 'new-extension'}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   onSubmit={(e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
-                    createExtensionMutation.mutate({
+                    const payload = {
                       name: (formData.get('name') as string) || '',
-                      slug: ((formData.get('name') as string) || 'extension').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
                       price: Number(formData.get('price')) || 0,
                       description: (formData.get('description') as string) || '',
                       category: (formData.get('category') as string) || '',
                       icon_url: (formData.get('icon_url') as string) || '',
                       status: 'published'
-                    });
+                    };
+                    if (editingExtension) {
+                      updateExtensionMutation.mutate({ id: editingExtension.id, updates: payload });
+                    } else {
+                      createExtensionMutation.mutate({
+                        ...payload,
+                        slug: (payload.name || 'extension').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                      });
+                    }
                   }}
                   className="p-6 bg-[#0A0A0A] border border-white/10 rounded-3xl space-y-4 mb-8"
                 >
