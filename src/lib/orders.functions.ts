@@ -140,7 +140,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
         license_key: data.licenseKey || '',
         license_name: data.licenseName || '',
         download_link: data.downloadLink || '',
-        expire_date: data.expire_date || data.expireDate || null,
+        expire_date: data.expireDate || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
