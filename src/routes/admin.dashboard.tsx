@@ -672,7 +672,7 @@ function AdminPage() {
                         {ext.icon_url ? <img src={ext.icon_url} className="w-8 h-8 object-contain" /> : '⚡'}
                       </div>
                       <div className="flex gap-2">
-                        <button className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"><Edit className="w-4 h-4" /></button>
+                        <button onClick={() => { setIsAddingExtension(false); setEditingExtension(ext); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"><Edit className="w-4 h-4" /></button>
                         <button onClick={() => deleteExtensionMutation.mutate(ext.id)} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-colors"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </div>
@@ -681,7 +681,10 @@ function AdminPage() {
                       <p className="text-xs text-white/40 line-clamp-2 mt-1">{ext.description}</p>
                     </div>
                     <div className="pt-4 border-t border-white/5 flex justify-between items-center">
-                      <span className="text-sm font-black">৳{ext.price}</span>
+                      <span className="text-sm font-black">
+                        ৳{ext.price}
+                        {toUsdt(ext.price) ? <span className="text-[10px] font-bold text-white/30 ml-2">≈ {toUsdt(ext.price)} USDT</span> : null}
+                      </span>
                       <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{ext.category}</span>
                     </div>
                   </div>
