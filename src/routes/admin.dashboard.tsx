@@ -11,7 +11,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateLicenseAdmin } from '@/lib/licenses.functions';
 import { createManualOrder, getAdminOrders, getEarningsStats, updateOrderStatus } from '@/lib/orders.functions';
-import { createExtension, deleteExtension, getExtensions } from '@/lib/extensions.functions';
+import { createExtension, deleteExtension, getExtensions, updateExtension } from '@/lib/extensions.functions';
 import { toggleUserStatus, removeUser } from '@/lib/users.functions';
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
 import { getOrderAssetSignedUrl } from '@/lib/assets.functions';
@@ -223,11 +223,13 @@ function AdminPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isAddingExtension, setIsAddingExtension] = useState(false);
+  const [editingExtension, setEditingExtension] = useState<any>(null);
   const queryClient = useQueryClient();
   const getAdminOrdersFn = useServerFn(getAdminOrders);
   const createManualOrderFn = useServerFn(createManualOrder);
   const updateOrderStatusFn = useServerFn(updateOrderStatus);
   const createExtensionFn = useServerFn(createExtension);
+  const updateExtensionFn = useServerFn(updateExtension);
   const deleteExtensionFn = useServerFn(deleteExtension);
   const getExtensionsFn = useServerFn(getExtensions);
   const getAdminUsersFn = useServerFn(getAdminUsersFast);
@@ -284,8 +286,14 @@ function AdminPage() {
   const { data: settings } = useQuery({
     queryKey: ['app-settings'],
     queryFn: () => getAppSettings(),
-    enabled: activeTab === 'settings' || activeTab === 'server_status',
   });
+
+  const usdtRate = Number((settings as any)?.usdt_rate) || 0;
+  const toUsdt = (bdt: any) => {
+    const amount = Number(bdt) || 0;
+    if (!usdtRate) return null;
+    return (amount / usdtRate).toFixed(2);
+  };
 
   const { data: licenses } = useQuery({
     queryKey: ['admin-licenses'],
@@ -347,6 +355,16 @@ function AdminPage() {
       setIsAddingExtension(false);
     },
     onError: (err: any) => toast.error(err.message || 'Failed to create extension')
+  });
+
+  const updateExtensionMutation = useMutation({
+    mutationFn: ({ id, updates }: any) => updateExtensionFn({ data: { id, updates } } as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
+      toast.success('প্রোডাক্ট আপডেট হয়েছে');
+      setEditingExtension(null);
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to update product')
   });
 
   const filteredOrders = useMemo(() => {
@@ -459,7 +477,7 @@ function AdminPage() {
                         />
                       </div>
                     </div>
-                    <p className="text-xs text-white/40">{order.customerName} | ৳{order.price} | {order.email}</p>
+                    <p className="text-xs text-white/40">{order.customerName} | ৳{order.price}{toUsdt(order.price) ? ` (≈ ${toUsdt(order.price)} USDT)` : ''} | {order.email}</p>
                   </div>
                   <div className="flex gap-2">
                      <button onClick={(e) => { e.stopPropagation(); updateOrderMutation.mutate({ orderId: order.id, status: 'Approved' }); }} className="px-4 py-2 bg-green-600/10 text-green-500 hover:bg-green-600 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">Approve</button>
@@ -566,29 +584,37 @@ function AdminPage() {
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold">Extensions</h2>
                 <button 
-                  onClick={() => setIsAddingExtension(true)}
+                  onClick={() => { setEditingExtension(null); setIsAddingExtension(true); }}
                   className="bg-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:bg-red-700 active:scale-95"
                 >
                   + Add Extension
                 </button>
               </div>
 
-              {isAddingExtension && (
+              {(isAddingExtension || editingExtension) && (
                 <motion.form 
+                  key={editingExtension?.id || 'new-extension'}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   onSubmit={(e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
-                    createExtensionMutation.mutate({
+                    const payload = {
                       name: (formData.get('name') as string) || '',
-                      slug: ((formData.get('name') as string) || 'extension').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
                       price: Number(formData.get('price')) || 0,
                       description: (formData.get('description') as string) || '',
                       category: (formData.get('category') as string) || '',
                       icon_url: (formData.get('icon_url') as string) || '',
                       status: 'published'
-                    });
+                    };
+                    if (editingExtension) {
+                      updateExtensionMutation.mutate({ id: editingExtension.id, updates: payload });
+                    } else {
+                      createExtensionMutation.mutate({
+                        ...payload,
+                        slug: (payload.name || 'extension').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                      });
+                    }
                   }}
                   className="p-6 bg-[#0A0A0A] border border-white/10 rounded-3xl space-y-4 mb-8"
                 >
@@ -605,32 +631,35 @@ function AdminPage() {
                           if (iconInput) iconInput.value = url;
                         }}
                       />
-                      <input type="hidden" name="icon_url" />
+                      <input type="hidden" name="icon_url" defaultValue={editingExtension?.icon_url || ''} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Name</label>
-                        <input name="name" placeholder="Extension Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                        <input name="name" defaultValue={editingExtension?.name || ''} placeholder="Extension Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Category</label>
-                        <input name="category" placeholder="Category" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                        <input name="category" defaultValue={editingExtension?.category || ''} placeholder="Category" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
                       </div>
                     </div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Price (৳)</label>
-                    <input name="price" placeholder="Price" type="number" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                    <input name="price" defaultValue={editingExtension?.price ?? ''} placeholder="Price" type="number" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                    {usdtRate > 0 && editingExtension?.price ? (
+                      <p className="text-[10px] font-bold text-white/30 ml-2">≈ {toUsdt(editingExtension.price)} USDT</p>
+                    ) : null}
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Description</label>
-                    <textarea name="description" placeholder="Description" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none h-24" />
+                    <textarea name="description" defaultValue={editingExtension?.description || ''} placeholder="Description" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none h-24" />
                   </div>
                   <div className="flex gap-4">
-                    <button type="button" onClick={() => setIsAddingExtension(false)} className="flex-1 py-3 bg-white/5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-white/10">Cancel</button>
-                    <button type="submit" disabled={createExtensionMutation.isPending} className="flex-[2] py-3 bg-red-600 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-red-700 flex items-center justify-center gap-2">
-                      {createExtensionMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Extension"}
+                    <button type="button" onClick={() => { setIsAddingExtension(false); setEditingExtension(null); }} className="flex-1 py-3 bg-white/5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-white/10">Cancel</button>
+                    <button type="submit" disabled={createExtensionMutation.isPending || updateExtensionMutation.isPending} className="flex-[2] py-3 bg-red-600 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-red-700 flex items-center justify-center gap-2">
+                      {createExtensionMutation.isPending || updateExtensionMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingExtension ? "Update Extension" : "Save Extension")}
                     </button>
                   </div>
                 </motion.form>
@@ -643,7 +672,7 @@ function AdminPage() {
                         {ext.icon_url ? <img src={ext.icon_url} className="w-8 h-8 object-contain" /> : '⚡'}
                       </div>
                       <div className="flex gap-2">
-                        <button className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"><Edit className="w-4 h-4" /></button>
+                        <button onClick={() => { setIsAddingExtension(false); setEditingExtension(ext); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"><Edit className="w-4 h-4" /></button>
                         <button onClick={() => deleteExtensionMutation.mutate(ext.id)} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-colors"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </div>
@@ -652,7 +681,10 @@ function AdminPage() {
                       <p className="text-xs text-white/40 line-clamp-2 mt-1">{ext.description}</p>
                     </div>
                     <div className="pt-4 border-t border-white/5 flex justify-between items-center">
-                      <span className="text-sm font-black">৳{ext.price}</span>
+                      <span className="text-sm font-black">
+                        ৳{ext.price}
+                        {toUsdt(ext.price) ? <span className="text-[10px] font-bold text-white/30 ml-2">≈ {toUsdt(ext.price)} USDT</span> : null}
+                      </span>
                       <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{ext.category}</span>
                     </div>
                   </div>
@@ -921,7 +953,10 @@ function AdminPage() {
                 </div>
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Price</label>
-                  <p className="font-bold">৳{selectedOrder.price}</p>
+                  <p className="font-bold">
+                    ৳{selectedOrder.price}
+                    {toUsdt(selectedOrder.price) ? <span className="text-xs font-bold text-white/40 ml-2">≈ {toUsdt(selectedOrder.price)} USDT</span> : null}
+                  </p>
                 </div>
               </div>
               <div className="space-y-4">
