@@ -631,32 +631,35 @@ function AdminPage() {
                           if (iconInput) iconInput.value = url;
                         }}
                       />
-                      <input type="hidden" name="icon_url" />
+                      <input type="hidden" name="icon_url" defaultValue={editingExtension?.icon_url || ''} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Name</label>
-                        <input name="name" placeholder="Extension Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                        <input name="name" defaultValue={editingExtension?.name || ''} placeholder="Extension Name" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Category</label>
-                        <input name="category" placeholder="Category" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                        <input name="category" defaultValue={editingExtension?.category || ''} placeholder="Category" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
                       </div>
                     </div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Price (৳)</label>
-                    <input name="price" placeholder="Price" type="number" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                    <input name="price" defaultValue={editingExtension?.price ?? ''} placeholder="Price" type="number" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                    {usdtRate > 0 && editingExtension?.price ? (
+                      <p className="text-[10px] font-bold text-white/30 ml-2">≈ {toUsdt(editingExtension.price)} USDT</p>
+                    ) : null}
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Description</label>
-                    <textarea name="description" placeholder="Description" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none h-24" />
+                    <textarea name="description" defaultValue={editingExtension?.description || ''} placeholder="Description" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none h-24" />
                   </div>
                   <div className="flex gap-4">
-                    <button type="button" onClick={() => setIsAddingExtension(false)} className="flex-1 py-3 bg-white/5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-white/10">Cancel</button>
-                    <button type="submit" disabled={createExtensionMutation.isPending} className="flex-[2] py-3 bg-red-600 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-red-700 flex items-center justify-center gap-2">
-                      {createExtensionMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Extension"}
+                    <button type="button" onClick={() => { setIsAddingExtension(false); setEditingExtension(null); }} className="flex-1 py-3 bg-white/5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-white/10">Cancel</button>
+                    <button type="submit" disabled={createExtensionMutation.isPending || updateExtensionMutation.isPending} className="flex-[2] py-3 bg-red-600 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:bg-red-700 flex items-center justify-center gap-2">
+                      {createExtensionMutation.isPending || updateExtensionMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingExtension ? "Update Extension" : "Save Extension")}
                     </button>
                   </div>
                 </motion.form>
