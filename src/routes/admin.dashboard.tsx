@@ -953,7 +953,10 @@ function AdminPage() {
                 </div>
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Price</label>
-                  <p className="font-bold">৳{selectedOrder.price}</p>
+                  <p className="font-bold">
+                    ৳{selectedOrder.price}
+                    {toUsdt(selectedOrder.price) ? <span className="text-xs font-bold text-white/40 ml-2">≈ {toUsdt(selectedOrder.price)} USDT</span> : null}
+                  </p>
                 </div>
               </div>
               <div className="space-y-4">
