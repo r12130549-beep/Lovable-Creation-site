@@ -132,25 +132,23 @@ function CheckoutPage() {
 
   useEffect(() => {
     if (coupons && product) {
-      console.log("Checking coupons for product:", product.id);
       const valid = (coupons as any[]).some(c => {
         const isExpired = c.expiry_date && new Date(c.expiry_date) < new Date();
         const limitReached = c.usage_limit && (c.used_count || 0) >= c.usage_limit;
         
-        if (isExpired || limitReached) {
-          console.log("Coupon expired or limit reached:", c.code);
-          return false;
-        }
+        if (isExpired || limitReached) return false;
 
-        const extensionIds = c.extension_ids ? c.extension_ids.split(',').map((id: string) => id.trim()).filter(Boolean) : [];
-        const isGlobal = extensionIds.length === 0 && (!c.extension_id);
-        const isTargeted = extensionIds.includes(product.id) || c.extension_id === product.id;
+        const extensionIds = c.extension_ids 
+          ? c.extension_ids.split(',').map((id: string) => id.trim()).filter(Boolean) 
+          : [];
         
-        if (isGlobal || isTargeted) {
-          console.log("Found valid coupon:", c.code);
-          return true;
-        }
-        return false;
+        const isGlobal = extensionIds.length === 0 && (!c.extension_id);
+        const isTargeted = extensionIds.includes(product.id) || 
+                          c.extension_id === product.id || 
+                          extensionIds.includes(product.slug) || 
+                          c.extension_id === product.slug;
+        
+        return isGlobal || isTargeted;
       });
       setHasValidCoupons(valid);
     } else {
@@ -159,7 +157,10 @@ function CheckoutPage() {
   }, [coupons, product]);
 
   useEffect(() => {
-    if (search.productId === 'binance') {
+    // If we're coming from a "Buy Now" click (which defaults to USD-based products), 
+    // or if the search productId is 'binance' (which might be a legacy flag),
+    // ensure Binance is the default selected method to show USD.
+    if (search.productId) {
       setSelectedMethod(PAYMENT_METHODS[0]);
     }
   }, [search.productId]);
