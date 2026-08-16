@@ -72,7 +72,7 @@ type PaymentMethod = typeof PAYMENT_METHODS[number];
 function CheckoutPage() {
   const { user: firebaseUser } = useAuth();
   const [step, setStep] = useState(1);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(PAYMENT_METHODS[0]);
   const [loading, setLoading] = useState(false);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -423,11 +423,16 @@ function CheckoutPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {PAYMENT_METHODS.map(m => (
-                        <button 
-                          key={m.id} 
-                          onClick={() => setSelectedMethod(m)} 
-                          className={`
+                        {PAYMENT_METHODS.map(m => (
+                          <button 
+                            key={m.id} 
+                            onClick={() => {
+                              setSelectedMethod(m);
+                              if (m.id === 'binance') {
+                                // Keep logic or add visual feedback
+                              }
+                            }} 
+                            className={`
                             group relative p-8 rounded-[2rem] border-2 transition-all duration-500 flex flex-col items-center gap-4 text-center
                             ${selectedMethod?.id === m.id ? m.color + " ring-1 ring-inset ring-white/10" : 'border-white/5 bg-white/[0.02] hover:bg-white/5 hover:border-white/10'}
                           `}
