@@ -394,7 +394,7 @@ function AdminPage() {
            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-purple-600 shadow-lg shadow-red-500/20 flex items-center justify-center">
              <Shield className="w-6 h-6 text-white" />
            </div>
-           <span className="text-xl font-black uppercase">Lovable Creation</span>
+           <span className="text-xl font-black uppercase">Lovable</span>
         </div>
         
         <nav className="flex-1 space-y-1">
