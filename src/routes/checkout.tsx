@@ -148,6 +148,12 @@ function CheckoutPage() {
     }
   }, [coupons, product]);
 
+  useEffect(() => {
+    if (search.productId === 'binance') {
+      setSelectedMethod(PAYMENT_METHODS[0]);
+    }
+  }, [search.productId]);
+
   const getMethodDetails = (methodId: string) => {
     if (!appSettings || Object.keys(appSettings).length === 0) return null;
     const settings = appSettings as Record<string, any>;
