@@ -27,6 +27,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getAppSettings } from '@/lib/settings.functions';
 import { useAuth } from '@/hooks/use-auth';
 import { createManualOrder } from '@/lib/orders.functions';
+import { getExtensions } from '@/lib/extensions.functions';
 
 
 export const Route = createFileRoute('/checkout')({
