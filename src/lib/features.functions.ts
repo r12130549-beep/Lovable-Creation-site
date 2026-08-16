@@ -31,6 +31,7 @@ export const createCoupon = createServerFn({ method: "POST" })
       discount_type: z.enum(['percentage', 'fixed']),
       discount_value: z.number(),
       extension_id: z.string().optional().nullable(),
+      extension_ids: z.string().optional().nullable(),
       expiry_date: z.string().optional().nullable(),
       usage_limit: z.number().optional().nullable()
     }).parse(raw);

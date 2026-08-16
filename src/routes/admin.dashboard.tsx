@@ -944,11 +944,26 @@ function AdminPage() {
                       const expiry = prompt("Expiry Date (YYYY-MM-DD) - Leave empty for none:");
                       const limit = Number(prompt("Usage Limit - Leave empty for none:"));
                       
+                      // Simplified multi-product selection for now using a prompt or modal logic
+                      // Better: Show a list of extensions for selection
+                      let selectedIds = "";
+                      if (extensions && extensions.length > 0) {
+                        const productList = extensions.map((e: any, i: number) => `${i + 1}. ${e.name}`).join('\n');
+                        const selection = prompt(`Select Product IDs (comma separated index):\n${productList}\n(Leave empty for all products)`);
+                        if (selection) {
+                          selectedIds = selection.split(',')
+                            .map(idx => extensions[parseInt(idx.trim()) - 1]?.id)
+                            .filter(Boolean)
+                            .join(',');
+                        }
+                      }
+                      
                       if (code && value) {
                         createCouponMutation.mutate({
                           code,
                           discount_type: type,
                           discount_value: value,
+                          extension_ids: selectedIds || null,
                           expiry_date: expiry || null,
                           usage_limit: limit || null
                         });
@@ -976,6 +991,11 @@ function AdminPage() {
                             <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
                               Uses: <span className="text-white">{coupon.used_count || 0}{coupon.usage_limit ? ` / ${coupon.usage_limit}` : ''}</span>
                             </p>
+                            {coupon.extension_ids && (
+                              <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
+                                Products: <span className="text-red-500">{coupon.extension_ids.split(',').length} selected</span>
+                              </p>
+                            )}
                             {coupon.expiry_date && (
                               <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
                                 Expires: <span className="text-white">{new Date(coupon.expiry_date).toLocaleDateString()}</span>
