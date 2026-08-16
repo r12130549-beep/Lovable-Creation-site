@@ -385,7 +385,7 @@ function AdminPage() {
   });
 
   const deleteCouponMutation = useMutation({
-    mutationFn: (id: string) => deleteCouponFn({ id }),
+    mutationFn: (id: string) => deleteCouponFn({ data: { id } } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-coupons'] });
       toast.success('Coupon deleted successfully');
@@ -932,7 +932,70 @@ function AdminPage() {
             </motion.div>
           )}
 
-          {activeTab === 'settings' && (
+           {activeTab === 'coupons' && (
+             <motion.div key="coupons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+               <div className="flex justify-between items-center">
+                 <h2 className="text-xl font-black uppercase">Coupon Management</h2>
+                 <button 
+                   onClick={() => {
+                     const code = prompt("Enter Coupon Code:");
+                     const type = prompt("Type (percentage/fixed):", "percentage") as 'percentage' | 'fixed';
+                     const value = Number(prompt("Discount Value:"));
+                     if (code && value) {
+                       createCouponMutation.mutate({
+                         code,
+                         discount_type: type,
+                         discount_value: value
+                       });
+                     }
+                   }}
+                   className="px-6 py-3 bg-red-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2"
+                 >
+                   <Plus className="w-4 h-4" /> Add Coupon
+                 </button>
+               </div>
+
+               <div className="grid gap-4">
+                 {(coupons as any[])?.map((coupon: any) => (
+                   <div key={coupon.id} className="p-6 bg-[#0A0A0A] border border-white/5 rounded-3xl flex justify-between items-center group">
+                     <div className="flex items-center gap-6">
+                       <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-red-500 font-black">
+                         {coupon.discount_type === 'percentage' ? '%' : '$'}
+                       </div>
+                       <div>
+                         <h3 className="font-black text-lg">{coupon.code}</h3>
+                         <div className="flex gap-4 mt-1">
+                           <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
+                             Value: <span className="text-white">{coupon.discount_value}{coupon.discount_type === 'percentage' ? '%' : ''}</span>
+                           </p>
+                           <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
+                             Uses: <span className="text-white">{coupon.used_count || 0}{coupon.usage_limit ? ` / ${coupon.usage_limit}` : ''}</span>
+                           </p>
+                         </div>
+                       </div>
+                     </div>
+                     <button 
+                       onClick={() => {
+                         if (confirm("Delete this coupon?")) {
+                           deleteCouponMutation.mutate(coupon.id);
+                         }
+                       }}
+                       className="p-4 bg-red-500/10 text-red-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-all"
+                     >
+                       <Trash2 className="w-5 h-5" />
+                     </button>
+                   </div>
+                 ))}
+                 {(!coupons || (coupons as any[]).length === 0) && (
+                   <div className="p-12 text-center text-white/20 font-black uppercase tracking-[0.2em] text-[10px] bg-[#0A0A0A] border border-dashed border-white/5 rounded-[3rem]">
+                     No coupons found
+                   </div>
+                 )}
+               </div>
+             </motion.div>
+           )}
+
+           {activeTab === 'settings' && (
             <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[

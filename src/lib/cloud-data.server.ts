@@ -139,7 +139,7 @@ export async function validateCouponInCloud(code: string, extensionId?: string) 
 export async function incrementCouponUsageInCloud(id: string) {
   const supabaseAdmin = getCloudAdminClient();
   const { data: current } = await supabaseAdmin.from('coupons').select('used_count').eq('id', id).single();
-  const newCount = (current?.used_count || 0) + 1;
+  const newCount = (Number(current?.used_count) || 0) + 1;
   const { error } = await supabaseAdmin.from('coupons').update({ used_count: newCount }).eq('id', id);
   if (error) throw new Error(error.message);
 }

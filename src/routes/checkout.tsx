@@ -28,6 +28,7 @@ import { getAppSettings } from '@/lib/settings.functions';
 import { useAuth } from '@/hooks/use-auth';
 import { createManualOrder } from '@/lib/orders.functions';
 import { getExtensions } from '@/lib/extensions.functions';
+import { validateCoupon } from '@/lib/features.functions';
 
 
 export const Route = createFileRoute('/checkout')({
@@ -82,6 +83,10 @@ function CheckoutPage() {
     phone: '', 
     trxId: '' 
   });
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const validateCouponFn = useServerFn(validateCoupon);
 
   // Keep form in sync if user logs in while on page
   useEffect(() => {
@@ -131,13 +136,40 @@ function CheckoutPage() {
   const usdtRate = useMemo(() => Number((appSettings as Record<string, any>)?.['usdt_rate']) || 130, [appSettings]);
   
   const pricing = useMemo(() => {
-    const usd = product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0);
-    const bdt = product?.price_bdt ?? (Math.round(usd * usdtRate));
-    return { usd, bdt };
-  }, [product, search.plan, usdtRate]);
+    let usd = product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0);
+    let bdt = product?.price_bdt ?? (Math.round(usd * usdtRate));
 
-  const bdtAmount = pricing.bdt;
+    if (appliedCoupon) {
+      if (appliedCoupon.discount_type === 'percentage') {
+        const factor = 1 - (appliedCoupon.discount_value / 100);
+        usd *= factor;
+        bdt *= factor;
+      } else {
+        usd = Math.max(0, usd - appliedCoupon.discount_value);
+        bdt = Math.max(0, bdt - (appliedCoupon.discount_value * usdtRate));
+      }
+    }
+
+    return { usd, bdt };
+  }, [product, search.plan, usdtRate, appliedCoupon]);
+
+  const bdtAmount = Math.round(pricing.bdt);
   const usdtAmount = pricing.usd.toFixed(2);
+
+  const applyCoupon = async () => {
+    if (!couponCode) return;
+    setCouponLoading(true);
+    try {
+      const coupon = await validateCouponFn({ code: couponCode, extensionId: product?.id });
+      setAppliedCoupon(coupon);
+      toast.success('Coupon applied successfully!');
+    } catch (err: any) {
+      toast.error(err.message || 'Invalid coupon code');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   const handleNext = () => {
     if (step === 1) {
@@ -207,7 +239,9 @@ function CheckoutPage() {
         orderStatus: "Pending",
         transactionId: formData.trxId || 'N/A',
         screenshotUrl: screenshotUrl || '',
-        notes: `TRX: ${formData.trxId || 'N/A'}`,
+        notes: `TRX: ${formData.trxId || 'N/A'}${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`,
+        couponId: appliedCoupon?.id,
+        couponCode: appliedCoupon?.code,
       };
 
       // 3. Create order via server function
