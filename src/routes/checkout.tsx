@@ -179,7 +179,6 @@ function CheckoutPage() {
     return { usd, bdt };
   }, [product, search.plan, usdtRate, appliedCoupon]);
 
-  const bdtAmount = Math.round(pricing.bdt);
   const usdtAmount = pricing.usd.toFixed(2);
 
   const applyCoupon = async () => {
