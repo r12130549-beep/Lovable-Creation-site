@@ -698,7 +698,7 @@ function CheckoutPage() {
                       Remove
                     </button>
                   </div>
-                )}
+                ) : null}
 
                 <div className="space-y-3">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
