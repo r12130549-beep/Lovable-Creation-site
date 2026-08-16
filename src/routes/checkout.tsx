@@ -28,7 +28,7 @@ import { getAppSettings } from '@/lib/settings.functions';
 import { useAuth } from '@/hooks/use-auth';
 import { createManualOrder } from '@/lib/orders.functions';
 import { getExtensions } from '@/lib/extensions.functions';
-import { validateCoupon } from '@/lib/features.functions';
+import { validateCoupon, getCoupons } from '@/lib/features.functions';
 
 
 export const Route = createFileRoute('/checkout')({
@@ -87,6 +87,12 @@ function CheckoutPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const validateCouponFn = useServerFn(validateCoupon);
+  const getCouponsFn = useServerFn(getCoupons);
+
+  const { data: coupons } = useQuery({
+    queryKey: ['coupons'],
+    queryFn: () => getCouponsFn(),
+  });
 
   // Keep form in sync if user logs in while on page
   useEffect(() => {
