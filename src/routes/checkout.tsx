@@ -703,7 +703,7 @@ function CheckoutPage() {
                         disabled={couponLoading || !couponCode}
                         className="px-4 bg-white text-black font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-white/90 transition-all disabled:opacity-50"
                       >
-                        {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Apply'}
+                        {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Try'}
                       </button>
                     </div>
                   </div>
