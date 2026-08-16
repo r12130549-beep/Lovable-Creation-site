@@ -8,7 +8,7 @@ import { getExtensions } from '@/lib/extensions.functions';
 
 export const Route = createFileRoute("/extensions")({
   head: () => ({
-    title: "Marketplace | VIBEX Extensions",
+    title: "Marketplace | Lovable Extensions",
     meta: [
       { name: "description", content: "Browse our curated collection of premium browser extensions. Performance-optimized and manually verified." },
       { property: "og:title", content: "Marketplace | VIBEX Extensions" },

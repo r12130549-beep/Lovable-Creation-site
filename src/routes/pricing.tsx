@@ -4,11 +4,11 @@ import { Check, Sparkles, Zap, Shield, Crown } from 'lucide-react';
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
-    title: "Pricing Plans | VIBEX",
+    title: "Pricing Plans | Lovable",
     meta: [
       { name: "description", content: "Choose the perfect plan for your browser needs. Flexible licensing from free to lifetime access." },
-      { property: "og:title", content: "Pricing Plans | VIBEX" },
-      { property: "og:description", content: "Flexible licensing plans for VIBEX premium extensions." },
+      { property: "og:title", content: "Pricing Plans | Lovable" },
+      { property: "og:description", content: "Flexible licensing plans for Lovable premium extensions." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

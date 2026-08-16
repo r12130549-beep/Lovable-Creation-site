@@ -311,14 +311,14 @@ function AdminPage() {
     mutationFn: (data: any) => createManualOrderFn({ data }),
     onSuccess: (result) => {
       if (!result.success || (!result.order_id && !result.orderId)) {
-        toast.error('অর্ডার তৈরি করতে ব্যর্থ হয়েছে');
+        toast.error('Failed to create order');
         return;
       }
-      toast.success('অর্ডার সফল হয়েছে');
+      toast.success('Order completed successfully');
       const orderIdToCopy = result.order_id || result.orderId;
       if (orderIdToCopy) {
         // Using alert for auto-update like persistence in UI interaction
-        window.alert(`অর্ডার আইডি (অটো-সেভ করা হয়েছে): ${orderIdToCopy}`);
+        window.alert(`Order ID (auto-saved): ${orderIdToCopy}`);
 
       }
       queryClient.invalidateQueries({ queryKey: ['admin-earnings'] });
@@ -326,26 +326,26 @@ function AdminPage() {
       getAdminOrdersFn().then(orders => setRealtimeOrders(orders || []));
       setActiveTab('orders');
     },
-    onError: (err: any) => toast.error(err.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে')
+    onError: (err: any) => toast.error(err.message || 'Failed to create order')
   });
 
   const updateOrderMutation = useMutation({
     mutationFn: (data: any) => updateOrderStatusFn({ data } as any),
     onSuccess: () => {
-      toast.success('অর্ডার আপডেট করা হয়েছে');
+      toast.success('Order updated successfully');
 
       setSelectedOrder(null);
       // Refresh list
       getAdminOrdersFn().then(orders => setRealtimeOrders(orders || []));
     },
-    onError: (err: any) => toast.error(err.message || 'আপডেট ব্যর্থ হয়েছে')
+    onError: (err: any) => toast.error(err.message || 'Update failed')
   });
 
   const deleteExtensionMutation = useMutation({
     mutationFn: (id: string) => deleteExtensionFn({ data: { id } } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
-      toast.success('প্রোডাক্ট ডিলিট করা হয়েছে');
+      toast.success('Product deleted successfully');
     }
   });
 
@@ -357,7 +357,7 @@ function AdminPage() {
         return;
       }
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
-      toast.success('প্রোডাক্ট সফলভাবে অ্যাড হয়েছে');
+      toast.success('Product added successfully');
       setIsAddingExtension(false);
     },
     onError: (err: any) => toast.error(err.message || 'Failed to create extension')
@@ -367,7 +367,7 @@ function AdminPage() {
     mutationFn: ({ id, updates }: any) => updateExtensionFn({ data: { id, updates } } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
-      toast.success('প্রোডাক্ট আপডেট হয়েছে');
+      toast.success('Product updated successfully');
       setEditingExtension(null);
     },
     onError: (err: any) => toast.error(err.message || 'Failed to update product')
@@ -394,7 +394,7 @@ function AdminPage() {
            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-purple-600 shadow-lg shadow-red-500/20 flex items-center justify-center">
              <Shield className="w-6 h-6 text-white" />
            </div>
-           <span className="text-xl font-black uppercase">Lovable Creation</span>
+           <span className="text-xl font-black uppercase">Lovable</span>
         </div>
         
         <nav className="flex-1 space-y-1">
@@ -561,6 +561,7 @@ function AdminPage() {
 
                 <button type="submit" disabled={createOrderMutation.isPending} className="w-full py-4 bg-red-600 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all flex items-center justify-center gap-2 mt-4">
                   {createOrderMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Order & Save"}
+
                 </button>
               </motion.form>
 

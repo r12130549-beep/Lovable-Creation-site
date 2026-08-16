@@ -142,17 +142,17 @@ function CheckoutPage() {
   const handleNext = () => {
     if (step === 1) {
       if (!formData.name || !formData.email || !formData.phone) {
-        toast.error('অনুগ্রহ করে সব প্রয়োজনীয় ঘর পূরণ করুন');
+        toast.error('Please fill in all required fields');
         return;
       }
       if (!formData.email.includes('@')) {
-        toast.error('অনুগ্রহ করে একটি সঠিক ইমেল প্রদান করুন');
+        toast.error('Please provide a valid email');
         return;
       }
       setStep(2);
     } else if (step === 2) {
       if (!selectedMethod) {
-        toast.error('অনুগ্রহ করে একটি পেমেন্ট পদ্ধতি নির্বাচন করুন');
+        toast.error('Please select a payment method');
         return;
       }
       if (selectedMethod.id === 'binance') {
@@ -170,7 +170,7 @@ function CheckoutPage() {
     
     if (selectedMethod.type === 'manual') {
       if (!formData.trxId || !screenshotUrl) {
-        toast.error('অনুগ্রহ করে ট্রানজেকশন আইডি এবং পেমেন্ট স্ক্রিনশট প্রদান করুন');
+        toast.error('Please provide Transaction ID and payment screenshot');
         return;
       }
     }
@@ -213,7 +213,7 @@ function CheckoutPage() {
       // 3. Create order via server function
       const result = await createManualOrderFn({ data: orderPayload });
       if (!result.success || (!result.order_id && !result.orderId)) {
-        throw new Error(result.message || 'অর্ডারটি সেভ করা যায়নি');
+        throw new Error(result.message || 'Could not save the order');
       }
       
       // 4. Update local state with the actual order ID from server
@@ -221,10 +221,10 @@ function CheckoutPage() {
       setOrderId(finalOrderId);
 
       setStep(5);
-      toast.success('অর্ডার সম্পন্ন হয়েছে!');
+      toast.success('Order completed successfully!');
     } catch (err: any) {
       console.error('Order submission error:', err);
-      toast.error(err?.message || 'অর্ডারটি সেভ করা যায়নি। আবার চেষ্টা করুন।');
+      toast.error(err?.message || 'Could not save the order. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -244,10 +244,10 @@ function CheckoutPage() {
               to="/" 
               className="inline-flex items-center gap-2 text-white/40 hover:text-white transition text-[10px] font-black uppercase tracking-widest mb-6"
             >
-              <ChevronLeft className="w-3 h-3" /> হোমে ফিরুন
+              <ChevronLeft className="w-3 h-3" /> Back to Home
             </Link>
             <h1 className="text-4xl md:text-5xl font-black tracking-tight">
-              SECURE <span className="text-red-500">CHECKOUT</span> <span className="text-[10px] ml-2 text-white/20">(অর্ডার ট্র্যাক করতে আইডি সেভ করুন)</span>
+              SECURE <span className="text-red-500">CHECKOUT</span> <span className="text-[10px] ml-2 text-white/20">(Save ID to track order)</span>
             </h1>
             <p className="text-white/40 mt-2 font-medium uppercase tracking-[0.2em] text-[10px]">
               Complete your premium experience
@@ -337,7 +337,7 @@ function CheckoutPage() {
                       onClick={handleNext} 
                       className="w-full mt-10 bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-white/10 text-[10px] uppercase tracking-widest"
                     >
-                      পেমেন্ট অপশনে যান <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      Go to Payment Options <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </section>
                 </motion.div>
@@ -389,12 +389,12 @@ function CheckoutPage() {
                     </div>
 
                     <div className="flex gap-4 mt-10">
-                      <button onClick={() => setStep(1)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">পিছনে</button>
+                      <button onClick={() => setStep(1)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
                       <button 
                         onClick={handleNext} 
                         className="flex-[2] bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-white/10 text-[10px] uppercase tracking-widest"
                       >
-                        অর্ডার রিভিউ করুন <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        Review Order <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
                   </section>
@@ -426,13 +426,13 @@ function CheckoutPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-black uppercase tracking-widest text-yellow-500 flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-                            ম্যানুয়াল ভেরিফিকেশন
+                            Manual Verification
                           </span>
                           <Wallet className="w-5 h-5 text-yellow-500/20" />
                         </div>
                         
                         <p className="text-xs font-medium text-white/60 leading-relaxed">
-                          Binance App এ গিয়ে নিচের Pay ID তে USDT পাঠান।
+                          Go to Binance App and send USDT to the Pay ID below.
                         </p>
 
                         <div className="space-y-4">
@@ -454,28 +454,28 @@ function CheckoutPage() {
 
                           <div className="grid grid-cols-2 gap-4">
                             <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
-                              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">প্রোডাক্টের দাম (USD)</p>
+                              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">Product Price (USD)</p>
                               <p className="text-sm font-black tracking-tight text-white">${pricing.usd}</p>
                             </div>
                             <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
-                              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">USDT পাঠাবেন</p>
+                              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">Send USDT</p>
                               <p className="text-sm font-black tracking-tight text-yellow-500">{usdtAmount} USDT</p>
                             </div>
                           </div>
 
                           <div className="text-[9px] font-black text-white/10 uppercase tracking-widest text-center py-2 border-t border-white/5 font-medium opacity-50">
-                            রেট: 1 USDT = ৳{usdtRate}
+                            Rate: 1 USDT = ৳{usdtRate}
                           </div>
                         </div>
                       </div>
                       
                       <div className="flex gap-4">
-                        <button onClick={() => setStep(2)} className="flex-1 bg-white/5 text-white/40 font-black py-5 rounded-[2rem] hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">পিছনে</button>
+                        <button onClick={() => setStep(2)} className="flex-1 bg-white/5 text-white/40 font-black py-5 rounded-[2rem] hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
                         <button 
                           onClick={handleNext}
                           className="flex-[2] bg-white text-black font-black py-5 rounded-[2rem] hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 group shadow-2xl shadow-white/10"
                         >
-                          পরবর্তী <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                          Next <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </button>
                       </div>
                     </div>
@@ -522,7 +522,7 @@ function CheckoutPage() {
                             </button>
                           </div>
                           <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">
-                            পরিমাণ: ৳{bdtAmount} | Send as "Personal" Cash-in / Send Money
+                            Amount: ৳{bdtAmount} | Send as "Personal" Cash-in / Send Money
                           </p>
                         </div>
                       ) : (
@@ -563,14 +563,14 @@ function CheckoutPage() {
                       </div>
 
                       <div className="flex gap-4">
-                        <button onClick={() => setStep(selectedMethod?.id === 'binance' ? 3 : 2)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">পিছনে</button>
+                        <button onClick={() => setStep(selectedMethod?.id === 'binance' ? 3 : 2)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
                         <button 
                           onClick={submitOrder} 
                           disabled={loading}
                           className="flex-[2] bg-red-600 text-white font-black py-4 rounded-2xl hover:bg-red-500 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-red-500/20 disabled:opacity-50 text-[10px] uppercase tracking-widest"
                         >
                           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                            <>অর্ডার সাবমিট করুন <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                            <>Submit Order <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
                           )}
                         </button>
                       </div>
@@ -598,13 +598,13 @@ function CheckoutPage() {
                       onClick={() => navigate({ to: '/' })} 
                       className="bg-white text-black font-black py-4 rounded-[1.5rem] hover:bg-white/90 transition-all text-xs uppercase tracking-widest shadow-xl shadow-white/5"
                     >
-                      হোমে ফিরুন
+                      Return to Home
                     </button>
                     <Link 
                       to="/track-order" 
                       className="bg-white/5 text-white/40 font-black py-4 rounded-[1.5rem] hover:bg-white/10 transition-all text-xs uppercase tracking-widest border border-white/5"
                     >
-                      অর্ডার ট্র্যাক করুন
+                      Track Order
                     </Link>
                   </div>
                 </motion.div>
@@ -614,7 +614,7 @@ function CheckoutPage() {
 
           <aside className="sticky top-12 space-y-6">
             <section className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
-              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-6">অর্ডার সামারি</h3>
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/20 mb-6">Order Summary</h3>
               
               <div className="space-y-6">
                 <div className="flex justify-between items-start gap-4">

@@ -29,18 +29,18 @@ function AuthPage() {
       const result = await signInWithPopup(auth, provider);
       console.log('[Auth] Sign-in successful:', result.user.email);
       
-      toast.success('সফলভাবে লগইন করা হয়েছে!');
+      toast.success('Successfully logged in!');
       navigate({ to: '/' });
     } catch (error: any) {
       console.error('[Auth] Google Login Error:', error);
       
-      let errorMessage = 'লগইন করতে সমস্যা হয়েছে।';
+      let errorMessage = 'Login failed.';
       if (error.code === 'auth/popup-blocked') {
-        errorMessage = 'পপআপ উইন্ডোটি ব্লক করা হয়েছে। অনুগ্রহ করে ব্রাউজারের পপআপ সেটিং অনুমতি দিন।';
+        errorMessage = 'Popup window was blocked. Please allow popups for this site.';
       } else if (error.code === 'auth/invalid-continue-uri') {
-        errorMessage = 'Firebase: Error (auth/invalid-continue-uri). এই ডোমেইনটি অথোরাইজড তালিকায় যুক্ত নেই।';
+        errorMessage = 'Firebase: Error (auth/invalid-continue-uri). This domain is not authorized.';
       } else if (error.code) {
-        errorMessage = `লগইন এরর: ${error.code}`;
+        errorMessage = `Login error: ${error.code}`;
       }
       
       toast.error(errorMessage);

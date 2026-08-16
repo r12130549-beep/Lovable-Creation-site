@@ -20,11 +20,11 @@ export const trackOrder = createServerFn({ method: "POST" })
       );
       
       if (!order) {
-        throw new Error("আপনার দেয়া অর্ডার আইডিটি আমাদের সিস্টেমে খুঁজে পাওয়া যায়নি। আইডিটি পুনরায় চেক করে দেখুন।");
+        throw new Error("The Order ID you provided was not found in our system. Please check the ID and try again.");
       }
 
       if (data.email && order.customer_email?.toLowerCase() !== data.email.toLowerCase()) {
-        throw new Error("দুঃখিত, এই অর্ডার আইডির সাথে ইমেইলটি মিলছে না। অনুগ্রহ করে সঠিক ইমেইল দিন।");
+        throw new Error("Sorry, the email does not match this Order ID. Please provide the correct email.");
       }
 
       const now = new Date();

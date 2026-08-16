@@ -9,10 +9,10 @@ import { useLanguage, translations } from "@/hooks/use-language";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    title: "Lovable Creation | Premium Browser Extension Store",
+    title: "Lovable | Premium Browser Extension Store",
     meta: [
       { name: "description", content: "The hub for elite browser tools. Discover verified, high-performance extensions to supercharge your productivity." },
-      { property: "og:title", content: "Lovable Creation | Premium Extension Store" },
+      { property: "og:title", content: "Lovable | Premium Extension Store" },
       { property: "og:description", content: "The hub for elite browser tools. Discover verified, high-performance extensions to supercharge your productivity." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -65,7 +65,7 @@ function Index() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-red-600 to-purple-600 flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:rotate-6 transition-transform">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Lovable Creation</span>
+            <span className="text-lg font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Lovable</span>
           </Link>
 
           <div className="hidden lg:flex items-center gap-3 text-[7px] font-bold uppercase tracking-widest text-white/50 bg-white/5 px-2 py-1 rounded-full border border-white/5">
@@ -90,16 +90,7 @@ function Index() {
           </div>
 
           <div className="hidden lg:flex items-center gap-6">
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-1">
-               <button 
-                onClick={() => setLang('EN')}
-                className={`px-2 py-1 text-[8px] font-black rounded-lg transition-colors ${lang === 'EN' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
-               >EN</button>
-               <button 
-                onClick={() => setLang('BN')}
-                className={`px-2 py-1 text-[8px] font-black rounded-lg transition-colors ${lang === 'BN' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
-               >BN</button>
-            </div>
+            {/* Language switch removed - English only */}
 
             <div className="flex items-center gap-4">
               {/* Login option removed as requested */}
@@ -285,7 +276,7 @@ function Index() {
           <div className="space-y-4">
             {[
               { q: "How do I install the extensions?", a: "Once you purchase or download a free extension, you'll get a direct download link and installation guide for your specific browser." },
-              { q: "Are the tools safe for my data?", a: "Yes, all extensions on VIBEX undergo a rigorous security audit. We strictly follow privacy-first principles." },
+              { q: "Are the tools safe for my data?", a: "Yes, all extensions on Lovable undergo a rigorous security audit. We strictly follow privacy-first principles." },
               { q: "Do you offer refunds?", a: "We offer a 14-day money-back guarantee if the tool doesn't meet your expectations or doesn't work as described." },
               { q: "How many devices can I use?", a: "Standard licenses allow up to 3 active devices. Pro and Enterprise plans offer more flexibility." },
             ].map((faq, i) => (
@@ -310,7 +301,7 @@ function Index() {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 to-purple-600 flex items-center justify-center">
                   <Zap className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-black tracking-tighter">Lovable Creation</span>
+                <span className="text-xl font-black tracking-tighter">Lovable</span>
               </Link>
               <p className="text-white/40 text-lg max-w-sm mb-8 leading-relaxed">
                 Empowering your browser with the next generation of premium productivity tools.
@@ -340,7 +331,7 @@ function Index() {
             </div>
           </div>
           <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-xs font-black uppercase tracking-[0.2em] text-white/20">
-            <div>© 2026 VIBEX INDUSTRIES. ALL RIGHTS RESERVED.</div>
+            <div>© 2026 LOVABLE INDUSTRIES. ALL RIGHTS RESERVED.</div>
             <div className="flex gap-8">
               <a href="#" className="hover:text-white transition-colors">Status</a>
               <a href="#" className="hover:text-white transition-colors">System</a>
