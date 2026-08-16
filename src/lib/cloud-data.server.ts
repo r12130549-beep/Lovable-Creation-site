@@ -125,7 +125,7 @@ export async function validateCouponInCloud(code: string, extensionId?: string) 
     throw new Error("Coupon expired");
   }
   
-  if (coupon.usage_limit && coupon.used_count >= coupon.usage_limit) {
+  if (coupon.usage_limit && (coupon.used_count || 0) >= coupon.usage_limit) {
     throw new Error("Usage limit reached");
   }
   
