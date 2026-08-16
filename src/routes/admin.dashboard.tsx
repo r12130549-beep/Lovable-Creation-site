@@ -275,13 +275,20 @@ function AdminPage() {
   });
 
   const { data: extensions, isLoading: extensionsLoading } = useQuery({
-    queryKey: ['admin-extensions'],
+    queryKey: ['admin-extensions-all'],
     queryFn: async () => {
-      const data = await getExtensionsFn({ data: {} } as any);
-      return data;
+      try {
+        const data = await getExtensionsFn({ data: {} } as any);
+        return data || [];
+      } catch (err) {
+        console.error("Error fetching extensions for coupons:", err);
+        return [];
+      }
     },
-    enabled: activeTab === 'extensions' || activeTab === 'coupons',
+    // Keep data fresh for the coupon form
+    staleTime: 30000,
   });
+
 
   const { data: adminUsers, isLoading: usersLoading } = useQuery({
     queryKey: ['admin-users'],
