@@ -522,7 +522,7 @@ function CheckoutPage() {
                             </button>
                           </div>
                           <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">
-                            Send as "Personal" Cash-in / Send Money
+                            পরিমাণ: ৳{bdtAmount} | Send as "Personal" Cash-in / Send Money
                           </p>
                         </div>
                       ) : (
