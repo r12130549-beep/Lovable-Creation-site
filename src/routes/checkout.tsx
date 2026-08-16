@@ -181,7 +181,8 @@ function CheckoutPage() {
       const searchProductName = (search as any)['productName'];
       const searchProductId = (search as any)['productId'];
       
-      const amount = Number(plan === 'premium' ? 1500 : 0);
+      const finalCurrency = selectedMethod.id === 'binance' ? "$" : "৳";
+      const finalAmount = selectedMethod.id === 'binance' ? pricing.usd : pricing.bdt;
       
       // 1. Generate Order ID locally for immediate UI feedback
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -199,8 +200,8 @@ function CheckoutPage() {
         whatsapp: formData.phone || 'N/A',
         productName: String(searchProductName || (plan === 'premium' ? 'Premium Extension' : (searchProductId || 'Premium Extension'))),
         category: 'Extension',
-        price: amount || 0,
-        currency: "৳",
+        price: finalAmount || 0,
+        currency: finalCurrency,
         paymentMethod: selectedMethod.id,
         paymentStatus: "Pending",
         orderStatus: "Pending",
