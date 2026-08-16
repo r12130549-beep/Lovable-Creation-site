@@ -623,11 +623,6 @@ function AdminPage() {
                         slug: (payload.name || 'extension').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
                       });
                     }
-                  }}
-                        slug: (payload.name || 'extension').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-                      });
-                    }
-                  }}
                   className="p-6 bg-[#0A0A0A] border border-white/10 rounded-3xl space-y-4 mb-8"
                 >
                   <div className="space-y-4">
