@@ -225,6 +225,7 @@ function AdminPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isAddingExtension, setIsAddingExtension] = useState(false);
+  const [isAddingCoupon, setIsAddingCoupon] = useState(false);
   const [editingExtension, setEditingExtension] = useState<any>(null);
   const queryClient = useQueryClient();
   const getAdminOrdersFn = useServerFn(getAdminOrders);
