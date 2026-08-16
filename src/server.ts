@@ -50,11 +50,11 @@ export default {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // The client went away mid-request; nothing to render and nothing to report.
       if (isClientAbortError(error)) return new Response(null, { status: 499 });
 
-      console.error("CATASTROPHIC ERROR:", error?.message, error?.stack);
+      console.error(error);
 
       return new Response(renderErrorPage(), {
         status: 500,
