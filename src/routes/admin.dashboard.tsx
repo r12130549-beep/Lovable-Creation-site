@@ -311,14 +311,14 @@ function AdminPage() {
     mutationFn: (data: any) => createManualOrderFn({ data }),
     onSuccess: (result) => {
       if (!result.success || (!result.order_id && !result.orderId)) {
-        toast.error('অর্ডার তৈরি করতে ব্যর্থ হয়েছে');
+        toast.error('Failed to create order');
         return;
       }
-      toast.success('অর্ডার সফল হয়েছে');
+      toast.success('Order completed successfully');
       const orderIdToCopy = result.order_id || result.orderId;
       if (orderIdToCopy) {
         // Using alert for auto-update like persistence in UI interaction
-        window.alert(`অর্ডার আইডি (অটো-সেভ করা হয়েছে): ${orderIdToCopy}`);
+        window.alert(`Order ID (auto-saved): ${orderIdToCopy}`);
 
       }
       queryClient.invalidateQueries({ queryKey: ['admin-earnings'] });
@@ -326,26 +326,26 @@ function AdminPage() {
       getAdminOrdersFn().then(orders => setRealtimeOrders(orders || []));
       setActiveTab('orders');
     },
-    onError: (err: any) => toast.error(err.message || 'অর্ডার তৈরি করতে ব্যর্থ হয়েছে')
+    onError: (err: any) => toast.error(err.message || 'Failed to create order')
   });
 
   const updateOrderMutation = useMutation({
     mutationFn: (data: any) => updateOrderStatusFn({ data } as any),
     onSuccess: () => {
-      toast.success('অর্ডার আপডেট করা হয়েছে');
+      toast.success('Order updated successfully');
 
       setSelectedOrder(null);
       // Refresh list
       getAdminOrdersFn().then(orders => setRealtimeOrders(orders || []));
     },
-    onError: (err: any) => toast.error(err.message || 'আপডেট ব্যর্থ হয়েছে')
+    onError: (err: any) => toast.error(err.message || 'Update failed')
   });
 
   const deleteExtensionMutation = useMutation({
     mutationFn: (id: string) => deleteExtensionFn({ data: { id } } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
-      toast.success('প্রোডাক্ট ডিলিট করা হয়েছে');
+      toast.success('Product deleted successfully');
     }
   });
 
@@ -357,7 +357,7 @@ function AdminPage() {
         return;
       }
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
-      toast.success('প্রোডাক্ট সফলভাবে অ্যাড হয়েছে');
+      toast.success('Product added successfully');
       setIsAddingExtension(false);
     },
     onError: (err: any) => toast.error(err.message || 'Failed to create extension')
@@ -367,7 +367,7 @@ function AdminPage() {
     mutationFn: ({ id, updates }: any) => updateExtensionFn({ data: { id, updates } } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-extensions'] });
-      toast.success('প্রোডাক্ট আপডেট হয়েছে');
+      toast.success('Product updated successfully');
       setEditingExtension(null);
     },
     onError: (err: any) => toast.error(err.message || 'Failed to update product')
