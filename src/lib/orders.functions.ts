@@ -145,6 +145,19 @@ export const createManualOrder = createServerFn({ method: "POST" })
         updated_at: new Date().toISOString()
       };
 
+      // Increment coupon usage if couponId is present in data
+      // We check for couponId which will be passed in the raw data from the client
+      const rawPayload = (data as any)?.data || data;
+      if (rawPayload && rawPayload.couponId) {
+        try {
+          const { incrementCouponUsageInCloud } = await import("./cloud-data.server");
+          await incrementCouponUsageInCloud(rawPayload.couponId);
+          orderData.notes = `${orderData.notes} | Coupon: ${rawPayload.couponCode || 'Applied'}`;
+        } catch (couponErr) {
+          console.error("Failed to increment coupon usage:", couponErr);
+        }
+      }
+
       const savedOrder = await createOrderInCloud(orderData);
       console.log("Order saved successfully:", savedOrder?.id);
       

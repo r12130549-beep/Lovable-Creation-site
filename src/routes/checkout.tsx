@@ -28,6 +28,7 @@ import { getAppSettings } from '@/lib/settings.functions';
 import { useAuth } from '@/hooks/use-auth';
 import { createManualOrder } from '@/lib/orders.functions';
 import { getExtensions } from '@/lib/extensions.functions';
+import { validateCoupon } from '@/lib/features.functions';
 
 
 export const Route = createFileRoute('/checkout')({
@@ -82,6 +83,10 @@ function CheckoutPage() {
     phone: '', 
     trxId: '' 
   });
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const validateCouponFn = useServerFn(validateCoupon);
 
   // Keep form in sync if user logs in while on page
   useEffect(() => {
@@ -131,13 +136,40 @@ function CheckoutPage() {
   const usdtRate = useMemo(() => Number((appSettings as Record<string, any>)?.['usdt_rate']) || 130, [appSettings]);
   
   const pricing = useMemo(() => {
-    const usd = product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0);
-    const bdt = product?.price_bdt ?? (Math.round(usd * usdtRate));
-    return { usd, bdt };
-  }, [product, search.plan, usdtRate]);
+    let usd = product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0);
+    let bdt = product?.price_bdt ?? (Math.round(usd * usdtRate));
 
-  const bdtAmount = pricing.bdt;
+    if (appliedCoupon) {
+      if (appliedCoupon.discount_type === 'percentage') {
+        const factor = 1 - (appliedCoupon.discount_value / 100);
+        usd *= factor;
+        bdt *= factor;
+      } else {
+        usd = Math.max(0, usd - appliedCoupon.discount_value);
+        bdt = Math.max(0, bdt - (appliedCoupon.discount_value * usdtRate));
+      }
+    }
+
+    return { usd, bdt };
+  }, [product, search.plan, usdtRate, appliedCoupon]);
+
+  const bdtAmount = Math.round(pricing.bdt);
   const usdtAmount = pricing.usd.toFixed(2);
+
+  const applyCoupon = async () => {
+    if (!couponCode) return;
+    setCouponLoading(true);
+    try {
+      const coupon = await validateCouponFn({ data: { code: couponCode, extensionId: product?.id } } as any);
+      setAppliedCoupon(coupon);
+      toast.success('Coupon applied successfully!');
+    } catch (err: any) {
+      toast.error(err.message || 'Invalid coupon code');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   const handleNext = () => {
     if (step === 1) {
@@ -207,7 +239,9 @@ function CheckoutPage() {
         orderStatus: "Pending",
         transactionId: formData.trxId || 'N/A',
         screenshotUrl: screenshotUrl || '',
-        notes: `TRX: ${formData.trxId || 'N/A'}`,
+        notes: `TRX: ${formData.trxId || 'N/A'}${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`,
+        couponId: appliedCoupon?.id,
+        couponCode: appliedCoupon?.code,
       };
 
       // 3. Create order via server function
@@ -627,11 +661,52 @@ function CheckoutPage() {
 
                 <div className="h-[1px] bg-white/5 w-full" />
 
+                {/* Coupon Input */}
+                {!appliedCoupon ? (
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Promo Code</label>
+                    <div className="flex gap-2">
+                      <input 
+                        placeholder="Enter code" 
+                        value={couponCode}
+                        onChange={e => setCouponCode(e.target.value)}
+                        className="flex-1 bg-white/5 border border-white/5 p-3 rounded-xl outline-none text-xs font-bold focus:border-red-500/50 transition-all uppercase"
+                      />
+                      <button 
+                        onClick={applyCoupon}
+                        disabled={couponLoading || !couponCode}
+                        className="px-4 bg-white text-black font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-white/90 transition-all disabled:opacity-50"
+                      >
+                        {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Apply'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-2xl flex justify-between items-center">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-green-500">Coupon Applied</p>
+                      <p className="text-xs font-black uppercase tracking-widest">{appliedCoupon.code}</p>
+                    </div>
+                    <button 
+                      onClick={() => setAppliedCoupon(null)}
+                      className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+
                 <div className="space-y-3">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
                     <span>Subtotal</span>
-                    <span>{selectedMethod?.id === 'binance' ? `$${usdtAmount}` : `৳${bdtAmount}`}</span>
+                    <span>{selectedMethod?.id === 'binance' ? `$${(product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0)).toFixed(2)}` : `৳${(product?.price_bdt ?? (Math.round((product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0)) * usdtRate)))}`}</span>
                   </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-green-500">
+                      <span>Discount</span>
+                      <span>-{appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}%` : (selectedMethod?.id === 'binance' ? `$${appliedCoupon.discount_value}` : `৳${Math.round(appliedCoupon.discount_value * usdtRate)}`)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
                     <span>Processing Fee</span>
                     <span>{selectedMethod?.id === 'binance' ? `$0.00` : `৳0.00`}</span>
