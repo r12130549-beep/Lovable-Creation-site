@@ -90,16 +90,7 @@ function Index() {
           </div>
 
           <div className="hidden lg:flex items-center gap-6">
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-1">
-               <button 
-                onClick={() => setLang('EN')}
-                className={`px-2 py-1 text-[8px] font-black rounded-lg transition-colors ${lang === 'EN' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
-               >EN</button>
-               <button 
-                onClick={() => setLang('BN')}
-                className={`px-2 py-1 text-[8px] font-black rounded-lg transition-colors ${lang === 'BN' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
-               >BN</button>
-            </div>
+            {/* Language switch removed - English only */}
 
             <div className="flex items-center gap-4">
               {/* Login option removed as requested */}
