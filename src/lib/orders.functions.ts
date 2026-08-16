@@ -134,6 +134,7 @@ export const createManualOrder = createServerFn({ method: "POST" })
         user_id: String(data.uid || 'guest'),
         product_name: productName,
         category: String(data.category || 'Extension'),
+        price: Number(data.price) || 0,
         currency: String(data.currency || "৳"),
         quantity: Number(data.quantity) || 1,
         notes: String(data.notes || ''),

@@ -295,6 +295,12 @@ function AdminPage() {
     return (amount / usdtRate).toFixed(2);
   };
 
+  const toBdt = (usd: any) => {
+    const amount = Number(usd) || 0;
+    if (!usdtRate) return 0;
+    return Math.round(amount * usdtRate);
+  };
+
   const { data: licenses } = useQuery({
     queryKey: ['admin-licenses'],
     queryFn: () => getAdminLicensesFn(),
