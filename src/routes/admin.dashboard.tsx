@@ -280,7 +280,7 @@ function AdminPage() {
       const data = await getExtensionsFn();
       return data;
     },
-    enabled: activeTab === 'extensions',
+    enabled: activeTab === 'extensions' || activeTab === 'coupons',
   });
 
   const { data: adminUsers, isLoading: usersLoading } = useQuery({
