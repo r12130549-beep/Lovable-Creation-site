@@ -40,6 +40,7 @@ export type Database = {
           discount_value: number
           expiry_date: string | null
           extension_id: string | null
+          extension_ids: string | null
           id: string
           usage_limit: number | null
           used_count: number | null
@@ -51,6 +52,7 @@ export type Database = {
           discount_value: number
           expiry_date?: string | null
           extension_id?: string | null
+          extension_ids?: string | null
           id?: string
           usage_limit?: number | null
           used_count?: number | null
@@ -62,6 +64,7 @@ export type Database = {
           discount_value?: number
           expiry_date?: string | null
           extension_id?: string | null
+          extension_ids?: string | null
           id?: string
           usage_limit?: number | null
           used_count?: number | null
