@@ -27,6 +27,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getAppSettings } from '@/lib/settings.functions';
 import { useAuth } from '@/hooks/use-auth';
 import { createManualOrder } from '@/lib/orders.functions';
+import { getExtensions } from '@/lib/extensions.functions';
 
 
 export const Route = createFileRoute('/checkout')({
@@ -96,6 +97,12 @@ function CheckoutPage() {
   
   const search = useSearch({ from: '/checkout' }) as { productId?: string; plan?: string; productName?: string };
   const navigate = useNavigate();
+  const getExtensionsFn = useServerFn(getExtensions);
+
+  const { data: extensions } = useQuery({
+    queryKey: ['extensions-checkout'],
+    queryFn: () => getExtensionsFn(),
+  });
 
   const { data: appSettings, isLoading: settingsLoading } = useQuery({
     queryKey: ['app-settings'],
@@ -104,6 +111,11 @@ function CheckoutPage() {
       return {};
     }),
   });
+
+  const product = useMemo(() => {
+    if (!extensions || !search.productId) return null;
+    return extensions.find((e: any) => e.id === search.productId || e.slug === search.productId);
+  }, [extensions, search.productId]);
 
   const getMethodDetails = (methodId: string) => {
     if (!appSettings || Object.keys(appSettings).length === 0) return null;
@@ -117,8 +129,15 @@ function CheckoutPage() {
   };
 
   const usdtRate = useMemo(() => Number((appSettings as Record<string, any>)?.['usdt_rate']) || 130, [appSettings]);
-  const bdtAmount = useMemo(() => (search as any)['plan'] === 'premium' ? 1500 : 0, [search]);
-  const usdtAmount = useMemo(() => (bdtAmount / usdtRate).toFixed(2), [bdtAmount, usdtRate]);
+  
+  const pricing = useMemo(() => {
+    const usd = product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0);
+    const bdt = product?.price_bdt ?? (Math.round(usd * usdtRate));
+    return { usd, bdt };
+  }, [product, search.plan, usdtRate]);
+
+  const bdtAmount = pricing.bdt;
+  const usdtAmount = pricing.usd.toFixed(2);
 
   const handleNext = () => {
     if (step === 1) {
@@ -162,7 +181,8 @@ function CheckoutPage() {
       const searchProductName = (search as any)['productName'];
       const searchProductId = (search as any)['productId'];
       
-      const amount = Number(plan === 'premium' ? 1500 : 0);
+      const finalCurrency = selectedMethod.id === 'binance' ? "$" : "৳";
+      const finalAmount = selectedMethod.id === 'binance' ? pricing.usd : pricing.bdt;
       
       // 1. Generate Order ID locally for immediate UI feedback
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -180,8 +200,8 @@ function CheckoutPage() {
         whatsapp: formData.phone || 'N/A',
         productName: String(searchProductName || (plan === 'premium' ? 'Premium Extension' : (searchProductId || 'Premium Extension'))),
         category: 'Extension',
-        price: amount || 0,
-        currency: "৳",
+        price: finalAmount || 0,
+        currency: finalCurrency,
         paymentMethod: selectedMethod.id,
         paymentStatus: "Pending",
         orderStatus: "Pending",
@@ -434,8 +454,8 @@ function CheckoutPage() {
 
                           <div className="grid grid-cols-2 gap-4">
                             <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
-                              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">পরিমাণ (BDT)</p>
-                              <p className="text-sm font-black tracking-tight text-white">৳{bdtAmount}</p>
+                              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">প্রোডাক্টের দাম (USD)</p>
+                              <p className="text-sm font-black tracking-tight text-white">${pricing.usd}</p>
                             </div>
                             <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
                               <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">USDT পাঠাবেন</p>
@@ -502,7 +522,7 @@ function CheckoutPage() {
                             </button>
                           </div>
                           <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">
-                            Send as "Personal" Cash-in / Send Money
+                            পরিমাণ: ৳{bdtAmount} | Send as "Personal" Cash-in / Send Money
                           </p>
                         </div>
                       ) : (
@@ -599,10 +619,10 @@ function CheckoutPage() {
               <div className="space-y-6">
                 <div className="flex justify-between items-start gap-4">
                   <div>
-                    <p className="font-black text-sm uppercase">VIBEX Premium Plan</p>
+                    <p className="font-black text-sm uppercase">{search.productName || product?.name || 'VIBEX Premium Tool'}</p>
                     <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">One-time payment</p>
                   </div>
-                  <p className="font-black text-red-500">৳{bdtAmount}</p>
+                  <p className="font-black text-red-500">{selectedMethod?.id === 'binance' ? `$${usdtAmount}` : `৳${bdtAmount}`}</p>
                 </div>
 
                 <div className="h-[1px] bg-white/5 w-full" />
@@ -610,18 +630,18 @@ function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
                     <span>Subtotal</span>
-                    <span>৳{bdtAmount}</span>
+                    <span>{selectedMethod?.id === 'binance' ? `$${usdtAmount}` : `৳${bdtAmount}`}</span>
                   </div>
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
                     <span>Processing Fee</span>
-                    <span>৳0.00</span>
+                    <span>{selectedMethod?.id === 'binance' ? `$0.00` : `৳0.00`}</span>
                   </div>
                 </div>
 
                 <div className="pt-6 border-t border-white/5">
                   <div className="flex justify-between items-end">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Total Amount</p>
-                    <p className="text-3xl font-black text-white">৳{bdtAmount}</p>
+                    <p className="text-3xl font-black text-white">{selectedMethod?.id === 'binance' ? `$${usdtAmount}` : `৳${bdtAmount}`}</p>
                   </div>
                 </div>
               </div>

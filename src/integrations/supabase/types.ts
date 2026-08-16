@@ -89,6 +89,8 @@ export type Database = {
           id: string
           name: string
           price: number | null
+          price_bdt: number | null
+          price_usd: number | null
           rating: number | null
           screenshots: string[] | null
           slug: string
@@ -110,6 +112,8 @@ export type Database = {
           id?: string
           name: string
           price?: number | null
+          price_bdt?: number | null
+          price_usd?: number | null
           rating?: number | null
           screenshots?: string[] | null
           slug: string
@@ -131,6 +135,8 @@ export type Database = {
           id?: string
           name?: string
           price?: number | null
+          price_bdt?: number | null
+          price_usd?: number | null
           rating?: number | null
           screenshots?: string[] | null
           slug?: string

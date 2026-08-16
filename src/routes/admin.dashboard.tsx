@@ -295,6 +295,12 @@ function AdminPage() {
     return (amount / usdtRate).toFixed(2);
   };
 
+  const toBdt = (usd: any) => {
+    const amount = Number(usd) || 0;
+    if (!usdtRate) return 0;
+    return Math.round(amount * usdtRate);
+  };
+
   const { data: licenses } = useQuery({
     queryKey: ['admin-licenses'],
     queryFn: () => getAdminLicensesFn(),
@@ -596,12 +602,14 @@ function AdminPage() {
                   key={editingExtension?.id || 'new-extension'}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  onSubmit={(e) => {
+                   onSubmit={(e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
                     const payload = {
                       name: (formData.get('name') as string) || '',
-                      price: Number(formData.get('price')) || 0,
+                      price_usd: Number(formData.get('price_usd')) || 0,
+                      price: Number(formData.get('price_usd')) || 0,
+                      price_bdt: formData.get('price_bdt') ? Number(formData.get('price_bdt')) : null,
                       description: (formData.get('description') as string) || '',
                       category: (formData.get('category') as string) || '',
                       icon_url: (formData.get('icon_url') as string) || '',
@@ -645,12 +653,15 @@ function AdminPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Price (৳)</label>
-                    <input name="price" defaultValue={editingExtension?.price ?? ''} placeholder="Price" type="number" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
-                    {usdtRate > 0 && editingExtension?.price ? (
-                      <p className="text-[10px] font-bold text-white/30 ml-2">≈ {toUsdt(editingExtension.price)} USDT</p>
-                    ) : null}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Price (USD)</label>
+                      <input name="price_usd" defaultValue={editingExtension?.price_usd ?? editingExtension?.price ?? ''} placeholder="USD Price" type="number" step="0.01" required className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Price (BDT) - Optional</label>
+                      <input name="price_bdt" defaultValue={editingExtension?.price_bdt ?? ''} placeholder="Custom BDT" type="number" className="w-full bg-white/5 p-3 rounded-xl border border-white/5 focus:border-red-500/50 outline-none" />
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Description</label>
@@ -681,10 +692,14 @@ function AdminPage() {
                       <p className="text-xs text-white/40 line-clamp-2 mt-1">{ext.description}</p>
                     </div>
                     <div className="pt-4 border-t border-white/5 flex justify-between items-center">
-                      <span className="text-sm font-black">
-                        ৳{ext.price}
-                        {toUsdt(ext.price) ? <span className="text-[10px] font-bold text-white/30 ml-2">≈ {toUsdt(ext.price)} USDT</span> : null}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-white">
+                          ${ext.price_usd ?? ext.price ?? 0}
+                        </span>
+                        <span className="text-[10px] font-bold text-white/30">
+                          ৳{ext.price_bdt || toBdt(ext.price_usd || ext.price)}
+                        </span>
+                      </div>
                       <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{ext.category}</span>
                     </div>
                   </div>

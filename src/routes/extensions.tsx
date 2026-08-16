@@ -178,7 +178,7 @@ function ExtensionsPage() {
                     <div className="flex flex-col">
                       <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-1">One-time payment</span>
                       <div className="text-2xl font-black tracking-tight">
-                        {ext.price === 0 ? 'FREE' : `৳${ext.price}`}
+                        {(ext.price_usd ?? ext.price) === 0 ? 'FREE' : `$${ext.price_usd ?? ext.price}`}
                       </div>
                     </div>
                     <div className="flex gap-2">

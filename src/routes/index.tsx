@@ -164,8 +164,7 @@ function Index() {
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-6">
               <Link 
-                to="/checkout"
-                search={{ plan: 'credits', productName: 'Credits Pack' }}
+                to="/extensions"
                 className="group relative bg-[#111] border border-white/5 hover:border-red-500/30 px-8 py-6 rounded-[2.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex flex-col items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-red-500/5 min-w-[240px]"
               >
                 <ShoppingBag className="w-8 h-8 text-red-500" />
