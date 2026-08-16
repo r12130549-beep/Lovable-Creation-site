@@ -108,7 +108,7 @@ function TrackOrderPage() {
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
-                    ট্র্যাক করুন
+                    Track Now
                     <ArrowRight className="w-5 h-5" />
                   </>
                 )}
@@ -142,7 +142,7 @@ function TrackOrderPage() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">অর্ডার আইডি</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">ORDER ID</span>
                     <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg flex items-center gap-2">
                       <code className="text-sm font-black text-white">{order?.id || orderId}</code>
                       <button onClick={() => { navigator.clipboard.writeText(order?.id || orderId); toast.success('Order ID copied'); }} className="text-white/20 hover:text-red-500 transition-colors">
@@ -152,13 +152,13 @@ function TrackOrderPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-green-500">অনলাইন</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-green-500">ONLINE</span>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-4">
                   <div className="text-right hidden md:block">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-white/20 mb-1">অর্ডার স্ট্যাটাস</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-white/20 mb-1">ORDER STATUS</p>
                     <p className={`text-xs font-black uppercase tracking-widest ${
                       ['Approved', 'Paid', 'Completed', 'Ready'].includes(order?.status || '') ? 'text-green-500' : 'text-yellow-500'
                     }`}>{order?.status || 'Pending'}</p>
@@ -179,7 +179,7 @@ function TrackOrderPage() {
                     {order?.product_name || "VIBEX Secure Product"}
                   </h4>
                   <p className="text-[10px] font-medium text-white/60 leading-relaxed">
-                    পেমেন্ট কনফার্ম হওয়ার সাথে সাথে গেটওয়ে স্বয়ংক্রিয়ভাবে লাইসেন্স কী এবং ডাউনলোড লিংক পাঠিয়ে দেবে।
+                    The gateway will automatically send the license key and download link once payment is confirmed.
                   </p>
                 </div>
               </div>
@@ -187,27 +187,27 @@ function TrackOrderPage() {
               {/* Order Info Grid */}
               <div className="grid grid-cols-2 md:grid-cols-2 gap-y-10 gap-x-12 mb-12">
                 <div className="space-y-1.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">ইমেইল</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Email</p>
                   <p className="text-xs font-bold text-white/80">{order?.customer_email || 'N/A'}</p>
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">প্ল্যান</p>
-                  <p className="text-xs font-bold text-white/80">লাইফটাইম</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Plan</p>
+                  <p className="text-xs font-bold text-white/80">Lifetime</p>
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">মূল্য</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Price</p>
                   <p className="text-xs font-bold text-white/80">{order?.amount || 0} {order?.currency || '৳'}</p>
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">পেমেন্ট</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Payment</p>
                   <p className="text-xs font-bold text-white/80 uppercase">{order?.payment_method || 'N/A'}</p>
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">ট্রানজেকশন আইডি</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Transaction ID</p>
                   <p className="text-xs font-mono font-bold text-white/80">{order?.transaction_id || 'N/A'}</p>
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">তারিখ</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Date</p>
                   <p className="text-xs font-bold text-white/80">{order?.created_at ? format(new Date(order.created_at), 'd/M/yyyy') : 'N/A'}</p>
                 </div>
               </div>
@@ -217,7 +217,7 @@ function TrackOrderPage() {
                 <div className="space-y-6 mb-12">
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/5 space-y-4">
                     <div className="flex items-center justify-between">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-red-500">আপনার লাইসেন্স কী</p>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-red-500">Your License Key</p>
                       <button onClick={() => { navigator.clipboard.writeText(order?.license?.key || ''); toast.success('License Key copied'); }} className="text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
                         Copy <Copy className="w-3 h-3" />
                       </button>
@@ -236,12 +236,12 @@ function TrackOrderPage() {
                       className="w-full bg-white text-black py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-gray-200 transition-all shadow-xl active:scale-95"
                     >
                       <Download className="w-5 h-5" />
-                      ডাউনলোড ফাইল
+                      Download File
                     </a>
                   )}
                   {order?.license?.expires_at && (
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/20 text-center">
-                      মেয়াদ শেষ হবে: {format(new Date(order.license.expires_at), 'PPp')}
+                      Expires on: {format(new Date(order.license.expires_at), 'PPp')}
 
                     </p>
                   )}
@@ -250,14 +250,14 @@ function TrackOrderPage() {
                 <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 mb-12 text-center space-y-4">
                   <Shield className="w-12 h-12 text-red-500 mx-auto opacity-50" />
                   <div>
-                    <h3 className="text-xl font-black uppercase tracking-tight text-red-500">লাইসেন্সের মেয়াদ শেষ</h3>
+                    <h3 className="text-xl font-black uppercase tracking-tight text-red-500">License Expired</h3>
                     <p className="text-xs font-medium text-white/40 mt-2">
-                      এই অর্ডারের মেয়াদের তারিখ অতিক্রম করেছে। এক্সেস পেতে অনুগ্রহ করে নতুন করে সাবস্ক্রিপশন নিন।
+                      This order has expired. Please purchase a new subscription to regain access.
                     </p>
                   </div>
                   <div className="pt-4">
                     <Link to="/pricing" className="inline-flex items-center gap-2 bg-red-500 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all">
-                      রিউনিউ করুন <ArrowRight className="w-3 h-3" />
+                      Renew Now <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
                 </div>
@@ -270,9 +270,9 @@ function TrackOrderPage() {
                     <Clock className="w-5 h-5 text-red-500" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-black uppercase tracking-widest text-red-500 mb-1">পেমেন্ট সময় শেষ</h4>
+                    <h4 className="text-xs font-black uppercase tracking-widest text-red-500 mb-1">Payment Timed Out</h4>
                     <p className="text-[10px] font-medium text-white/60 leading-relaxed">
-                      {order?.admin_note || "৩০ মিনিটের মধ্যে পেমেন্ট না হওয়ায় এই অর্ডারটি স্বয়ংক্রিয়ভাবে বাতিল হয়েছে। অনুগ্রহ করে নতুন অর্ডার দিন।"}
+                      {order?.admin_note || "This order was automatically cancelled as payment was not received within 30 minutes. Please place a new order."}
                     </p>
                   </div>
                 </div>
@@ -282,9 +282,9 @@ function TrackOrderPage() {
                     <Clock className="w-5 h-5 text-yellow-500" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-black uppercase tracking-widest text-yellow-500 mb-1">পেমেন্ট ভেরিফিকেশন চলছে</h4>
+                    <h4 className="text-xs font-black uppercase tracking-widest text-yellow-500 mb-1">Payment Verification in Progress</h4>
                     <p className="text-[10px] font-medium text-white/60 leading-relaxed">
-                      আপনার পেমেন্টটি বর্তমানে ভেরিফাই করা হচ্ছে। সাধারণত ৫-৩০ মিনিটের মধ্যে লাইসেন্স কী পেয়ে যাবেন।
+                      Your payment is currently being verified. You will usually receive your license key within 5-30 minutes.
                     </p>
                   </div>
                 </div>
@@ -295,7 +295,7 @@ function TrackOrderPage() {
                   onClick={() => setShowResult(false)}
                   className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-red-500 transition-colors"
                 >
-                  হোমে ফিরুন
+                  Return to Home
                 </button>
               </div>
             </div>
