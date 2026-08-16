@@ -555,8 +555,8 @@ function CheckoutPage() {
                               <Copy className="w-4 h-4" />
                             </button>
                           </div>
-                          <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">
-                            Amount: ৳{bdtAmount} | Send as "Personal" Cash-in / Send Money
+                          <p className="text-[10px] uppercase tracking-widest text-white/40 font-medium">
+                            Amount: ৳{bdtAmount} | Personal
                           </p>
                         </div>
                       ) : (
