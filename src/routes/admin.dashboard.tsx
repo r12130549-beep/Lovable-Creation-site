@@ -936,21 +936,26 @@ function AdminPage() {
              <motion.div key="coupons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
                <div className="flex justify-between items-center">
                  <h2 className="text-xl font-black uppercase">Coupon Management</h2>
-                 <button 
-                   onClick={() => {
-                     const code = prompt("Enter Coupon Code:");
-                     const type = prompt("Type (percentage/fixed):", "percentage") as 'percentage' | 'fixed';
-                     const value = Number(prompt("Discount Value:"));
-                     if (code && value) {
-                       createCouponMutation.mutate({
-                         code,
-                         discount_type: type,
-                         discount_value: value
-                       });
-                     }
-                   }}
-                   className="px-6 py-3 bg-red-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2"
-                 >
+                  <button 
+                    onClick={() => {
+                      const code = prompt("Enter Coupon Code:");
+                      const type = prompt("Type (percentage/fixed):", "percentage") as 'percentage' | 'fixed';
+                      const value = Number(prompt("Discount Value:"));
+                      const expiry = prompt("Expiry Date (YYYY-MM-DD) - Leave empty for none:");
+                      const limit = Number(prompt("Usage Limit - Leave empty for none:"));
+                      
+                      if (code && value) {
+                        createCouponMutation.mutate({
+                          code,
+                          discount_type: type,
+                          discount_value: value,
+                          expiry_date: expiry || null,
+                          usage_limit: limit || null
+                        });
+                      }
+                    }}
+                    className="px-6 py-3 bg-red-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2"
+                  >
                    <Plus className="w-4 h-4" /> Add Coupon
                  </button>
                </div>
@@ -968,10 +973,15 @@ function AdminPage() {
                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
                              Value: <span className="text-white">{coupon.discount_value}{coupon.discount_type === 'percentage' ? '%' : ''}</span>
                            </p>
-                           <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
-                             Uses: <span className="text-white">{coupon.used_count || 0}{coupon.usage_limit ? ` / ${coupon.usage_limit}` : ''}</span>
-                           </p>
-                         </div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
+                              Uses: <span className="text-white">{coupon.used_count || 0}{coupon.usage_limit ? ` / ${coupon.usage_limit}` : ''}</span>
+                            </p>
+                            {coupon.expiry_date && (
+                              <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
+                                Expires: <span className="text-white">{new Date(coupon.expiry_date).toLocaleDateString()}</span>
+                              </p>
+                            )}
+                          </div>
                        </div>
                      </div>
                      <button 
