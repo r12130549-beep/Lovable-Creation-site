@@ -7,10 +7,23 @@ const TTL_MS = 5_000;
 // A client that navigates away / cancels mid-request aborts the socket. Node throws
 // "Error: aborted" from _http_server — harmless noise, never a real app failure.
 export function isClientAbortError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  const code = (error as { code?: unknown }).code;
-  if (code === "ECONNRESET" || code === "ABORT_ERR") return true;
-  return error.name === "AbortError" || /^aborted$/i.test(error.message);
+  let current: unknown = error;
+  for (let depth = 0; depth < 4 && current != null; depth++) {
+    if (typeof current !== "object") return false;
+    const candidate = current as {
+      name?: unknown;
+      message?: unknown;
+      code?: unknown;
+      cause?: unknown;
+    };
+    if (candidate.code === "ECONNRESET" || candidate.code === "ABORT_ERR") return true;
+    if (candidate.name === "AbortError") return true;
+    if (typeof candidate.message === "string" && /^aborted$/i.test(candidate.message.trim())) {
+      return true;
+    }
+    current = candidate.cause;
+  }
+  return false;
 }
 
 function record(error: unknown) {
@@ -75,10 +88,22 @@ console.error = (...args: unknown[]) => {
 };
 
 if (typeof globalThis.addEventListener === "function") {
-  globalThis.addEventListener("error", (event) => record((event as ErrorEvent).error ?? event));
-  globalThis.addEventListener("unhandledrejection", (event) =>
-    record((event as PromiseRejectionEvent).reason),
-  );
+  globalThis.addEventListener("error", (event) => {
+    const error = (event as ErrorEvent).error ?? event;
+    if (isClientAbortError(error)) {
+      event.preventDefault?.();
+      return;
+    }
+    record(error);
+  });
+  globalThis.addEventListener("unhandledrejection", (event) => {
+    const error = (event as PromiseRejectionEvent).reason;
+    if (isClientAbortError(error)) {
+      event.preventDefault?.();
+      return;
+    }
+    record(error);
+  });
 }
 
 export function consumeLastCapturedError(): unknown {

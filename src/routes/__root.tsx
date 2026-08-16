@@ -12,6 +12,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 
 import appCss from "../styles.css?url";
+import { isClientAbortError } from "../lib/error-capture";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -37,11 +38,14 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
+  const isAbort = isClientAbortError(error);
+  if (!isAbort) console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+    if (!isAbort) {
+      reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    }
+  }, [error, isAbort]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
