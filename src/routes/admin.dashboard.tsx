@@ -225,6 +225,7 @@ function AdminPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isAddingExtension, setIsAddingExtension] = useState(false);
+  const [isAddingCoupon, setIsAddingCoupon] = useState(false);
   const [editingExtension, setEditingExtension] = useState<any>(null);
   const queryClient = useQueryClient();
   const getAdminOrdersFn = useServerFn(getAdminOrders);
@@ -937,43 +938,102 @@ function AdminPage() {
                <div className="flex justify-between items-center">
                  <h2 className="text-xl font-black uppercase">Coupon Management</h2>
                   <button 
-                    onClick={() => {
-                      const code = prompt("Enter Coupon Code:");
-                      const type = prompt("Type (percentage/fixed):", "percentage") as 'percentage' | 'fixed';
-                      const value = Number(prompt("Discount Value:"));
-                      const expiry = prompt("Expiry Date (YYYY-MM-DD) - Leave empty for none:");
-                      const limit = Number(prompt("Usage Limit - Leave empty for none:"));
-                      
-                      // Simplified multi-product selection for now using a prompt or modal logic
-                      // Better: Show a list of extensions for selection
-                      let selectedIds = "";
-                      if (extensions && extensions.length > 0) {
-                        const productList = extensions.map((e: any, i: number) => `${i + 1}. ${e.name}`).join('\n');
-                        const selection = prompt(`Select Product IDs (comma separated index):\n${productList}\n(Leave empty for all products)`);
-                        if (selection) {
-                          selectedIds = selection.split(',')
-                            .map(idx => extensions[parseInt(idx.trim()) - 1]?.id)
-                            .filter(Boolean)
-                            .join(',');
-                        }
-                      }
-                      
-                      if (code && value) {
-                        createCouponMutation.mutate({
-                          code,
-                          discount_type: type,
-                          discount_value: value,
-                          extension_ids: selectedIds || null,
-                          expiry_date: expiry || null,
-                          usage_limit: limit || null
-                        });
-                      }
-                    }}
+                    onClick={() => setIsAddingCoupon(!isAddingCoupon)}
                     className="px-6 py-3 bg-red-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2"
                   >
-                   <Plus className="w-4 h-4" /> Add Coupon
+                   <Plus className="w-4 h-4" /> {isAddingCoupon ? 'Close Form' : 'Add Coupon'}
                  </button>
                </div>
+
+               <AnimatePresence>
+                 {isAddingCoupon && (
+                   <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                   >
+                     <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl p-8 mb-8 space-y-6">
+                       <h3 className="text-sm font-black uppercase tracking-widest text-red-500">Create New Coupon</h3>
+                       <form 
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const formData = new FormData(e.currentTarget);
+                          const code = formData.get('code') as string;
+                          const type = formData.get('type') as 'percentage' | 'fixed';
+                          const value = Number(formData.get('value'));
+                          const expiry = formData.get('expiry') as string;
+                          const limit = formData.get('limit') ? Number(formData.get('limit')) : null;
+                          
+                          // Get selected product IDs from checkboxes
+                          const selectedIds = Array.from(e.currentTarget.querySelectorAll('input[name="product_ids"]:checked'))
+                            .map((cb: any) => cb.value)
+                            .join(',');
+
+                          if (code && value) {
+                            createCouponMutation.mutate({
+                              code,
+                              discount_type: type,
+                              discount_value: value,
+                              extension_ids: selectedIds || null,
+                              expiry_date: expiry || null,
+                              usage_limit: limit || null
+                            });
+                            setIsAddingCoupon(false);
+                          }
+                        }}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                       >
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Coupon Code</label>
+                           <input name="code" required placeholder="SUMMER25" className="w-full bg-white/5 border border-white/5 p-4 rounded-2xl text-sm font-bold outline-none focus:border-red-500/50" />
+                         </div>
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Discount Type</label>
+                           <select name="type" className="w-full bg-[#0A0A0A] border border-white/5 p-4 rounded-2xl text-sm font-bold outline-none focus:border-red-500/50 appearance-none">
+                             <option value="percentage">Percentage (%)</option>
+                             <option value="fixed">Fixed Amount (BDT/USD)</option>
+                           </select>
+                         </div>
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Discount Value</label>
+                           <input name="value" type="number" required placeholder="10" className="w-full bg-white/5 border border-white/5 p-4 rounded-2xl text-sm font-bold outline-none focus:border-red-500/50" />
+                         </div>
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Expiry Date</label>
+                           <input name="expiry" type="date" className="w-full bg-white/5 border border-white/5 p-4 rounded-2xl text-sm font-bold outline-none focus:border-red-500/50" />
+                         </div>
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Usage Limit</label>
+                           <input name="limit" type="number" placeholder="100" className="w-full bg-white/5 border border-white/5 p-4 rounded-2xl text-sm font-bold outline-none focus:border-red-500/50" />
+                         </div>
+                         
+                         <div className="space-y-2 md:col-span-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2 block mb-2">Apply to Products (Multiple)</label>
+                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-4 bg-white/5 rounded-2xl border border-white/5 custom-scrollbar">
+                             {extensions?.map((ext: any) => (
+                               <label key={ext.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl cursor-pointer hover:bg-white/10 transition-colors border border-transparent has-[:checked]:border-red-500/50 has-[:checked]:bg-red-500/5">
+                                 <input type="checkbox" name="product_ids" value={ext.id} className="w-4 h-4 accent-red-500" />
+                                 <span className="text-xs font-bold truncate">{ext.name}</span>
+                               </label>
+                             ))}
+                             {(!extensions || extensions.length === 0) && (
+                               <p className="text-[10px] text-white/20 italic p-2">No products found</p>
+                             )}
+                           </div>
+                           <p className="text-[10px] text-white/20 mt-2 ml-2 uppercase font-bold tracking-widest italic">If none selected, coupon applies to all products.</p>
+                         </div>
+
+                         <div className="md:col-span-2 pt-4">
+                           <button type="submit" className="w-full py-4 bg-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-600/20">
+                             Create Coupon
+                           </button>
+                         </div>
+                       </form>
+                     </div>
+                   </motion.div>
+                 )}
+               </AnimatePresence>
 
                <div className="grid gap-4">
                  {(coupons as any[])?.map((coupon: any) => (
