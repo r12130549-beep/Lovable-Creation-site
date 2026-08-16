@@ -285,8 +285,9 @@ function AdminPage() {
         return [];
       }
     },
-    // Keep data fresh for the coupon form
-    staleTime: 30000,
+    // Always enable to ensure coupon form has products
+    enabled: true,
+    staleTime: 10000,
   });
 
 
@@ -323,7 +324,9 @@ function AdminPage() {
   const { data: coupons } = useQuery({
     queryKey: ['admin-coupons'],
     queryFn: () => getCouponsFn(),
-    enabled: activeTab === 'coupons',
+    enabled: activeTab === 'coupons' || activeTab === 'dashboard',
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
 
   const createOrderMutation = useMutation({
