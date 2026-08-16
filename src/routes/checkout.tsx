@@ -86,6 +86,7 @@ function CheckoutPage() {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [couponLoading, setCouponLoading] = useState(false);
+  const [hasValidCoupons, setHasValidCoupons] = useState(false);
   const validateCouponFn = useServerFn(validateCoupon);
   const getCouponsFn = useServerFn(getCoupons);
 
@@ -123,10 +124,29 @@ function CheckoutPage() {
     }),
   });
 
+
   const product = useMemo(() => {
     if (!extensions || !search.productId) return null;
     return extensions.find((e: any) => e.id === search.productId || e.slug === search.productId);
   }, [extensions, search.productId]);
+
+  useEffect(() => {
+    if (coupons && product) {
+      const valid = (coupons as any[]).some(c => {
+        const isExpired = c.expiry_date && new Date(c.expiry_date) < new Date();
+        const limitReached = c.usage_limit && (c.used_count || 0) >= c.usage_limit;
+        
+        if (isExpired || limitReached) return false;
+
+        const extensionIds = c.extension_ids ? c.extension_ids.split(',').filter(Boolean) : [];
+        const isGlobal = extensionIds.length === 0 && (!c.extension_id);
+        const isTargeted = extensionIds.includes(product.id) || c.extension_id === product.id;
+        
+        return isGlobal || isTargeted;
+      });
+      setHasValidCoupons(valid);
+    }
+  }, [coupons, product]);
 
   const getMethodDetails = (methodId: string) => {
     if (!appSettings || Object.keys(appSettings).length === 0) return null;
@@ -668,11 +688,7 @@ function CheckoutPage() {
                 <div className="h-[1px] bg-white/5 w-full" />
 
                 {/* Coupon Input */}
-                {(!appliedCoupon && coupons && (coupons as any[]).some(c => 
-                  !c.extension_ids || 
-                  c.extension_ids === "" || 
-                  (product?.id && c.extension_ids.split(',').includes(product.id))
-                )) ? (
+                {(!appliedCoupon && hasValidCoupons) ? (
                   <div className="space-y-3">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Promo Code</label>
                     <div className="flex gap-2">
@@ -687,7 +703,7 @@ function CheckoutPage() {
                         disabled={couponLoading || !couponCode}
                         className="px-4 bg-white text-black font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-white/90 transition-all disabled:opacity-50"
                       >
-                        {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Apply'}
+                        {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Try'}
                       </button>
                     </div>
                   </div>

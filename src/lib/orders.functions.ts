@@ -107,6 +107,8 @@ export const createManualOrder = createServerFn({ method: "POST" })
       notes: z.any().optional().default(""),
       transactionId: z.any().optional(),
       screenshotUrl: z.any().optional(),
+      couponId: z.string().optional(),
+      couponCode: z.string().optional(),
     }).parse(raw);
   })
   .handler(async ({ data }) => {
@@ -147,12 +149,11 @@ export const createManualOrder = createServerFn({ method: "POST" })
 
       // Increment coupon usage if couponId is present in data
       // We check for couponId which will be passed in the raw data from the client
-      const rawPayload = (data as any)?.data || data;
-      if (rawPayload && rawPayload.couponId) {
+      if (data.couponId) {
         try {
           const { incrementCouponUsageInCloud } = await import("./cloud-data.server");
-          await incrementCouponUsageInCloud(rawPayload.couponId);
-          orderData.notes = `${orderData.notes} | Coupon: ${rawPayload.couponCode || 'Applied'}`;
+          await incrementCouponUsageInCloud(data.couponId);
+          orderData.notes = `${orderData.notes} | Coupon: ${data.couponCode || 'Applied'}`;
         } catch (couponErr) {
           console.error("Failed to increment coupon usage:", couponErr);
         }
