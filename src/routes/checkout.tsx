@@ -142,17 +142,17 @@ function CheckoutPage() {
   const handleNext = () => {
     if (step === 1) {
       if (!formData.name || !formData.email || !formData.phone) {
-        toast.error('অনুগ্রহ করে সব প্রয়োজনীয় ঘর পূরণ করুন');
+        toast.error('Please fill in all required fields');
         return;
       }
       if (!formData.email.includes('@')) {
-        toast.error('অনুগ্রহ করে একটি সঠিক ইমেল প্রদান করুন');
+        toast.error('Please provide a valid email');
         return;
       }
       setStep(2);
     } else if (step === 2) {
       if (!selectedMethod) {
-        toast.error('অনুগ্রহ করে একটি পেমেন্ট পদ্ধতি নির্বাচন করুন');
+        toast.error('Please select a payment method');
         return;
       }
       if (selectedMethod.id === 'binance') {
@@ -170,7 +170,7 @@ function CheckoutPage() {
     
     if (selectedMethod.type === 'manual') {
       if (!formData.trxId || !screenshotUrl) {
-        toast.error('অনুগ্রহ করে ট্রানজেকশন আইডি এবং পেমেন্ট স্ক্রিনশট প্রদান করুন');
+        toast.error('Please provide Transaction ID and payment screenshot');
         return;
       }
     }
@@ -213,7 +213,7 @@ function CheckoutPage() {
       // 3. Create order via server function
       const result = await createManualOrderFn({ data: orderPayload });
       if (!result.success || (!result.order_id && !result.orderId)) {
-        throw new Error(result.message || 'অর্ডারটি সেভ করা যায়নি');
+        throw new Error(result.message || 'Could not save the order');
       }
       
       // 4. Update local state with the actual order ID from server
@@ -221,10 +221,10 @@ function CheckoutPage() {
       setOrderId(finalOrderId);
 
       setStep(5);
-      toast.success('অর্ডার সম্পন্ন হয়েছে!');
+      toast.success('Order completed successfully!');
     } catch (err: any) {
       console.error('Order submission error:', err);
-      toast.error(err?.message || 'অর্ডারটি সেভ করা যায়নি। আবার চেষ্টা করুন।');
+      toast.error(err?.message || 'Could not save the order. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -244,10 +244,10 @@ function CheckoutPage() {
               to="/" 
               className="inline-flex items-center gap-2 text-white/40 hover:text-white transition text-[10px] font-black uppercase tracking-widest mb-6"
             >
-              <ChevronLeft className="w-3 h-3" /> হোমে ফিরুন
+              <ChevronLeft className="w-3 h-3" /> Back to Home
             </Link>
             <h1 className="text-4xl md:text-5xl font-black tracking-tight">
-              SECURE <span className="text-red-500">CHECKOUT</span> <span className="text-[10px] ml-2 text-white/20">(অর্ডার ট্র্যাক করতে আইডি সেভ করুন)</span>
+              SECURE <span className="text-red-500">CHECKOUT</span> <span className="text-[10px] ml-2 text-white/20">(Save ID to track order)</span>
             </h1>
             <p className="text-white/40 mt-2 font-medium uppercase tracking-[0.2em] text-[10px]">
               Complete your premium experience
@@ -337,7 +337,7 @@ function CheckoutPage() {
                       onClick={handleNext} 
                       className="w-full mt-10 bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-white/10 text-[10px] uppercase tracking-widest"
                     >
-                      পেমেন্ট অপশনে যান <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      Go to Payment Options <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </section>
                 </motion.div>
@@ -389,7 +389,7 @@ function CheckoutPage() {
                     </div>
 
                     <div className="flex gap-4 mt-10">
-                      <button onClick={() => setStep(1)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">পিছনে</button>
+                      <button onClick={() => setStep(1)} className="flex-1 bg-white/5 text-white/40 font-black py-4 rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]">Back</button>
                       <button 
                         onClick={handleNext} 
                         className="flex-[2] bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group shadow-2xl shadow-white/10 text-[10px] uppercase tracking-widest"

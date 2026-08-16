@@ -77,8 +77,8 @@ function AdminLayout() {
           <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6">
             <div className="text-center space-y-4">
               <h1 className="text-4xl font-black text-red-500">ACCESS DENIED</h1>
-              <p className="text-white/40">আপনি এই পেজটি দেখার জন্য অনুমোদিত নন।</p>
-              <Link to="/admin" className="inline-block bg-white text-black px-6 py-2 rounded-xl font-bold">লগইন পেজে ফিরে যান</Link>
+              <p className="text-white/40">You are not authorized to view this page.</p>
+              <Link to="/admin" className="inline-block bg-white text-black px-6 py-2 rounded-xl font-bold">Return to Login</Link>
             </div>
           </div>
         );
@@ -117,28 +117,28 @@ function AdminLoginPage() {
       const isAdmin = result?.isAdmin || false;
       
       if (isAdmin) {
-        toast.success('অ্যাডমিন অ্যাক্সেস মঞ্জুর করা হয়েছে');
+        toast.success('Admin access granted');
         console.log('[AdminLogin] Redirecting to dashboard...');
         navigate({ to: '/admin/dashboard' });
       } else {
         console.log('[AdminLogin] Access denied. Admin:', isAdmin);
         // FORCE SIGN OUT IMMEDIATELY
         await auth.signOut();
-        toast.error('অ্যাক্সেস প্রত্যাখ্যান করা হয়েছে: আপনি অনুমোদিত অ্যাডমিন নন');
+        toast.error('Access denied: You are not an authorized admin');
       }
     } catch (err: any) {
       console.error('[AdminLogin] Error:', err);
-      let message = 'ভুল ইমেল বা পাসওয়ার্ড।';
+      let message = 'Invalid email or password.';
       const errorCode = err.code || '';
       
       if (errorCode === 'auth/invalid-continue-uri') {
-        message = 'Firebase: Error (auth/invalid-continue-uri). অ্যাডমিন ডোমেইন কনফিগারেশন চেক করুন।';
+        message = 'Firebase: Error (auth/invalid-continue-uri). Check admin domain configuration.';
       } else if (errorCode.includes('invalid-credential') || 
                  errorCode.includes('user-not-found') || 
                  errorCode.includes('wrong-password')) {
-        message = 'ভুল ইমেল বা পাসওয়ার্ড।';
+        message = 'Invalid email or password.';
       } else if (errorCode.includes('invalid-api-key')) {
-        message = 'Firebase API Key সঠিক নয়।';
+        message = 'Firebase API Key is invalid.';
       }
       toast.error(message);
 
@@ -151,7 +151,7 @@ function AdminLoginPage() {
     <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 font-sans">
       <Link to="/" className="mb-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition group z-10">
         <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-        হোমে ফিরে যান
+        Back to Home
       </Link>
 
       <motion.div 
@@ -164,8 +164,8 @@ function AdminLoginPage() {
             <Sparkles className="w-3 h-3" />
             VIBEX Admin
           </div>
-          <h1 className="text-4xl font-black tracking-tight mb-3 uppercase">অ্যাডমিন লগইন</h1>
-          <p className="text-white/40 text-sm font-medium">সুরক্ষিত প্রশাসনিক অ্যাক্সেস হাব।</p>
+          <h1 className="text-4xl font-black tracking-tight mb-3 uppercase">Admin Login</h1>
+          <p className="text-white/40 text-sm font-medium">Secure administrative access hub.</p>
         </div>
         
         <form className="space-y-4" onSubmit={handleLogin}>
@@ -176,7 +176,7 @@ function AdminLoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="অ্যাডমিন ইমেল" 
+              placeholder="Admin Email" 
               className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-sm font-bold focus:outline-none focus:border-red-500/50 transition-all placeholder:text-white/20" 
             />
           </div>
@@ -188,7 +188,7 @@ function AdminLoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="পাসওয়ার্ড" 
+              placeholder="Password" 
               className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-sm font-bold focus:outline-none focus:border-red-500/50 transition-all placeholder:text-white/20" 
             />
           </div>
@@ -198,7 +198,7 @@ function AdminLoginPage() {
             disabled={loading}
             className="w-full bg-white text-black font-black py-4 rounded-2xl hover:bg-white/90 transition-all shadow-xl flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>প্যানেলে লগইন করুন <ArrowRight className="w-4 h-4" /></>}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Login to Panel <ArrowRight className="w-4 h-4" /></>}
           </button>
         </form>
       </motion.div>
