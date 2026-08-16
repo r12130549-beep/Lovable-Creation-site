@@ -454,8 +454,8 @@ function CheckoutPage() {
 
                           <div className="grid grid-cols-2 gap-4">
                             <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
-                              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">পরিমাণ (BDT)</p>
-                              <p className="text-sm font-black tracking-tight text-white">৳{bdtAmount}</p>
+                              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">প্রোডাক্টের দাম (USD)</p>
+                              <p className="text-sm font-black tracking-tight text-white">${pricing.usd}</p>
                             </div>
                             <div className="bg-black/40 p-4 rounded-2xl border border-white/5">
                               <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">USDT পাঠাবেন</p>
