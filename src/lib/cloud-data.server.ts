@@ -121,19 +121,31 @@ export async function validateCouponInCloud(code: string, extensionId?: string) 
   
   if (error || !coupon) throw new Error("Invalid coupon code");
   
-  if (coupon.expiry_date && new Date(coupon.expiry_date) < new Date()) {
+  const couponData = coupon as any;
+  
+  if (couponData.expiry_date && new Date(couponData.expiry_date) < new Date()) {
     throw new Error("Coupon expired");
   }
   
-  if (coupon.usage_limit && (coupon.used_count || 0) >= coupon.usage_limit) {
+  if (couponData.usage_limit && (couponData.used_count || 0) >= couponData.usage_limit) {
     throw new Error("Usage limit reached");
   }
   
-  if (coupon.extension_id && extensionId && coupon.extension_id !== extensionId) {
+  // Check if coupon is restricted to specific extensions
+  const allowedIds = couponData.extension_ids ? couponData.extension_ids.split(',').filter(Boolean) : [];
+  if (allowedIds.length > 0) {
+    if (!extensionId) {
+      throw new Error("Coupon not valid for this purchase");
+    }
+    if (!allowedIds.includes(extensionId)) {
+      throw new Error("Coupon not valid for this product");
+    }
+  } else if (couponData.extension_id && extensionId && couponData.extension_id !== extensionId) {
+    // Backward compatibility for old single extension_id column
     throw new Error("Coupon not valid for this product");
   }
   
-  return coupon;
+  return couponData;
 }
 
 export async function incrementCouponUsageInCloud(id: string) {

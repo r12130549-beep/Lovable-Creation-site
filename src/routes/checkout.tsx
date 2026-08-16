@@ -28,7 +28,7 @@ import { getAppSettings } from '@/lib/settings.functions';
 import { useAuth } from '@/hooks/use-auth';
 import { createManualOrder } from '@/lib/orders.functions';
 import { getExtensions } from '@/lib/extensions.functions';
-import { validateCoupon } from '@/lib/features.functions';
+import { validateCoupon, getCoupons } from '@/lib/features.functions';
 
 
 export const Route = createFileRoute('/checkout')({
@@ -87,6 +87,12 @@ function CheckoutPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const validateCouponFn = useServerFn(validateCoupon);
+  const getCouponsFn = useServerFn(getCoupons);
+
+  const { data: coupons } = useQuery({
+    queryKey: ['coupons'],
+    queryFn: () => getCouponsFn(),
+  });
 
   // Keep form in sync if user logs in while on page
   useEffect(() => {
@@ -662,7 +668,11 @@ function CheckoutPage() {
                 <div className="h-[1px] bg-white/5 w-full" />
 
                 {/* Coupon Input */}
-                {!appliedCoupon ? (
+                {(!appliedCoupon && coupons && (coupons as any[]).some(c => 
+                  !c.extension_ids || 
+                  c.extension_ids === "" || 
+                  (product?.id && c.extension_ids.split(',').includes(product.id))
+                )) ? (
                   <div className="space-y-3">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-2">Promo Code</label>
                     <div className="flex gap-2">
@@ -681,7 +691,7 @@ function CheckoutPage() {
                       </button>
                     </div>
                   </div>
-                ) : (
+                ) : appliedCoupon ? (
                   <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-2xl flex justify-between items-center">
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-green-500">Coupon Applied</p>
@@ -694,7 +704,7 @@ function CheckoutPage() {
                       Remove
                     </button>
                   </div>
-                )}
+                ) : null}
 
                 <div className="space-y-3">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
