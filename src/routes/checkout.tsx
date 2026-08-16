@@ -93,6 +93,8 @@ function CheckoutPage() {
   const { data: coupons } = useQuery({
     queryKey: ['coupons'],
     queryFn: () => getCouponsFn(),
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
 
   // Keep form in sync if user logs in while on page
