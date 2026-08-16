@@ -132,19 +132,29 @@ function CheckoutPage() {
 
   useEffect(() => {
     if (coupons && product) {
+      console.log("Checking coupons for product:", product.id);
       const valid = (coupons as any[]).some(c => {
         const isExpired = c.expiry_date && new Date(c.expiry_date) < new Date();
         const limitReached = c.usage_limit && (c.used_count || 0) >= c.usage_limit;
         
-        if (isExpired || limitReached) return false;
+        if (isExpired || limitReached) {
+          console.log("Coupon expired or limit reached:", c.code);
+          return false;
+        }
 
-        const extensionIds = c.extension_ids ? c.extension_ids.split(',').filter(Boolean) : [];
+        const extensionIds = c.extension_ids ? c.extension_ids.split(',').map((id: string) => id.trim()).filter(Boolean) : [];
         const isGlobal = extensionIds.length === 0 && (!c.extension_id);
         const isTargeted = extensionIds.includes(product.id) || c.extension_id === product.id;
         
-        return isGlobal || isTargeted;
+        if (isGlobal || isTargeted) {
+          console.log("Found valid coupon:", c.code);
+          return true;
+        }
+        return false;
       });
       setHasValidCoupons(valid);
+    } else {
+      setHasValidCoupons(false);
     }
   }, [coupons, product]);
 
@@ -736,7 +746,7 @@ function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
                     <span>Subtotal</span>
-                    <span>{selectedMethod?.id === 'binance' ? `$${(product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0)).toFixed(2)}` : `৳${(product?.price_bdt ?? (Math.round((product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0)) * usdtRate)))}`}</span>
+                    <span>{selectedMethod?.id === 'binance' ? `$${(product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0)).toFixed(2)}` : `৳${Math.round(product?.price_bdt ?? ((product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0)) * usdtRate))}`}</span>
                   </div>
                   {appliedCoupon && (
                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-green-500">
