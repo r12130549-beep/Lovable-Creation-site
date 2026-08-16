@@ -1,93 +1,73 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
 
-// --- Coupons ---
 export const getCoupons = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { data, error } = await supabase.from('coupons' as any).select('*');
-    if (error) throw new Error(error.message);
-    return data as any[];
+    try {
+      const { listCouponsFromCloud } = await import("./cloud-data.server");
+      return await listCouponsFromCloud();
+    } catch (error: any) {
+      console.error("Error fetching coupons:", error);
+      return [];
+    }
   });
 
 export const validateCoupon = createServerFn({ method: "POST" })
   .validator((data: any) => z.object({ code: z.string(), extensionId: z.string().optional() }).parse(data))
   .handler(async ({ data }) => {
-    const { data: coupon, error } = await supabase
-      .from('coupons' as any)
-      .select('*')
-      .eq('code', data.code)
-      .single();
-    
-    if (error || !coupon) throw new Error("Invalid coupon code");
-    const c = coupon as any;
-    if (c.expiry_date && new Date(c.expiry_date) < new Date()) throw new Error("Coupon expired");
-    if (c.usage_limit && c.used_count >= c.usage_limit) throw new Error("Usage limit reached");
-    if (c.extension_id && data.extensionId && c.extension_id !== data.extensionId) throw new Error("Coupon not valid for this product");
-    
-    return c;
+    try {
+      const { validateCouponInCloud } = await import("./cloud-data.server");
+      return await validateCouponInCloud(data.code, data.extensionId);
+    } catch (error: any) {
+      throw new Error(error.message || "Invalid coupon");
+    }
   });
 
-// --- Reviews ---
-export const getExtensionReviews = createServerFn({ method: "GET" })
-  .validator((data: any) => z.object({ extensionId: z.string() }).parse(data))
+export const createCoupon = createServerFn({ method: "POST" })
+  .validator((data: any) => {
+    const raw = data?.data || (typeof data === 'string' ? JSON.parse(data) : data);
+    return z.object({
+      code: z.string(),
+      discount_type: z.enum(['percentage', 'fixed']),
+      discount_value: z.number(),
+      extension_id: z.string().optional().nullable(),
+      expiry_date: z.string().optional().nullable(),
+      usage_limit: z.number().optional().nullable()
+    }).parse(raw);
+  })
   .handler(async ({ data }) => {
-    const { data: reviews, error } = await supabase
-      .from('reviews' as any)
-      .select('*, profiles(full_name, avatar_url)')
-      .eq('extension_id', data.extensionId)
-      .eq('status', 'approved');
-    if (error) throw new Error(error.message);
-    return reviews as any[];
+    try {
+      const { createCouponInCloud } = await import("./cloud-data.server");
+      const coupon = await createCouponInCloud(data);
+      return { success: true, coupon };
+    } catch (error: any) {
+      console.error("Error creating coupon:", error);
+      return { success: false, message: error.message };
+    }
   });
 
-export const submitReview = createServerFn({ method: "POST" })
-  .validator((data: any) => z.object({
-    extensionId: z.string(),
-    rating: z.number().min(1).max(5),
-    comment: z.string().optional()
-  }).parse(data))
+export const deleteCoupon = createServerFn({ method: "POST" })
+  .validator((data: any) => z.object({ id: z.string() }).parse(data))
   .handler(async ({ data }) => {
-    const { data: review, error } = await supabase
-      .from('reviews' as any)
-      .insert({
-        extension_id: data.extensionId,
-        rating: data.rating,
-        comment: data.comment,
-        status: 'pending' 
-      });
-    if (error) throw new Error(error.message);
-    return review;
+    try {
+      const { deleteCouponInCloud } = await import("./cloud-data.server");
+      await deleteCouponInCloud(data.id);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error deleting coupon:", error);
+      return { success: false, message: error.message };
+    }
   });
 
-// --- Support ---
-export const createTicket = createServerFn({ method: "POST" })
-  .validator((data: any) => z.object({
-    subject: z.string(),
-    message: z.string(),
-    attachmentUrl: z.string().optional()
-  }).parse(data))
+export const incrementCouponUsage = createServerFn({ method: "POST" })
+  .validator((data: any) => z.object({ id: z.string() }).parse(data))
   .handler(async ({ data }) => {
-    const { data: ticket, error } = await supabase
-      .from('support_tickets' as any)
-      .insert({
-        subject: data.subject,
-        message: data.message,
-        attachment_url: data.attachmentUrl,
-        status: 'open'
-      })
-      .select()
-      .single();
-    if (error) throw new Error(error.message);
-    return ticket;
-  });
-
-export const getMyTickets = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const { data, error } = await supabase
-      .from('support_tickets' as any)
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) throw new Error(error.message);
-    return data as any[];
+    try {
+      const { incrementCouponUsageInCloud } = await import("./cloud-data.server");
+      await incrementCouponUsageInCloud(data.id);
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error incrementing coupon usage:", error);
+      return { success: false };
+    }
   });

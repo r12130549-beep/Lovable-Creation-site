@@ -83,3 +83,63 @@ export async function updateAppSettingInCloud(key: string, value: any) {
     .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
   if (error) throw new Error(error.message);
 }
+
+export async function listCouponsFromCloud() {
+  const supabaseAdmin = getCloudAdminClient();
+  const { data, error } = await supabaseAdmin
+    .from("coupons")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function createCouponInCloud(coupon: any) {
+  const supabaseAdmin = getCloudAdminClient();
+  const { data, error } = await supabaseAdmin
+    .from("coupons")
+    .insert(coupon)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function deleteCouponInCloud(id: string) {
+  const supabaseAdmin = getCloudAdminClient();
+  const { error } = await supabaseAdmin.from("coupons").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function validateCouponInCloud(code: string, extensionId?: string) {
+  const supabaseAdmin = getCloudAdminClient();
+  const { data: coupon, error } = await supabaseAdmin
+    .from('coupons')
+    .select('*')
+    .eq('code', code)
+    .single();
+  
+  if (error || !coupon) throw new Error("Invalid coupon code");
+  
+  if (coupon.expiry_date && new Date(coupon.expiry_date) < new Date()) {
+    throw new Error("Coupon expired");
+  }
+  
+  if (coupon.usage_limit && coupon.used_count >= coupon.usage_limit) {
+    throw new Error("Usage limit reached");
+  }
+  
+  if (coupon.extension_id && extensionId && coupon.extension_id !== extensionId) {
+    throw new Error("Coupon not valid for this product");
+  }
+  
+  return coupon;
+}
+
+export async function incrementCouponUsageInCloud(id: string) {
+  const supabaseAdmin = getCloudAdminClient();
+  const { data: current } = await supabaseAdmin.from('coupons').select('used_count').eq('id', id).single();
+  const newCount = (current?.used_count || 0) + 1;
+  const { error } = await supabaseAdmin.from('coupons').update({ used_count: newCount }).eq('id', id);
+  if (error) throw new Error(error.message);
+}

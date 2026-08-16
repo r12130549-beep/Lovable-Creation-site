@@ -15,6 +15,7 @@ import { createExtension, deleteExtension, getExtensions, updateExtension } from
 import { toggleUserStatus, removeUser } from '@/lib/users.functions';
 import { getAppSettings, updateAppSetting } from '@/lib/settings.functions';
 import { getOrderAssetSignedUrl } from '@/lib/assets.functions';
+import { getCoupons, createCoupon, deleteCoupon } from '@/lib/features.functions';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { FileUpload } from '@/components/admin/FileUpload';
@@ -208,6 +209,7 @@ const MENU = [
   { icon: CreditCard, label: 'Payments', id: 'payments' },
   { icon: TrendingUp, label: 'Earnings', id: 'analytics' },
   { icon: Shield, label: 'Licenses', id: 'licenses' },
+  { icon: Zap, label: 'Coupons', id: 'coupons' },
   { icon: Zap, label: 'Server Status', id: 'server_status' },
   { icon: Settings, label: 'Website Settings', id: 'settings' },
 ];
@@ -234,6 +236,9 @@ function AdminPage() {
   const getExtensionsFn = useServerFn(getExtensions);
   const getAdminUsersFn = useServerFn(getAdminUsersFast);
   const getAdminLicensesFn = useServerFn(getAdminLicensesFast);
+  const getCouponsFn = useServerFn(getCoupons);
+  const createCouponFn = useServerFn(createCoupon);
+  const deleteCouponFn = useServerFn(deleteCoupon);
 
   useEffect(() => {
     if (initialized && (!user || !isAdmin)) {
@@ -307,6 +312,12 @@ function AdminPage() {
     enabled: activeTab === 'licenses',
   });
 
+  const { data: coupons } = useQuery({
+    queryKey: ['admin-coupons'],
+    queryFn: () => getCouponsFn(),
+    enabled: activeTab === 'coupons',
+  });
+
   const createOrderMutation = useMutation({
     mutationFn: (data: any) => createManualOrderFn({ data }),
     onSuccess: (result) => {
@@ -371,6 +382,22 @@ function AdminPage() {
       setEditingExtension(null);
     },
     onError: (err: any) => toast.error(err.message || 'Failed to update product')
+  });
+
+  const deleteCouponMutation = useMutation({
+    mutationFn: (id: string) => deleteCouponFn({ id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-coupons'] });
+      toast.success('Coupon deleted successfully');
+    }
+  });
+
+  const createCouponMutation = useMutation({
+    mutationFn: (data: any) => createCouponFn({ data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-coupons'] });
+      toast.success('Coupon created successfully');
+    }
   });
 
   const filteredOrders = useMemo(() => {
