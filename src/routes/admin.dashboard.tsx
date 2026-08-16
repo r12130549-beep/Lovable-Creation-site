@@ -602,12 +602,14 @@ function AdminPage() {
                   key={editingExtension?.id || 'new-extension'}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  onSubmit={(e) => {
+                   onSubmit={(e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
                     const payload = {
                       name: (formData.get('name') as string) || '',
-                      price: Number(formData.get('price')) || 0,
+                      price_usd: Number(formData.get('price_usd')) || 0,
+                      price: Number(formData.get('price_usd')) || 0,
+                      price_bdt: formData.get('price_bdt') ? Number(formData.get('price_bdt')) : null,
                       description: (formData.get('description') as string) || '',
                       category: (formData.get('category') as string) || '',
                       icon_url: (formData.get('icon_url') as string) || '',
@@ -618,6 +620,10 @@ function AdminPage() {
                     } else {
                       createExtensionMutation.mutate({
                         ...payload,
+                        slug: (payload.name || 'extension').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                      });
+                    }
+                  }}
                         slug: (payload.name || 'extension').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
                       });
                     }
