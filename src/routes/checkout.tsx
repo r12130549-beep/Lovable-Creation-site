@@ -147,6 +147,24 @@ function CheckoutPage() {
     return extensions.find((e: any) => e.id === search.productId || e.slug === search.productId);
   }, [extensions, search.productId]);
 
+  useEffect(() => {
+    if (coupons && product) {
+      const valid = (coupons as any[]).some(c => {
+        const isExpired = c.expiry_date && new Date(c.expiry_date) < new Date();
+        const limitReached = c.usage_limit && (c.used_count || 0) >= c.usage_limit;
+        
+        if (isExpired || limitReached) return false;
+
+        const extensionIds = c.extension_ids ? c.extension_ids.split(',').filter(Boolean) : [];
+        const isGlobal = extensionIds.length === 0 && (!c.extension_id);
+        const isTargeted = extensionIds.includes(product.id) || c.extension_id === product.id;
+        
+        return isGlobal || isTargeted;
+      });
+      setHasValidCoupons(valid);
+    }
+  }, [coupons, product]);
+
   const getMethodDetails = (methodId: string) => {
     if (!appSettings || Object.keys(appSettings).length === 0) return null;
     const settings = appSettings as Record<string, any>;
