@@ -277,7 +277,7 @@ function AdminPage() {
   const { data: extensions, isLoading: extensionsLoading } = useQuery({
     queryKey: ['admin-extensions'],
     queryFn: async () => {
-      const data = await getExtensionsFn();
+      const data = await getExtensionsFn({ data: {} } as any);
       return data;
     },
     enabled: activeTab === 'extensions' || activeTab === 'coupons',
