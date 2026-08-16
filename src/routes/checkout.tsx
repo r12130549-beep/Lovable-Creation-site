@@ -72,7 +72,7 @@ type PaymentMethod = typeof PAYMENT_METHODS[number];
 function CheckoutPage() {
   const { user: firebaseUser } = useAuth();
   const [step, setStep] = useState(1);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(PAYMENT_METHODS[0]);
   const [loading, setLoading] = useState(false);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -138,15 +138,32 @@ function CheckoutPage() {
         
         if (isExpired || limitReached) return false;
 
-        const extensionIds = c.extension_ids ? c.extension_ids.split(',').filter(Boolean) : [];
+        const extensionIds = c.extension_ids 
+          ? c.extension_ids.split(',').map((id: string) => id.trim()).filter(Boolean) 
+          : [];
+        
         const isGlobal = extensionIds.length === 0 && (!c.extension_id);
-        const isTargeted = extensionIds.includes(product.id) || c.extension_id === product.id;
+        const isTargeted = extensionIds.includes(product.id) || 
+                          c.extension_id === product.id || 
+                          extensionIds.includes(product.slug) || 
+                          c.extension_id === product.slug;
         
         return isGlobal || isTargeted;
       });
       setHasValidCoupons(valid);
+    } else {
+      setHasValidCoupons(false);
     }
   }, [coupons, product]);
+
+  useEffect(() => {
+    // If we're coming from a "Buy Now" click (which defaults to USD-based products), 
+    // or if the search productId is 'binance' (which might be a legacy flag),
+    // ensure Binance is the default selected method to show USD.
+    if (search.productId) {
+      setSelectedMethod(PAYMENT_METHODS[0]);
+    }
+  }, [search.productId]);
 
   const getMethodDetails = (methodId: string) => {
     if (!appSettings || Object.keys(appSettings).length === 0) return null;
@@ -423,11 +440,16 @@ function CheckoutPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {PAYMENT_METHODS.map(m => (
-                        <button 
-                          key={m.id} 
-                          onClick={() => setSelectedMethod(m)} 
-                          className={`
+                        {PAYMENT_METHODS.map(m => (
+                          <button 
+                            key={m.id} 
+                            onClick={() => {
+                              setSelectedMethod(m);
+                              if (m.id === 'binance') {
+                                // Keep logic or add visual feedback
+                              }
+                            }} 
+                            className={`
                             group relative p-8 rounded-[2rem] border-2 transition-all duration-500 flex flex-col items-center gap-4 text-center
                             ${selectedMethod?.id === m.id ? m.color + " ring-1 ring-inset ring-white/10" : 'border-white/5 bg-white/[0.02] hover:bg-white/5 hover:border-white/10'}
                           `}
@@ -725,7 +747,7 @@ function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
                     <span>Subtotal</span>
-                    <span>{selectedMethod?.id === 'binance' ? `$${(product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0)).toFixed(2)}` : `৳${(product?.price_bdt ?? (Math.round((product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0)) * usdtRate)))}`}</span>
+                    <span>{selectedMethod?.id === 'binance' ? `$${(product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0)).toFixed(2)}` : `৳${Math.round(product?.price_bdt ?? ((product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0)) * usdtRate))}`}</span>
                   </div>
                   {appliedCoupon && (
                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-green-500">
