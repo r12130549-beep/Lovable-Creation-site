@@ -404,10 +404,17 @@ function AdminPage() {
   });
 
   const createCouponMutation = useMutation({
-    mutationFn: (data: any) => createCouponFn({ data }),
+    mutationFn: async (data: any) => {
+      const res: any = await createCouponFn({ data });
+      if (res && res.success === false) throw new Error(res.message || 'Failed to create coupon');
+      return res;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-coupons'] });
       toast.success('Coupon created successfully');
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Failed to create coupon');
     }
   });
 
