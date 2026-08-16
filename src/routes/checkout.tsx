@@ -619,10 +619,10 @@ function CheckoutPage() {
               <div className="space-y-6">
                 <div className="flex justify-between items-start gap-4">
                   <div>
-                    <p className="font-black text-sm uppercase">VIBEX Premium Plan</p>
+                    <p className="font-black text-sm uppercase">{search.productName || product?.name || 'VIBEX Premium Tool'}</p>
                     <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-1">One-time payment</p>
                   </div>
-                  <p className="font-black text-red-500">৳{bdtAmount}</p>
+                  <p className="font-black text-red-500">{selectedMethod?.id === 'binance' ? `$${usdtAmount}` : `৳${bdtAmount}`}</p>
                 </div>
 
                 <div className="h-[1px] bg-white/5 w-full" />
@@ -630,18 +630,18 @@ function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
                     <span>Subtotal</span>
-                    <span>৳{bdtAmount}</span>
+                    <span>{selectedMethod?.id === 'binance' ? `$${usdtAmount}` : `৳${bdtAmount}`}</span>
                   </div>
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
                     <span>Processing Fee</span>
-                    <span>৳0.00</span>
+                    <span>{selectedMethod?.id === 'binance' ? `$0.00` : `৳0.00`}</span>
                   </div>
                 </div>
 
                 <div className="pt-6 border-t border-white/5">
                   <div className="flex justify-between items-end">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Total Amount</p>
-                    <p className="text-3xl font-black text-white">৳{bdtAmount}</p>
+                    <p className="text-3xl font-black text-white">{selectedMethod?.id === 'binance' ? `$${usdtAmount}` : `৳${bdtAmount}`}</p>
                   </div>
                 </div>
               </div>
