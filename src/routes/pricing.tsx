@@ -97,7 +97,8 @@ function PricingPage() {
                 </div>
                 <h3 className="text-2xl font-black mb-2 uppercase tracking-tight">{plan.name}</h3>
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-5xl font-black tracking-tighter">৳{plan.price}</span>
+                  <span className="text-5xl font-black tracking-tighter">${(Number(plan.price.replace(/,/g, '')) / 130).toFixed(0)}</span>
+                  <span className="text-white/20 text-xs font-black uppercase tracking-widest">/ ৳{plan.price}</span>
                   {plan.name !== 'LIFETIME' && <span className="text-white/20 text-xs font-black uppercase tracking-widest">/ Month</span>}
                 </div>
                 <p className="text-white/40 text-sm font-medium leading-relaxed">{plan.description}</p>
