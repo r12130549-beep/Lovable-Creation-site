@@ -93,6 +93,8 @@ function CheckoutPage() {
   const { data: coupons } = useQuery({
     queryKey: ['coupons'],
     queryFn: () => getCouponsFn(),
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
 
   // Keep form in sync if user logs in while on page
@@ -132,6 +134,8 @@ function CheckoutPage() {
 
   useEffect(() => {
     if (coupons && product) {
+      console.log("Checking coupons for product:", product.id, product.slug);
+      console.log("Available coupons:", coupons);
       const valid = (coupons as any[]).some(c => {
         const isExpired = c.expiry_date && new Date(c.expiry_date) < new Date();
         const limitReached = c.usage_limit && (c.used_count || 0) >= c.usage_limit;
