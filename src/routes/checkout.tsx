@@ -96,6 +96,12 @@ function CheckoutPage() {
   
   const search = useSearch({ from: '/checkout' }) as { productId?: string; plan?: string; productName?: string };
   const navigate = useNavigate();
+  const getExtensionsFn = useServerFn(getExtensions);
+
+  const { data: extensions } = useQuery({
+    queryKey: ['extensions-checkout'],
+    queryFn: () => getExtensionsFn(),
+  });
 
   const { data: appSettings, isLoading: settingsLoading } = useQuery({
     queryKey: ['app-settings'],
@@ -104,6 +110,11 @@ function CheckoutPage() {
       return {};
     }),
   });
+
+  const product = useMemo(() => {
+    if (!extensions || !search.productId) return null;
+    return extensions.find((e: any) => e.id === search.productId || e.slug === search.productId);
+  }, [extensions, search.productId]);
 
   const getMethodDetails = (methodId: string) => {
     if (!appSettings || Object.keys(appSettings).length === 0) return null;
@@ -117,8 +128,15 @@ function CheckoutPage() {
   };
 
   const usdtRate = useMemo(() => Number((appSettings as Record<string, any>)?.['usdt_rate']) || 130, [appSettings]);
-  const bdtAmount = useMemo(() => (search as any)['plan'] === 'premium' ? 1500 : 0, [search]);
-  const usdtAmount = useMemo(() => (bdtAmount / usdtRate).toFixed(2), [bdtAmount, usdtRate]);
+  
+  const pricing = useMemo(() => {
+    const usd = product?.price_usd ?? product?.price ?? (search.plan === 'premium' ? 12 : 0);
+    const bdt = product?.price_bdt ?? (Math.round(usd * usdtRate));
+    return { usd, bdt };
+  }, [product, search.plan, usdtRate]);
+
+  const bdtAmount = pricing.bdt;
+  const usdtAmount = pricing.usd.toFixed(2);
 
   const handleNext = () => {
     if (step === 1) {
